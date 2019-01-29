@@ -126,10 +126,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StereoDXR.h" />
+    <ClInclude Include="VRDXR.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="StereoDXR.cpp" />
+    <ClCompile Include="VRDXR.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
