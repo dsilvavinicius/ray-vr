@@ -26,11 +26,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 RWTexture2D<float4> gOutput;
+RWTexture2D<float4> gRightOutput;
 __import Raytracing;
 
 shared cbuffer PerFrameCB
 {
     float4x4 invView;
+	float4x4 invRightView;
     float4x4 invModel;
     float2 viewportDims;
     float tanHalfFovY;
@@ -162,4 +164,18 @@ void rayGen()
     hitData.depth = 0;
     TraceRay( gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, hitData );
     gOutput[launchIndex.xy] = hitData.color;
+
+	// Right eye
+	RayDesc rightRay;
+	rightRay.Origin = invRightView[3].xyz;
+
+	rightRay.Direction = normalize((d.x * invRightView[0].xyz * tanHalfFovY * aspectRatio) - (d.y * invRightView[1].xyz * tanHalfFovY) - invRightView[2].xyz);
+
+	rightRay.TMin = 0;
+	rightRay.TMax = 100000;
+
+	PrimaryRayData rightHitData;
+	rightHitData.depth = 0;
+	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, rightRay, rightHitData);
+	gRightOutput[launchIndex.xy] = rightHitData.color;
 }

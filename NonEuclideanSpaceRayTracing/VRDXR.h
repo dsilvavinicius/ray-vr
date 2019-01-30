@@ -57,7 +57,7 @@ private:
 	RtProgramVars::SharedPtr mpRtVars;
 	RtState::SharedPtr mpRtState;
 	RtSceneRenderer::SharedPtr mpRtRenderer;
-	Texture::SharedPtr mpRtOut;
+	Texture::SharedPtr mpRtOut[2];
 
 	void setPerFrameVars(const Fbo* pTargetFbo);
 	void renderRT(RenderContext* pContext, const Fbo* pTargetFbo);

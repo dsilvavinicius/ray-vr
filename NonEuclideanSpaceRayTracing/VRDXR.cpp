@@ -94,11 +94,6 @@ void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 	pModel->bindSamplerToMaterials(pSampler);
 
 	// Update the controllers
-	/*mCamController.setCameraSpeed(radius * 0.25f);
-	float nearZ = std::max(0.1f, pModel->getRadius() / 750.0f);
-	float farZ = radius * 10;
-	mpCamera->setDepthRange(nearZ, farZ);
-	mpCamera->setAspectRatio((float)pTargetFbo->getWidth() / (float)pTargetFbo->getHeight());*/
 	mpSceneRenderer = SceneRenderer::create(mpScene);
 	mpRtVars = RtProgramVars::create(mpRaytraceProgram, mpScene);
 	mpRtRenderer = RtSceneRenderer::create(mpScene);
@@ -157,6 +152,7 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 	GraphicsVars* pVars = mpRtVars->getGlobalVars().get();
 	ConstantBuffer::SharedPtr pCB = pVars->getConstantBuffer("PerFrameCB");
 	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
+	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
 	float fovY = focalLengthToFovY(mpCamera->getFocalLength(), Camera::kDefaultFrameHeight);
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
@@ -167,11 +163,15 @@ void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 	PROFILE("renderRT");
 	setPerFrameVars(pTargetFbo);
 
-	pContext->clearUAV(mpRtOut->getUAV().get(), kClearColor);
-	mpRtVars->getRayGenVars()->setTexture("gOutput", mpRtOut);
-
+	pContext->clearUAV(mpRtOut[ 0 ]->getUAV().get(), kClearColor);
+	pContext->clearUAV(mpRtOut[ 1 ]->getUAV().get(), kClearColor);
+	
+	mpRtVars->getRayGenVars()->setTexture("gOutput", mpRtOut[ 0 ]);
+	mpRtVars->getRayGenVars()->setTexture("gRightOutput", mpRtOut[ 1 ]);
+	
 	mpRtRenderer->renderScene(pContext, mpRtVars, mpRtState, uvec3(pTargetFbo->getWidth(), pTargetFbo->getHeight(), 1), mpCamera.get());
-	pContext->blit(mpRtOut->getSRV(), pTargetFbo->getRenderTargetView(0));
+	pContext->blit(mpRtOut[ 0 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 0, 1));
+	pContext->blit(mpRtOut[ 1 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 1, 1));
 }
 
 void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
@@ -186,7 +186,7 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		pRenderContext->clearFbo(mpVrFbo->getFbo().get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
 
 		mpGraphicsState->setFbo(mpVrFbo->getFbo());
-		mpGraphicsState->setFbo(pTargetFbo);
+		//mpGraphicsState->setFbo(pTargetFbo);
 		mCamController.update();
 
 		if (mRayTrace)
@@ -208,7 +208,7 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		// Submit the views and display them
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
-		//blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Right), pTargetFbo->getWidth() / 2);
+		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Right), pTargetFbo->getWidth() / 2);
 		
 	}
 }
@@ -336,7 +336,8 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 
 		VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 		ivec2 renderSize = pDisplay->getRecommendedRenderSize();
-		mpRtOut = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
+		mpRtOut[ 0 ] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
+		mpRtOut[ 1 ] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
 	}
 	else
 	{
