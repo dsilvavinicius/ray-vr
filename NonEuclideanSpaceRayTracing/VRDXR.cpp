@@ -82,7 +82,6 @@ void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 	mpScene = RtScene::loadFromFile(filename, RtBuildFlags::None, Model::LoadFlags::RemoveInstancing);
 	Model::SharedPtr pModel = mpScene->getModel(0);
 	float radius = pModel->getRadius();
-
 	
 	mpCamera = mpScene->getActiveCamera();
 	assert(mpCamera);
@@ -95,11 +94,11 @@ void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 	pModel->bindSamplerToMaterials(pSampler);
 
 	// Update the controllers
-	mCamController.setCameraSpeed(radius * 0.25f);
+	/*mCamController.setCameraSpeed(radius * 0.25f);
 	float nearZ = std::max(0.1f, pModel->getRadius() / 750.0f);
 	float farZ = radius * 10;
 	mpCamera->setDepthRange(nearZ, farZ);
-	mpCamera->setAspectRatio((float)pTargetFbo->getWidth() / (float)pTargetFbo->getHeight());
+	mpCamera->setAspectRatio((float)pTargetFbo->getWidth() / (float)pTargetFbo->getHeight());*/
 	mpSceneRenderer = SceneRenderer::create(mpScene);
 	mpRtVars = RtProgramVars::create(mpRaytraceProgram, mpScene);
 	mpRtRenderer = RtSceneRenderer::create(mpScene);
@@ -297,15 +296,6 @@ bool StereoRendering::onMouseEvent(SampleCallbacks* pSample, const MouseEvent& m
 
 void VRDXR::onResizeSwapChain(SampleCallbacks* pSample, uint32_t width, uint32_t height)
 {
-	float h = (float)height;
-	float w = (float)width;
-
-	mpCamera->setFocalLength(18);
-	float aspectRatio = (w / h);
-	mpCamera->setAspectRatio(aspectRatio);
-
-	mpRtOut = Texture::create2D(width, height, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
-
 	// VR
 	initVR(pSample->getCurrentFbo().get());
 }
@@ -343,6 +333,10 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 		{
 			displaySpsWarning();
 		}
+
+		VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
+		ivec2 renderSize = pDisplay->getRecommendedRenderSize();
+		mpRtOut = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
 	}
 	else
 	{
