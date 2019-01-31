@@ -154,7 +154,7 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
 	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
-	float fovY = focalLengthToFovY(mpCamera->getFocalLength(), Camera::kDefaultFrameHeight);
+	float fovY = VRSystem::instance()->getHMD()->getFovY();
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
 }
 
