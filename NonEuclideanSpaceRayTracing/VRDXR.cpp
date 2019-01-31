@@ -151,10 +151,13 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 	PROFILE("setPerFrameVars");
 	GraphicsVars* pVars = mpRtVars->getGlobalVars().get();
 	ConstantBuffer::SharedPtr pCB = pVars->getConstantBuffer("PerFrameCB");
-	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
-	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
+
+	VRDisplay* hmd = VRSystem::instance()->getHMD().get();
+
+	pCB["invView"] = glm::inverse(hmd->getViewMatrix(VRDisplay::Eye::Left));
+	pCB["invRightView"] = glm::inverse(hmd->getViewMatrix(VRDisplay::Eye::Right));
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
-	float fovY = VRSystem::instance()->getHMD()->getFovY();
+	float fovY = hmd->getFovY();
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
 }
 
@@ -169,7 +172,7 @@ void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 	mpRtVars->getRayGenVars()->setTexture("gOutput", mpRtOut[ 0 ]);
 	mpRtVars->getRayGenVars()->setTexture("gRightOutput", mpRtOut[ 1 ]);
 	
-	mpRtRenderer->renderScene(pContext, mpRtVars, mpRtState, uvec3(pTargetFbo->getWidth(), pTargetFbo->getHeight(), 1), mpCamera.get());
+	mpRtRenderer->renderScene(pContext, mpRtVars, mpRtState, uvec3(pTargetFbo->getWidth(), pTargetFbo->getHeight(), 1)/*, mpCamera.get()*/);
 	pContext->blit(mpRtOut[ 0 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 0, 1));
 	pContext->blit(mpRtOut[ 1 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 1, 1));
 }

@@ -64,13 +64,6 @@ private:
 	void renderRaster(RenderContext* pContext);
 	void loadScene(const std::string& filename, const Fbo* pTargetFbo);
 
-	// Stereo
-	/*GraphicsProgram::SharedPtr mpMonoSPSProgram = nullptr;
-	GraphicsVars::SharedPtr mpMonoSPSVars = nullptr;
-
-	GraphicsProgram::SharedPtr mpStereoProgram = nullptr;
-	GraphicsVars::SharedPtr mpStereoVars = nullptr;*/
-
 	Sampler::SharedPtr mpTriLinearSampler;
 
 	enum class RenderMode
@@ -84,11 +77,9 @@ private:
 	RenderMode mRenderMode = RenderMode::Mono;
 	Gui::DropdownList mSubmitModeList;
 
-	//void submitToScreen(RenderContext* pContext, Fbo::SharedPtr pTargetFbo);
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;
-	//void submitStereo(RenderContext* pContext, Fbo::SharedPtr pTargetFbo, bool singlePassStereo);
 	void setRenderMode();
 };

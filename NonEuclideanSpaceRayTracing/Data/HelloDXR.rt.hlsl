@@ -140,6 +140,27 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     hitData.color.a = 1;
 }
 
+float4 traceFirstRay(float4x4 invView, float2 d, float aspectRatio)
+{
+	RayDesc ray;
+	ray.Origin = invView[3].xyz;
+
+	// We negate the Z exis because the 'view' matrix is generated using a 
+	// Right Handed coordinate system with Z pointing towards the viewer
+	// The negation of Z axis is needed to get the rays go out in the direction away fromt he viewer.
+	// The negation of Y axis is needed because the texel coordinate system, used in the UAV we write into using launchIndex
+	// has the Y axis flipped with respect to the camera Y axis (0 is at the top and 1 at the bottom)
+	ray.Direction = normalize((d.x * invView[0].xyz * tanHalfFovY * aspectRatio) - (d.y * invView[1].xyz * tanHalfFovY) - invView[2].xyz);
+
+	ray.TMin = 0;
+	ray.TMax = 100000;
+
+	PrimaryRayData hitData;
+	hitData.depth = 0;
+	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, hitData);
+	return hitData.color;
+}
+
 [shader("raygeneration")]
 void rayGen()
 {
@@ -147,35 +168,6 @@ void rayGen()
     float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
     float aspectRatio = viewportDims.x / viewportDims.y;
 
-    RayDesc ray;
-    ray.Origin = invView[3].xyz;
-
-    // We negate the Z exis because the 'view' matrix is generated using a 
-    // Right Handed coordinate system with Z pointing towards the viewer
-    // The negation of Z axis is needed to get the rays go out in the direction away fromt he viewer.
-    // The negation of Y axis is needed because the texel coordinate system, used in the UAV we write into using launchIndex
-    // has the Y axis flipped with respect to the camera Y axis (0 is at the top and 1 at the bottom)
-    ray.Direction = normalize( (d.x * invView[0].xyz * tanHalfFovY * aspectRatio) - (d.y * invView[1].xyz * tanHalfFovY) - invView[2].xyz );
-    
-    ray.TMin = 0;
-    ray.TMax = 100000;
-
-    PrimaryRayData hitData;
-    hitData.depth = 0;
-    TraceRay( gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, hitData );
-    gOutput[launchIndex.xy] = hitData.color;
-
-	// Right eye
-	RayDesc rightRay;
-	rightRay.Origin = invRightView[3].xyz;
-
-	rightRay.Direction = normalize((d.x * invRightView[0].xyz * tanHalfFovY * aspectRatio) - (d.y * invRightView[1].xyz * tanHalfFovY) - invRightView[2].xyz);
-
-	rightRay.TMin = 0;
-	rightRay.TMax = 100000;
-
-	PrimaryRayData rightHitData;
-	rightHitData.depth = 0;
-	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, rightRay, rightHitData);
-	gRightOutput[launchIndex.xy] = rightHitData.color;
+	gOutput[launchIndex.xy] = traceFirstRay(invView, d, aspectRatio);
+	gRightOutput[launchIndex.xy] = traceFirstRay(invRightView, d, aspectRatio);
 }
