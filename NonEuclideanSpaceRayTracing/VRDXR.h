@@ -47,8 +47,8 @@ private:
 
 	// RTX
 	RtProgram::SharedPtr mpRaytraceProgram = nullptr;
-	GraphicsProgram::SharedPtr mpRasterProgram = nullptr;
-	GraphicsVars::SharedPtr mpProgramVars = nullptr;
+	GraphicsProgram::SharedPtr mpStereoProgram = nullptr;
+	GraphicsVars::SharedPtr mpStereoVars = nullptr;
 	GraphicsState::SharedPtr mpGraphicsState = nullptr;
 	Camera::SharedPtr mpCamera;
 	HmdCameraController mCamController;

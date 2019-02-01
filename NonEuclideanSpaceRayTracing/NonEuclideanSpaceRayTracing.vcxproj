@@ -131,6 +131,23 @@
   <ItemGroup>
     <ClCompile Include="VRDXR.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\HelloDXR.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\HelloDXR.rt.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\StereoRendering.gs.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\StereoRendering.ps.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Data\StereoRendering.vs.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -6,4 +6,26 @@
   <ItemGroup>
     <ClCompile Include="VRDXR.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Data">
+      <UniqueIdentifier>{10198c2d-7454-45aa-af4a-93ea5bdda54a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\HelloDXR.ps.hlsl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\HelloDXR.rt.hlsl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\StereoRendering.gs.hlsl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\StereoRendering.ps.hlsl">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\StereoRendering.vs.hlsl">
+      <Filter>Data</Filter>
+    </None>
+  </ItemGroup>
 </Project>

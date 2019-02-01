@@ -82,7 +82,7 @@ void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 	mpScene = RtScene::loadFromFile(filename, RtBuildFlags::None, Model::LoadFlags::RemoveInstancing);
 	Model::SharedPtr pModel = mpScene->getModel(0);
 	float radius = pModel->getRadius();
-	
+
 	mpCamera = mpScene->getActiveCamera();
 	assert(mpCamera);
 
@@ -123,13 +123,12 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 
 	mpRaytraceProgram = RtProgram::create(rtProgDesc);
 
-	mpRasterProgram = GraphicsProgram::createFromFile("HelloDXR.ps.hlsl", "", "main");
-
 	loadScene(kDefaultScene, pSample->getCurrentFbo().get());
 
-	mpProgramVars = GraphicsVars::create(mpRasterProgram->getReflector());
-	mpGraphicsState = GraphicsState::create();
-	mpGraphicsState->setProgram(mpRasterProgram);
+	GraphicsProgram::Desc progDesc;
+	progDesc.addShaderLibrary("StereoRendering.vs.hlsl").vsEntry("main").addShaderLibrary("StereoRendering.ps.hlsl").psEntry("main").addShaderLibrary("StereoRendering.gs.hlsl").gsEntry("main");
+	mpStereoProgram = GraphicsProgram::create(progDesc);
+	mpStereoVars = GraphicsVars::create(mpStereoProgram->getReflector());
 
 	mpRtState = RtState::create();
 	mpRtState->setProgram(mpRaytraceProgram);
@@ -138,12 +137,16 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 
 void VRDXR::renderRaster(RenderContext* pContext)
 {
-	mpGraphicsState->setRasterizerState(nullptr);
-	mpGraphicsState->setDepthStencilState(nullptr);
-	mpGraphicsState->setProgram(mpRasterProgram);
-	pContext->setGraphicsState(mpGraphicsState);
-	pContext->setGraphicsVars(mpProgramVars);
-	mpSceneRenderer->renderScene(pContext, mpCamera.get());
+	mpGraphicsState->setProgram(mpStereoProgram);
+	pContext->setGraphicsVars(mpStereoVars);
+
+	pContext->pushGraphicsState(mpGraphicsState);
+
+	// Render
+	mpSceneRenderer->renderScene(pContext);
+
+	// Restore the state
+	pContext->popGraphicsState();
 }
 
 void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
