@@ -65,6 +65,8 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 	{
 		setRenderMode();
 	}
+
+	pGui->addFloat3Var("Eye distance fix", mEyeDistanceFix);
 }
 
 /*
@@ -157,8 +159,30 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 
 	VRDisplay* hmd = VRSystem::instance()->getHMD().get();
 
-	/*pCB["invView"] = glm::inverse(hmd->getViewMatrix(VRDisplay::Eye::Left));
-	pCB["invRightView"] = glm::inverse(hmd->getViewMatrix(VRDisplay::Eye::Right));*/
+	/*{
+		float4x4 view = mpCamera->getViewMatrix();
+		float3 xAxis(view[0].x, view[0].y, view[0].z);
+		float3 yAxis(view[1].x, view[1].y, view[1].z);
+		float3 zAxis(view[2].x, view[2].y, view[2].z);
+		float3 offset = xAxis * mEyeDistanceFix[0] + yAxis * mEyeDistanceFix[1] + zAxis * mEyeDistanceFix[2];
+		view[3][0] += offset.x;
+		view[3][1] += offset.y;
+		view[3][2] += offset.z;
+		pCB["invView"] = glm::inverse(view);
+	}
+	
+	{
+		float4x4 view = mpCamera->getRightEyeViewMatrix();
+		float3 xAxis(view[0].x, view[0].y, view[0].z);
+		float3 yAxis(view[1].x, view[1].y, view[1].z);
+		float3 zAxis(view[2].x, view[2].y, view[2].z);
+		float3 offset = xAxis * mEyeDistanceFix[0] + yAxis * mEyeDistanceFix[1] + zAxis * mEyeDistanceFix[2];
+		view[3][0] -= offset.x;
+		view[3][1] -= offset.y;
+		view[3][2] -= offset.z;
+		pCB["invRightView"] = glm::inverse(view);
+	}*/
+
 	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
 	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
 	
