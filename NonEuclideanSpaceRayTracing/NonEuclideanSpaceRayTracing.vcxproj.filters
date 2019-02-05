@@ -27,5 +27,8 @@
     <None Include="Data\StereoRendering.vs.hlsl">
       <Filter>Data</Filter>
     </None>
+    <None Include="Data\Proj2Rays.ps.hlsl">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
 </Project>

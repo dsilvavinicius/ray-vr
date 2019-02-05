@@ -27,6 +27,8 @@
 ***************************************************************************/
 RWTexture2D<float4> gOutput;
 RWTexture2D<float4> gRightOutput;
+
+RWTexture2DArray<float4> gRayDirs;
 __import Raytracing;
 
 shared cbuffer PerFrameCB
@@ -184,7 +186,19 @@ float4 traceRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
 	return traceRay(ray);
 }
 
-void traceRaysV0()
+float4 traceRay(float3 origin, uint slice)
+{
+	RayDesc ray;
+	ray.Origin = origin;
+	ray.Direction = gRayDirs[DispatchRaysIndex().xy, slice].xyz;
+
+	ray.TMin = 0;
+	ray.TMax = 100000;
+	return traceRay(ray);
+}
+
+// In this version the ray directions are created using the inverse view matrix.
+void traceRaysInvView()
 {
 	uint3 launchIndex = DispatchRaysIndex();
 	float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
@@ -194,7 +208,8 @@ void traceRaysV0()
 	gRightOutput[launchIndex.xy] = traceRay(invRightView, d, aspectRatio);
 }
 
-void traceRaysV1()
+// In this version the ray directions are creating using camera vectors. 
+void traceRaysCamVecs()
 {
 	uint3 launchIndex = DispatchRaysIndex();
 	float2 pixelCenter = (launchIndex.xy + float2(0.5f, 0.5f)) / DispatchRaysDimensions().xy;
@@ -204,9 +219,17 @@ void traceRaysV1()
 	gRightOutput[launchIndex.xy] = traceRay(ndc, RightCamPos, RightCamU, RightCamV, RightCamW);
 }
 
+// In this version the ray directions are provided in a texture.
+void traceRaysTex()
+{
+	gOutput[DispatchRaysIndex().xy] = traceRay(gCamera.posW, 0);
+	gRightOutput[DispatchRaysIndex().xy] = traceRay(RightCamPos, 1);
+}
+
 [shader("raygeneration")]
 void rayGen()
 {
-	traceRaysV0();
-	//traceRaysV1();
+	//traceRaysInvView();
+	//traceRaysCamVecs();
+	traceRaysTex();
 }

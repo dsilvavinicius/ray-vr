@@ -45,11 +45,16 @@ private:
 	RtScene::SharedPtr mpScene;
 	SceneRenderer::SharedPtr mpSceneRenderer;
 
-	// RTX
 	RtProgram::SharedPtr mpRaytraceProgram = nullptr;
+	
 	GraphicsProgram::SharedPtr mpStereoProgram = nullptr;
 	GraphicsVars::SharedPtr mpStereoVars = nullptr;
+	
+	GraphicsProgram::SharedPtr mpRayTexProgram = nullptr;
+	GraphicsVars::SharedPtr mpRayTexVars = nullptr;
+
 	GraphicsState::SharedPtr mpGraphicsState = nullptr;
+	
 	Camera::SharedPtr mpCamera;
 	HmdCameraController mCamController;
 
@@ -59,6 +64,7 @@ private:
 	RtSceneRenderer::SharedPtr mpRtRenderer;
 	Texture::SharedPtr mpRtOut[2];
 
+	void calcRayDirs(RenderContext* pContext);
 	void setPerFrameVars(const Fbo* pTargetFbo);
 	void renderRT(RenderContext* pContext, const Fbo* pTargetFbo);
 	void renderRaster(RenderContext* pContext);
@@ -80,6 +86,7 @@ private:
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
+	Fbo::SharedPtr mpRayDirFbo;
 	bool mShowStereoViews = true;
 	void setRenderMode();
 

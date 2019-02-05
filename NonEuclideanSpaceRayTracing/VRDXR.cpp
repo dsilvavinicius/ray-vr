@@ -130,6 +130,11 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 	mpStereoProgram = GraphicsProgram::create(progDesc);
 	mpStereoVars = GraphicsVars::create(mpStereoProgram->getReflector());
 
+	GraphicsProgram::Desc rayTexDesc;
+	rayTexDesc.addShaderLibrary("StereoRendering.vs.hlsl").vsEntry("main").addShaderLibrary("Proj2Rays.ps.hlsl").psEntry("main").addShaderLibrary("StereoRendering.gs.hlsl").gsEntry("main");
+	mpRayTexProgram = GraphicsProgram::create(rayTexDesc);
+	mpRayTexVars = GraphicsVars::create(mpRayTexProgram->getReflector());
+
 	mpRtState = RtState::create();
 	mpRtState->setProgram(mpRaytraceProgram);
 	mpRtState->setMaxTraceRecursionDepth(3); // 1 for calling TraceRay from RayGen, 1 for calling it from the primary-ray ClosestHitShader for reflections, 1 for reflection ray tracing a shadow ray
@@ -169,11 +174,17 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
 	float fovY = hmd->getFovY();
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
+
+	pVars->setTexture("gRayDirs", mpRayDirFbo->getColorTexture(0));
 }
 
 void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 {
 	PROFILE("renderRT");
+	calcRayDirs(pContext);
+
+	/*
+	mpGraphicsState->setFbo(mpVrFbo->getFbo());
 	setPerFrameVars(pTargetFbo);
 
 	pContext->clearUAV(mpRtOut[ 0 ]->getUAV().get(), kClearColor);
@@ -185,6 +196,24 @@ void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 	mpRtRenderer->renderScene(pContext, mpRtVars, mpRtState, uvec3(pTargetFbo->getWidth(), pTargetFbo->getHeight(), 1), mpCamera.get());
 	pContext->blit(mpRtOut[ 0 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 0, 1));
 	pContext->blit(mpRtOut[ 1 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 1, 1));
+	*/
+}
+
+void VRDXR::calcRayDirs(RenderContext* pContext)
+{
+	//pContext->clearFbo(mpRayDirFbo.get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
+	//mpGraphicsState->setFbo(mpRayDirFbo);
+
+	mpGraphicsState->setProgram(mpRayTexProgram);
+	pContext->setGraphicsVars(mpRayTexVars);
+
+	pContext->pushGraphicsState(mpGraphicsState);
+
+	// Render
+	mpSceneRenderer->renderScene(pContext);
+
+	// Restore the state
+	pContext->popGraphicsState();
 }
 
 void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
@@ -349,6 +378,9 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 
 		VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 		ivec2 renderSize = pDisplay->getRecommendedRenderSize();
+
+		mpRayDirFbo = FboHelper::create2D(renderSize.x, renderSize.y, vrFboDesc, 2);
+
 		mpRtOut[ 0 ] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
 		mpRtOut[ 1 ] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
 	}
