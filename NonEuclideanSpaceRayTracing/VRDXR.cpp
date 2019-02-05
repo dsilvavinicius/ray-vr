@@ -65,8 +65,6 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 	{
 		setRenderMode();
 	}
-
-	pGui->addFloat3Var("Eye distance fix", mEyeDistanceFix);
 }
 
 /*
@@ -159,42 +157,14 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 
 	VRDisplay* hmd = VRSystem::instance()->getHMD().get();
 
-	/*{
-		float4x4 view = mpCamera->getViewMatrix();
-		float3 xAxis(view[0].x, view[0].y, view[0].z);
-		float3 yAxis(view[1].x, view[1].y, view[1].z);
-		float3 zAxis(view[2].x, view[2].y, view[2].z);
-		float3 offset = xAxis * mEyeDistanceFix[0] + yAxis * mEyeDistanceFix[1] + zAxis * mEyeDistanceFix[2];
-		view[3][0] += offset.x;
-		view[3][1] += offset.y;
-		view[3][2] += offset.z;
-		pCB["invView"] = glm::inverse(view);
-	}
-	
-	{
-		float4x4 view = mpCamera->getRightEyeViewMatrix();
-		float3 xAxis(view[0].x, view[0].y, view[0].z);
-		float3 yAxis(view[1].x, view[1].y, view[1].z);
-		float3 zAxis(view[2].x, view[2].y, view[2].z);
-		float3 offset = xAxis * mEyeDistanceFix[0] + yAxis * mEyeDistanceFix[1] + zAxis * mEyeDistanceFix[2];
-		view[3][0] -= offset.x;
-		view[3][1] -= offset.y;
-		view[3][2] -= offset.z;
-		pCB["invRightView"] = glm::inverse(view);
-	}*/
-
 	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
 	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
 	
-	/*vec3 pos = mpCamera->getPosition();
-	vec3 forward = glm::normalize(mpCamera->getTarget() - mpCamera->getPosition());
-	vec3 up = glm::normalize(mpCamera->getUpVector());
-	vec3 side = glm::normalize(glm::cross(up, forward));
-
-	pCB["wsCamPos"] = pos;
-	pCB["wsCamU"] = side;
-	pCB["wsCamV"] = up;
-	pCB["wsCamZ"] = forward;*/
+	CameraData camData = calculateRightEyeParams();
+	pCB["RightCamPos"] = camData.posW;
+	pCB["RightCamU"] = camData.cameraU;
+	pCB["RightCamV"] = camData.cameraV;
+	pCB["RightCamW"] = camData.cameraW;
 
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
 	float fovY = hmd->getFovY();
@@ -473,6 +443,22 @@ void VRDXR::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::Share
 		dstRect.w = pTargetFbo->getHeight();
 		pContext->blit(pTexture->getSRV(0, 1, 0, 1), pTargetFbo->getRenderTargetView(0), uvec4(-1), dstRect);
 	}
+}
+
+CameraData VRDXR::calculateRightEyeParams() const
+{
+	// Save left eye view matrix.
+	float4x4 leftView = mpCamera->getViewMatrix();
+	
+	// Overwrite view with right eye and calculate shader parameters.
+	float4x4 rightView = mpCamera->getRightEyeViewMatrix();
+	mpCamera->setViewMatrix(rightView);
+	CameraData data = mpCamera->getData();
+	
+	// Restore left eye view matrix.
+	mpCamera->setViewMatrix(leftView);
+
+	return data;
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)

@@ -28,7 +28,6 @@
 RWTexture2D<float4> gOutput;
 RWTexture2D<float4> gRightOutput;
 __import Raytracing;
-//__import Matrix;
 
 shared cbuffer PerFrameCB
 {
@@ -38,10 +37,10 @@ shared cbuffer PerFrameCB
     float2 viewportDims;
     float tanHalfFovY;
 
-	/*float3 wsCamPos;
-	float3 wsCamU;
-	float3 wsCamV;
-	float3 wsCamZ;*/
+	float3 RightCamPos;
+	float3 RightCamU;
+	float3 RightCamV;
+	float3 RightCamW;
 };
 
 struct PrimaryRayData
@@ -146,11 +145,18 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     hitData.color.a = 1;
 }
 
-float4 traceFirstRay(float4x4 invView, float2 d, float aspectRatio)
+float4 traceRay(RayDesc ray)
+{
+	PrimaryRayData hitData;
+	hitData.depth = 0;
+	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, hitData);
+	return hitData.color;
+}
+
+float4 traceRay(float4x4 invView, float2 d, float aspectRatio)
 {
 	RayDesc ray;
 	ray.Origin = invView[3].xyz;
-	//ray.Origin = wsCamPos;
 
 	// We negate the Z exis because the 'view' matrix is generated using a 
 	// Right Handed coordinate system with Z pointing towards the viewer
@@ -158,28 +164,49 @@ float4 traceFirstRay(float4x4 invView, float2 d, float aspectRatio)
 	// The negation of Y axis is needed because the texel coordinate system, used in the UAV we write into using launchIndex
 	// has the Y axis flipped with respect to the camera Y axis (0 is at the top and 1 at the bottom)
 	ray.Direction = normalize((d.x * invView[0].xyz * tanHalfFovY * aspectRatio) - (d.y * invView[1].xyz * tanHalfFovY) - invView[2].xyz);
-	//ray.Direction = normalize(d.x * wsCamU + d.y * wsCamV + wsCamZ);
 
 	ray.TMin = 0;
 	ray.TMax = 100000;
 
-	PrimaryRayData hitData;
-	hitData.depth = 0;
-	TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, hitData);
-	return hitData.color;
+	return traceRay(ray);
+}
+
+float4 traceRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
+{
+	RayDesc ray;
+	ray.Origin = posW; // Start our ray at the world-space camera position
+	float3 rayDir = ndc.x * camU + ndc.y * camV + camW;
+	ray.Direction = normalize(rayDir);
+
+	ray.TMin = 0;
+	ray.TMax = 100000;
+
+	return traceRay(ray);
+}
+
+void traceRaysV0()
+{
+	uint3 launchIndex = DispatchRaysIndex();
+	float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
+	float aspectRatio = viewportDims.x / viewportDims.y;
+
+	gOutput[launchIndex.xy] = traceRay(invView, d, aspectRatio);
+	gRightOutput[launchIndex.xy] = traceRay(invRightView, d, aspectRatio);
+}
+
+void traceRaysV1()
+{
+	uint3 launchIndex = DispatchRaysIndex();
+	float2 pixelCenter = (launchIndex.xy + float2(0.5f, 0.5f)) / DispatchRaysDimensions().xy;
+	float2 ndc = float2(2, -2) * pixelCenter + float2(-1, 1);
+
+	gOutput[launchIndex.xy] = traceRay(ndc, gCamera.posW, gCamera.cameraU, gCamera.cameraV, gCamera.cameraW);
+	gRightOutput[launchIndex.xy] = traceRay(ndc, RightCamPos, RightCamU, RightCamV, RightCamW);
 }
 
 [shader("raygeneration")]
 void rayGen()
 {
-    uint3 launchIndex = DispatchRaysIndex();
-    float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
-	//float2 d = (((launchIndex.xy + 0.5) / DispatchRaysDimensions().xy) * float2(2.f, -2.f) - float2(-1.f,1.f));
-    float aspectRatio = viewportDims.x / viewportDims.y;
-
-	gOutput[launchIndex.xy] = traceFirstRay(invView, d, aspectRatio);
-	gRightOutput[launchIndex.xy] = traceFirstRay(invRightView, d, aspectRatio);
-
-	//gOutput[launchIndex.xy] = traceFirstRay(inverse(gCamera.viewMat), d, aspectRatio);
-	//gRightOutput[launchIndex.xy] = traceFirstRay(inverse(gCamera.rightEyeViewMat), d, aspectRatio);
+	traceRaysV0();
+	//traceRaysV1();
 }

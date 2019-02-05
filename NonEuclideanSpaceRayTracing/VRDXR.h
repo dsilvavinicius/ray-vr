@@ -77,11 +77,11 @@ private:
 	RenderMode mRenderMode = RenderMode::Mono;
 	Gui::DropdownList mSubmitModeList;
 
-	float3 mEyeDistanceFix = float3(0.f,0.f,0.f);
-
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;
 	void setRenderMode();
+
+	CameraData calculateRightEyeParams() const;
 };
