@@ -87,7 +87,7 @@ private:
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
-	//Fbo::SharedPtr mpRaysFbo;
+	Fbo::SharedPtr mpRayDirsFbo;
 	bool mShowStereoViews = true;
 	void setRenderMode();
 
