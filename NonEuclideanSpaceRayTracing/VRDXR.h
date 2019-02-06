@@ -63,9 +63,10 @@ private:
 	RtState::SharedPtr mpRtState;
 	RtSceneRenderer::SharedPtr mpRtRenderer;
 	Texture::SharedPtr mpRtOut[2];
+	Texture::SharedPtr mpRayDirs[2];
 
-	void calcRayDirs(RenderContext* pContext);
-	void setPerFrameVars(const Fbo* pTargetFbo);
+	void calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamData);
+	void setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCamData);
 	void renderRT(RenderContext* pContext, const Fbo* pTargetFbo);
 	void renderRaster(RenderContext* pContext);
 	void loadScene(const std::string& filename, const Fbo* pTargetFbo);
@@ -86,7 +87,7 @@ private:
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
-	Fbo::SharedPtr mpRayDirFbo;
+	//Fbo::SharedPtr mpRaysFbo;
 	bool mShowStereoViews = true;
 	void setRenderMode();
 

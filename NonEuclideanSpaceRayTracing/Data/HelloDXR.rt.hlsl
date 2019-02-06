@@ -28,7 +28,8 @@
 RWTexture2D<float4> gOutput;
 RWTexture2D<float4> gRightOutput;
 
-RWTexture2DArray<float4> gRayDirs;
+RWTexture2D<float4> gLeftRayDirs;
+RWTexture2D<float4> gRightRayDirs;
 __import Raytracing;
 
 shared cbuffer PerFrameCB
@@ -186,11 +187,11 @@ float4 traceRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
 	return traceRay(ray);
 }
 
-float4 traceRay(float3 origin, uint slice)
+float4 traceRay(float3 origin, RWTexture2D<float4> rayDirs)
 {
 	RayDesc ray;
 	ray.Origin = origin;
-	ray.Direction = gRayDirs[DispatchRaysIndex().xy, slice].xyz;
+	ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
 
 	ray.TMin = 0;
 	ray.TMax = 100000;
@@ -222,8 +223,8 @@ void traceRaysCamVecs()
 // In this version the ray directions are provided in a texture.
 void traceRaysTex()
 {
-	gOutput[DispatchRaysIndex().xy] = traceRay(gCamera.posW, 0);
-	gRightOutput[DispatchRaysIndex().xy] = traceRay(RightCamPos, 1);
+	gOutput[DispatchRaysIndex().xy] = traceRay(gCamera.posW, gLeftRayDirs);
+	gRightOutput[DispatchRaysIndex().xy] = traceRay(RightCamPos, gRightRayDirs);
 }
 
 [shader("raygeneration")]

@@ -154,7 +154,7 @@ void VRDXR::renderRaster(RenderContext* pContext)
 	pContext->popGraphicsState();
 }
 
-void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
+void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCamData)
 {
 	PROFILE("setPerFrameVars");
 	GraphicsVars* pVars = mpRtVars->getGlobalVars().get();
@@ -165,27 +165,33 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo)
 	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
 	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
 	
-	CameraData camData = calculateRightEyeParams();
-	pCB["RightCamPos"] = camData.posW;
-	pCB["RightCamU"] = camData.cameraU;
-	pCB["RightCamV"] = camData.cameraV;
-	pCB["RightCamW"] = camData.cameraW;
+	pCB["RightCamPos"] = rightEyeCamData.posW;
+	pCB["RightCamU"] = rightEyeCamData.cameraU;
+	pCB["RightCamV"] = rightEyeCamData.cameraV;
+	pCB["RightCamW"] = rightEyeCamData.cameraW;
 
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
 	float fovY = hmd->getFovY();
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
 
-	pVars->setTexture("gRayDirs", mpRayDirFbo->getColorTexture(0));
+	pVars->setTexture("gLeftRayDirs", mpRayDirs[0]);
+	pVars->setTexture("gRightRayDirs", mpRayDirs[1]);
 }
 
 void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 {
 	PROFILE("renderRT");
-	calcRayDirs(pContext);
+	
+	CameraData rightEyeCamData = calculateRightEyeParams();
+	calcRayDirs(pContext, rightEyeCamData);
 
-	/*
+	/*pContext->blit(pTargetFbo->getRenderTargetView(0)->getResource()->getSRV(0, 0, 1), mpRayDirs[0]->getRTV());
+	pContext->blit(pTargetFbo->getRenderTargetView(0)->getResource()->getSRV(0, 1, 1), mpRayDirs[1]->getRTV());
+
 	mpGraphicsState->setFbo(mpVrFbo->getFbo());
-	setPerFrameVars(pTargetFbo);
+	pContext->clearFbo(mpVrFbo->getFbo().get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
+
+	setPerFrameVars(pTargetFbo, rightEyeCamData);
 
 	pContext->clearUAV(mpRtOut[ 0 ]->getUAV().get(), kClearColor);
 	pContext->clearUAV(mpRtOut[ 1 ]->getUAV().get(), kClearColor);
@@ -195,14 +201,13 @@ void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 	
 	mpRtRenderer->renderScene(pContext, mpRtVars, mpRtState, uvec3(pTargetFbo->getWidth(), pTargetFbo->getHeight(), 1), mpCamera.get());
 	pContext->blit(mpRtOut[ 0 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 0, 1));
-	pContext->blit(mpRtOut[ 1 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 1, 1));
-	*/
+	pContext->blit(mpRtOut[ 1 ]->getSRV(), pTargetFbo->getRenderTargetView( 0 )->getResource()->getRTV(0, 1, 1));*/
 }
 
-void VRDXR::calcRayDirs(RenderContext* pContext)
+void VRDXR::calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamData)
 {
-	//pContext->clearFbo(mpRayDirFbo.get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
-	//mpGraphicsState->setFbo(mpRayDirFbo);
+	ConstantBuffer::SharedPtr pCB = mpRayTexVars->getConstantBuffer("PerFrameCB");
+	pCB["gRightEyePosW"] = rightEyeCamData.posW;
 
 	mpGraphicsState->setProgram(mpRayTexProgram);
 	pContext->setGraphicsVars(mpRayTexVars);
@@ -379,10 +384,14 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 		VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 		ivec2 renderSize = pDisplay->getRecommendedRenderSize();
 
-		mpRayDirFbo = FboHelper::create2D(renderSize.x, renderSize.y, vrFboDesc, 2);
+		mpRtOut[0] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
+		mpRtOut[1] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
+		
+		mpRayDirs[0] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
+		mpRayDirs[1] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
 
-		mpRtOut[ 0 ] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
-		mpRtOut[ 1 ] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
+		//mpRaysFbo = Fbo::create();
+		//mpRaysFbo->attachColorTarget();
 	}
 	else
 	{
