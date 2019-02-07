@@ -31,4 +31,9 @@
       <Filter>Data</Filter>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Data\ShadingFromRays.ps.hlsl">
+      <Filter>Data</Filter>
+    </FxCompile>
+  </ItemGroup>
 </Project>
