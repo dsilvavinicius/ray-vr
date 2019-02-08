@@ -42,17 +42,6 @@ public:
 	void onGuiRender(SampleCallbacks* pSample, Gui* pGui) override;
 
 private:
-	/*enum class RenderingMode
-	{
-		RASTER = 0,
-		RASTER_RAY_TEX,
-		//RAY_TRACING_INV_VIEW,
-		//RAY_TRACING_CAM_VECS,
-		RAY_TRACING_RAY_TEX
-	};
-
-	RenderingMode mRenderMode = RASTER_RAY_TEX;*/
-
 	RtScene::SharedPtr mpScene;
 	SceneRenderer::SharedPtr mpSceneRenderer;
 
@@ -72,7 +61,6 @@ private:
 	Camera::SharedPtr mpCamera;
 	HmdCameraController mCamController;
 
-	bool mRayTrace = true;
 	RtProgramVars::SharedPtr mpRtVars;
 	RtState::SharedPtr mpRtState;
 	RtSceneRenderer::SharedPtr mpRtRenderer;
@@ -90,21 +78,21 @@ private:
 
 	enum class RenderMode
 	{
-		Mono,
-		Stereo,
-		SinglePassStereo
+		Raster = 0,
+		RasterWithRays,
+		RayTracingWithRayTex
 	};
 
+	RenderMode mRenderMode = RenderMode::RayTracingWithRayTex;
+
 	bool mSPSSupported = false;
-	RenderMode mRenderMode = RenderMode::Mono;
-	Gui::DropdownList mSubmitModeList;
+	Gui::DropdownList mRenderModeList;
 
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
 	Fbo::SharedPtr mpRayDirsFbo;
 	bool mShowStereoViews = true;
-	void setRenderMode();
 
 	CameraData calculateRightEyeParams() const;
 };

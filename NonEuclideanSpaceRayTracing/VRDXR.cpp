@@ -39,7 +39,6 @@ std::string to_string(const vec3& v)
 
 void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 {
-	pGui->addCheckBox("Ray Trace", mRayTrace);
 	if (pGui->addButton("Load Scene"))
 	{
 		std::string filename;
@@ -61,10 +60,7 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 	}
 
-	if (pGui->addDropdown("Submission Mode", mSubmitModeList, (uint32_t&)mRenderMode))
-	{
-		setRenderMode();
-	}
+	pGui->addDropdown("Submission Mode", mRenderModeList, (uint32_t&)mRenderMode);
 }
 
 /*
@@ -97,8 +93,6 @@ void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 	mpSceneRenderer = SceneRenderer::create(mpScene);
 	mpRtVars = RtProgramVars::create(mpRaytraceProgram, mpScene);
 	mpRtRenderer = RtSceneRenderer::create(mpScene);
-
-	setRenderMode();
 }
 
 void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
@@ -114,7 +108,6 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 	initVR(pSample->getCurrentFbo().get());
 
 	mpGraphicsState = GraphicsState::create();
-	setRenderMode();
 
 	RtProgram::Desc rtProgDesc;
 	rtProgDesc.addShaderLibrary("HelloDXR.rt.hlsl").setRayGen("rayGen");
@@ -275,14 +268,20 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		//mpGraphicsState->setFbo(pTargetFbo);
 		mCamController.update();
 
-		if (mRayTrace)
+		switch (mRenderMode)
 		{
-			renderRT(pRenderContext, mpVrFbo->getFbo().get());
-			//renderRasterWithRays(pRenderContext);
-		}
-		else
-		{
-			renderRaster(pRenderContext);
+			case RenderMode::RayTracingWithRayTex:
+			{
+				renderRT(pRenderContext, mpVrFbo->getFbo().get()); break;
+			}
+			case RenderMode::RasterWithRays:
+			{
+				renderRasterWithRays(pRenderContext); break;
+			}
+			case RenderMode::Raster:
+			{
+				renderRaster(pRenderContext); break;
+			}
 		}
 
 		/*
@@ -342,11 +341,6 @@ bool VRDXR::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
 		return true;
 	}
 
-	if (keyEvent.key == KeyboardEvent::Key::Space && keyEvent.type == KeyboardEvent::Type::KeyPressed)
-	{
-		mRayTrace = !mRayTrace;
-		return true;
-	}
 	return false;
 }
 
@@ -396,11 +390,14 @@ bool displaySpsWarning()
 
 void VRDXR::initVR(Fbo* pTargetFbo)
 {
-	mSubmitModeList.clear();
-	mSubmitModeList.push_back({ (int)RenderMode::Mono, "Render to Screen" });
+	mRenderModeList.clear();
 
 	if (VRSystem::instance())
 	{
+		mRenderModeList.push_back({ (int)RenderMode::Raster, "Raster" });
+		mRenderModeList.push_back({ (int)RenderMode::RasterWithRays, "Raster Using Rays for Blinn-Phong model" });
+		mRenderModeList.push_back({ (int)RenderMode::RayTracingWithRayTex, "Ray Tracing With a Ray Generation Pre-pass" });
+
 		// Create the FBOs
 		Fbo::Desc vrFboDesc;
 
@@ -408,17 +405,6 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 		vrFboDesc.setDepthStencilTarget(pTargetFbo->getDepthStencilTexture()->getFormat());
 
 		mpVrFbo = VrFbo::create(vrFboDesc);
-
-		mSubmitModeList.push_back({ (int)RenderMode::Stereo, "Stereo" });
-
-		if (mSPSSupported)
-		{
-			mSubmitModeList.push_back({ (int)RenderMode::SinglePassStereo, "Single Pass Stereo" });
-		}
-		else
-		{
-			displaySpsWarning();
-		}
 
 		VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 		ivec2 renderSize = pDisplay->getRecommendedRenderSize();
@@ -485,35 +471,6 @@ void StereoRendering::submitToScreen(RenderContext* pContext, Fbo::SharedPtr pTa
 	mpSceneRenderer->renderScene(pContext);
 }
 */
-
-
-void VRDXR::setRenderMode()
-{
-	/*
-	if (mpScene)
-	{
-		//mpMonoSPSProgram->removeDefine("_SINGLE_PASS_STEREO");
-
-		mpGraphicsState->toggleSinglePassStereo(false);
-		switch (mRenderMode)
-		{
-		case RenderMode::SinglePassStereo:
-			//mpMonoSPSProgram->addDefine("_SINGLE_PASS_STEREO");
-			mpGraphicsState->toggleSinglePassStereo(true);
-			mpSceneRenderer->setCameraControllerType(SceneRenderer::CameraControllerType::Hmd);
-			mpRtRenderer->setCameraControllerType(SceneRenderer::CameraControllerType::Hmd);
-			break;
-		case RenderMode::Stereo:
-			mpSceneRenderer->setCameraControllerType(SceneRenderer::CameraControllerType::Hmd);
-			mpRtRenderer->setCameraControllerType(SceneRenderer::CameraControllerType::Hmd);
-			break;
-		case RenderMode::Mono:
-			mpSceneRenderer->setCameraControllerType(SceneRenderer::CameraControllerType::SixDof);
-			mpRtRenderer->setCameraControllerType(SceneRenderer::CameraControllerType::SixDof);
-			break;
-		}
-	}*/
-}
 
 void VRDXR::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart)
 {
