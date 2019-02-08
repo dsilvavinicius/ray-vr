@@ -42,6 +42,17 @@ public:
 	void onGuiRender(SampleCallbacks* pSample, Gui* pGui) override;
 
 private:
+	/*enum class RenderingMode
+	{
+		RASTER = 0,
+		RASTER_RAY_TEX,
+		//RAY_TRACING_INV_VIEW,
+		//RAY_TRACING_CAM_VECS,
+		RAY_TRACING_RAY_TEX
+	};
+
+	RenderingMode mRenderMode = RASTER_RAY_TEX;*/
+
 	RtScene::SharedPtr mpScene;
 	SceneRenderer::SharedPtr mpSceneRenderer;
 
@@ -52,6 +63,9 @@ private:
 	
 	GraphicsProgram::SharedPtr mpRayTexProgram = nullptr;
 	GraphicsVars::SharedPtr mpRayTexVars = nullptr;
+
+	GraphicsProgram::SharedPtr mpRayRasterProgram = nullptr;
+	GraphicsVars::SharedPtr mpRayRasterVars = nullptr;
 
 	GraphicsState::SharedPtr mpGraphicsState = nullptr;
 	
@@ -69,6 +83,7 @@ private:
 	void setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCamData);
 	void renderRT(RenderContext* pContext, const Fbo* pTargetFbo);
 	void renderRaster(RenderContext* pContext);
+	void renderRasterWithRays(RenderContext* pContext);
 	void loadScene(const std::string& filename, const Fbo* pTargetFbo);
 
 	Sampler::SharedPtr mpTriLinearSampler;

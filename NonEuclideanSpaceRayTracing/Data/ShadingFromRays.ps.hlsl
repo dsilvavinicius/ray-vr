@@ -2,31 +2,31 @@ __import ShaderCommon;
 //__import Shading;
 __import DefaultVS;
 
-float4 calcBlinnPhongLighting(float3 N, float3 L, float3 H)
+float3 calcBlinnPhongLighting(float3 N, float3 L, float3 H)
 {
-	float4 ambient = float4(0.25f, 0.20725f, 0.20725f, 1.0f);
-	float4 diffuse = float4(1.0f, 0.829f, 0.829f, 1.0f);
-	float4 specular = float4(0.296648f, 0.296648f, 0.296648f, 1.0f);
-	float shininess = 11.264;
+	float3 ambient = float3(0.329412f, 0.223529f, 0.027451f);
+	float3 diffuse = float3(0.780392f, 0.568627f, 0.113725f);
+	float3 specular = float3(0.992157f, 0.941176f, 0.807843f);
+	float shininess = 27.8974f;
 
-	float4 Id = diffuse * saturate(dot(N, L));
-	float4 Is =  * pow(saturate(dot(N, H)), shininess);
+	float3 Id = diffuse * saturate(dot(N, L));
+	float3 Is = specular * pow(saturate(dot(N, H)), shininess);
 
 	return ambient + Id + Is;
 }
 
 float4 main(VertexOut vOut) : SV_TARGET
 {
-	float3 V = -vOut.prevPosH.xyz;
+	float3 V = normalize(-vOut.prevPosH.xyz);
 
 	float4 finalColor = float4(0, 0, 0, 1);
 
 	for (uint l = 0; l < gLightsCount; l++)
 	{
 		LightData light = gLights[l];
-		H = normalize(-light.dirW + V);
+		float3 H = normalize(-light.dirW + V);
 
-		finalColor.rgb += calcBlinnPhongLighting(vOut.normalW, -light.dirW, H);
+		finalColor.rgb += calcBlinnPhongLighting(normalize(vOut.normalW), normalize(-light.dirW), H);
 	}
 
 	return finalColor;

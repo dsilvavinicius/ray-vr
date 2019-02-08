@@ -135,6 +135,11 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 	mpRayTexProgram = GraphicsProgram::create(rayTexDesc);
 	mpRayTexVars = GraphicsVars::create(mpRayTexProgram->getReflector());
 
+	GraphicsProgram::Desc rayRasterDesc;
+	rayRasterDesc.addShaderLibrary("StereoRendering.vs.hlsl").vsEntry("main").addShaderLibrary("ShadingFromRays.ps.hlsl").psEntry("main").addShaderLibrary("StereoRendering.gs.hlsl").gsEntry("main");
+	mpRayRasterProgram = GraphicsProgram::create(rayRasterDesc);
+	mpRayRasterVars = GraphicsVars::create(mpRayRasterProgram->getReflector());
+
 	mpRtState = RtState::create();
 	mpRtState->setProgram(mpRaytraceProgram);
 	mpRtState->setMaxTraceRecursionDepth(3); // 1 for calling TraceRay from RayGen, 1 for calling it from the primary-ray ClosestHitShader for reflections, 1 for reflection ray tracing a shadow ray
@@ -203,6 +208,25 @@ void VRDXR::calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamDa
 	pContext->blit(mpRayDirsFbo->getColorTexture(0)->getSRV(0, 1, 1, 1), mpRayDirs[1]->getRTV());
 }
 
+void VRDXR::renderRasterWithRays(RenderContext* pContext)
+{
+	CameraData rightEyeCamData = calculateRightEyeParams();
+
+	ConstantBuffer::SharedPtr pCB = mpRayRasterVars->getConstantBuffer("PerFrameCB");
+	pCB["gRightEyePosW"] = rightEyeCamData.posW;
+
+	mpGraphicsState->setProgram(mpRayRasterProgram);
+	pContext->setGraphicsVars(mpRayRasterVars);
+
+	pContext->pushGraphicsState(mpGraphicsState);
+
+	// Render
+	mpSceneRenderer->renderScene(pContext);
+
+	// Restore the state
+	pContext->popGraphicsState();
+}
+
 void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 {
 	PROFILE("renderRT");
@@ -219,6 +243,7 @@ void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 		pContext->blit(mpRayDirs[1]->getSRV(), pTargetFbo->getColorTexture(0)->getRTV(0, 1, 1));
 	}*/
 
+	// Ray tracing from ray direction textures.
 	mpGraphicsState->setFbo(mpVrFbo->getFbo());
 	pContext->clearFbo(mpVrFbo->getFbo().get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
 
@@ -253,7 +278,7 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		if (mRayTrace)
 		{
 			renderRT(pRenderContext, mpVrFbo->getFbo().get());
-			//renderRT(pRenderContext, pTargetFbo.get());
+			//renderRasterWithRays(pRenderContext);
 		}
 		else
 		{
