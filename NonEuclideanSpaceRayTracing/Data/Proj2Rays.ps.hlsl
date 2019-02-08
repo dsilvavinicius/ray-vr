@@ -4,7 +4,6 @@ __import DefaultVS;
 
 float4 main(VertexOut vOut) : SV_TARGET
 {
-	//float4 rayDirection = float4(normalize(vOut.posW - gCamera.posW), 1);
-	//return rayDirection;
-	return vOut.prevPosH;
+	//return vOut.prevPosH;
+	return float4(vOut.posW, 1.0f);
 }

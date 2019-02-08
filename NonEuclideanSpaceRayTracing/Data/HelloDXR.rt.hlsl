@@ -25,6 +25,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
+#define VERSION 2
+
 RWTexture2D<float4> gOutput;
 RWTexture2D<float4> gRightOutput;
 
@@ -44,6 +46,8 @@ shared cbuffer PerFrameCB
 	float3 RightCamU;
 	float3 RightCamV;
 	float3 RightCamW;
+
+	float4 clearColor;
 };
 
 struct PrimaryRayData
@@ -189,13 +193,23 @@ float4 traceRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
 
 float4 traceRay(float3 origin, RWTexture2D<float4> rayDirs)
 {
-	RayDesc ray;
-	ray.Origin = origin;
-	ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
+	float3 posW = rayDirs[DispatchRaysIndex().xy].xyz;
 
-	ray.TMin = 0;
-	ray.TMax = 100000;
-	return traceRay(ray);
+	if (all(posW == clearColor.xyz))
+	{
+		return clearColor;
+	}
+	else
+	{
+		RayDesc ray;
+		ray.Origin = origin;
+		//ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
+		ray.Direction = normalize(posW.xyz - origin);
+
+		ray.TMin = 0;
+		ray.TMax = 100000;
+		return traceRay(ray);
+	}
 }
 
 // In this version the ray directions are created using the inverse view matrix.

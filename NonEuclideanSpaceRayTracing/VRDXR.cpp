@@ -174,6 +174,7 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
 	float fovY = hmd->getFovY();
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
+	pCB["clearColor"] = kClearColor;
 
 	switch (mRayTracingVersion)
 	{
