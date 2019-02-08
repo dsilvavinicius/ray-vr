@@ -60,7 +60,8 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 	}
 
-	pGui->addDropdown("Submission Mode", mRenderModeList, (uint32_t&)mRenderMode);
+	pGui->addDropdown("Render Mode", mRenderModeList, (uint32_t&)mRenderMode);
+	pGui->addDropdown("Ray Tracing Version", mRayTracingVersionList, (uint32_t&)mRayTracingVersion);
 }
 
 /*
@@ -174,6 +175,22 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 	float fovY = hmd->getFovY();
 	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
 
+	switch (mRayTracingVersion)
+	{
+	case RayTracingVersion::InverseView:
+	{
+		mpRtState->getProgram()->getRayGenProgram()->addDefine("VERSION", "0"); break;
+	}
+	case RayTracingVersion::CameraVectors:
+	{
+		mpRtState->getProgram()->getRayGenProgram()->addDefine("VERSION", "1"); break;
+	}
+	case RayTracingVersion::RayTexture:
+	{
+		mpRtState->getProgram()->getRayGenProgram()->addDefine("VERSION", "2"); break;
+	}
+	}
+
 	mpRtVars->getRayGenVars()->setTexture("gLeftRayDirs", mpRayDirs[0]);
 	mpRtVars->getRayGenVars()->setTexture("gRightRayDirs", mpRayDirs[1]);
 }
@@ -223,9 +240,12 @@ void VRDXR::renderRasterWithRays(RenderContext* pContext)
 void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 {
 	PROFILE("renderRT");
-	
 	CameraData rightEyeCamData = calculateRightEyeParams();
-	calcRayDirs(pContext, rightEyeCamData);
+
+	if(mRayTracingVersion == RayTracingVersion::RayTexture)
+	{
+		calcRayDirs(pContext, rightEyeCamData);
+	}	
 
 	// DEBUG: Output ray direction texture.
 	/*{
@@ -270,18 +290,18 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 
 		switch (mRenderMode)
 		{
-			case RenderMode::RayTracingWithRayTex:
-			{
-				renderRT(pRenderContext, mpVrFbo->getFbo().get()); break;
-			}
-			case RenderMode::RasterWithRays:
-			{
-				renderRasterWithRays(pRenderContext); break;
-			}
-			case RenderMode::Raster:
-			{
-				renderRaster(pRenderContext); break;
-			}
+		case RenderMode::RayTracingWithRayTex:
+		{
+			renderRT(pRenderContext, mpVrFbo->getFbo().get()); break;
+		}
+		case RenderMode::RasterWithRays:
+		{
+			renderRasterWithRays(pRenderContext); break;
+		}
+		case RenderMode::Raster:
+		{
+			renderRaster(pRenderContext); break;
+		}
 		}
 
 		/*
@@ -391,12 +411,17 @@ bool displaySpsWarning()
 void VRDXR::initVR(Fbo* pTargetFbo)
 {
 	mRenderModeList.clear();
+	mRayTracingVersionList.clear();
 
 	if (VRSystem::instance())
 	{
 		mRenderModeList.push_back({ (int)RenderMode::Raster, "Raster" });
 		mRenderModeList.push_back({ (int)RenderMode::RasterWithRays, "Raster Using Rays for Blinn-Phong model" });
-		mRenderModeList.push_back({ (int)RenderMode::RayTracingWithRayTex, "Ray Tracing With a Ray Generation Pre-pass" });
+		mRenderModeList.push_back({ (int)RenderMode::RayTracingWithRayTex, "Ray Tracing" });
+
+		mRayTracingVersionList.push_back({ (int)RayTracingVersion::InverseView, "Inverse View" });
+		mRayTracingVersionList.push_back({ (int)RayTracingVersion::CameraVectors, "Camera Vectors" });
+		mRayTracingVersionList.push_back({ (int)RayTracingVersion::RayTexture, "Ray Texture" });
 
 		// Create the FBOs
 		Fbo::Desc vrFboDesc;
@@ -426,51 +451,6 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 		msgBox("Can't initialize the VR system. Make sure that your HMD is connected properly");
 	}
 }
-
-/*
-void StereoRendering::submitStereo(RenderContext* pContext, Fbo::SharedPtr pTargetFbo, bool singlePassStereo)
-{
-	PROFILE("submitStereo");
-	VRSystem::instance()->refresh();
-
-	// Clear the FBO
-	pContext->clearFbo(mpVrFbo->getFbo().get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
-
-	// update state
-	if (singlePassStereo)
-	{
-		mpGraphicsState->setProgram(mpMonoSPSProgram);
-		pContext->setGraphicsVars(mpMonoSPSVars);
-	}
-	else
-	{
-		mpGraphicsState->setProgram(mpStereoProgram);
-		pContext->setGraphicsVars(mpStereoVars);
-	}
-	mpGraphicsState->setFbo(mpVrFbo->getFbo());
-	pContext->pushGraphicsState(mpGraphicsState);
-
-	// Render
-	mpSceneRenderer->renderScene(pContext);
-
-	// Restore the state
-	pContext->popGraphicsState();
-
-	// Submit the views and display them
-	mpVrFbo->submitToHmd(pContext);
-	blitTexture(pContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
-	blitTexture(pContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Right), pTargetFbo->getWidth() / 2);
-}
-
-void StereoRendering::submitToScreen(RenderContext* pContext, Fbo::SharedPtr pTargetFbo)
-{
-	mpGraphicsState->setProgram(mpMonoSPSProgram);
-	mpGraphicsState->setFbo(pTargetFbo);
-	pContext->setGraphicsState(mpGraphicsState);
-	pContext->setGraphicsVars(mpMonoSPSVars);
-	mpSceneRenderer->renderScene(pContext);
-}
-*/
 
 void VRDXR::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart)
 {

@@ -230,7 +230,11 @@ void traceRaysTex()
 [shader("raygeneration")]
 void rayGen()
 {
-	//traceRaysInvView();
-	//traceRaysCamVecs();
+#if VERSION == 0
+	traceRaysInvView();
+#elif VERSION == 1
+	traceRaysCamVecs();
+#elif VERSION == 2
 	traceRaysTex();
+#endif
 }

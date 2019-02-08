@@ -85,8 +85,18 @@ private:
 
 	RenderMode mRenderMode = RenderMode::RayTracingWithRayTex;
 
+	enum class RayTracingVersion
+	{
+		InverseView,
+		CameraVectors,
+		RayTexture
+	};
+
+	RayTracingVersion mRayTracingVersion = RayTracingVersion::RayTexture;
+
 	bool mSPSSupported = false;
 	Gui::DropdownList mRenderModeList;
+	Gui::DropdownList mRayTracingVersionList;
 
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
