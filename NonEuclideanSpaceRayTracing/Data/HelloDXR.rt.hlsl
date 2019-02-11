@@ -195,7 +195,9 @@ float4 traceRay(float3 origin, RWTexture2D<float4> rayDirs)
 {
 	float3 posW = rayDirs[DispatchRaysIndex().xy].xyz;
 
-	if (all(posW == clearColor.xyz))
+	float epsilon = 1.0e-5;
+	float3 diff = posW - clearColor.xyz;
+	if (dot(diff, diff) < epsilon)
 	{
 		return clearColor;
 	}
