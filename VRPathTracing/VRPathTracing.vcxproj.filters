@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Data">
+      <UniqueIdentifier>{b4cb8d0d-65d6-432a-9267-584a1f6c7d13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RenderPasses">
+      <UniqueIdentifier>{54b2a735-d8e1-47b9-96ca-7a392c4f953b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PathTracer.cpp" />
+    <ClCompile Include="RenderPasses\GBufferRaster.cpp">
+      <Filter>RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPasses\GGXGlobalIllumination.cpp">
+      <Filter>RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPasses\TemporalAccumulation.cpp">
+      <Filter>RenderPasses</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="PathTracer.h" />
+    <ClInclude Include="RenderPasses\GBuffer.h">
+      <Filter>RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPasses\GBufferRaster.h">
+      <Filter>RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPasses\GGXGlobalIllumination.h">
+      <Filter>RenderPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderPasses\TemporalAccumulation.h">
+      <Filter>RenderPasses</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Accumulate.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\GGXGICommon.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\GGXGIIndirectRay.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\GGXGIRayGen.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\GGXGIShadowRay.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\RasterPrimary.slang">
+      <Filter>Data</Filter>
+    </None>
+  </ItemGroup>
+</Project>
