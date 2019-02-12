@@ -225,7 +225,7 @@ void traceRaysInvView()
 	gRightOutput[launchIndex.xy] = traceRay(invRightView, d, aspectRatio);
 }
 
-// In this version the ray directions are creating using camera vectors. 
+// In this version the ray directions are created using the camera vectors. 
 void traceRaysCamVecs()
 {
 	uint3 launchIndex = DispatchRaysIndex();
