@@ -62,17 +62,16 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 
 	pGui->addDropdown("Render Mode", mRenderModeList, (uint32_t&)mRenderMode);
 	pGui->addDropdown("Ray Tracing Version", mRayTracingVersionList, (uint32_t&)mRayTracingVersion);
-}
 
-/*
-void StereoRendering::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
-{
-	if (pGui->addButton("Load Scene"))
+	if (mpEditor)
 	{
-		loadScene();
+		mpEditor->renderGui(pGui);
+		if (mpScene->getCameraCount())
+		{
+			pGui->addCheckBox("Preview Camera", mCameraLiveViewMode);
+		}
 	}
 }
-*/
 
 void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 {
@@ -94,6 +93,8 @@ void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 	mpSceneRenderer = SceneRenderer::create(mpScene);
 	mpRtVars = RtProgramVars::create(mpRaytraceProgram, mpScene);
 	mpRtRenderer = RtSceneRenderer::create(mpScene);
+
+	mpEditor = SceneEditor::create(mpScene);
 }
 
 void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
@@ -139,7 +140,7 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 	mpRtState->setMaxTraceRecursionDepth(3); // 1 for calling TraceRay from RayGen, 1 for calling it from the primary-ray ClosestHitShader for reflections, 1 for reflection ray tracing a shadow ray
 }
 
-void VRDXR::renderRaster(RenderContext* pContext)
+void VRDXR::renderRaster(RenderContext* pContext, Camera::SharedPtr camera)
 {
 	mpGraphicsState->setProgram(mpStereoProgram);
 	pContext->setGraphicsVars(mpStereoVars);
@@ -147,7 +148,14 @@ void VRDXR::renderRaster(RenderContext* pContext)
 	pContext->pushGraphicsState(mpGraphicsState);
 
 	// Render
-	mpSceneRenderer->renderScene(pContext);
+	if (camera)
+	{
+		mpSceneRenderer->renderScene(pContext, camera.get());
+	}
+	else
+	{
+		mpSceneRenderer->renderScene(pContext);
+	}
 
 	// Restore the state
 	pContext->popGraphicsState();
@@ -286,119 +294,79 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		pRenderContext->clearFbo(mpVrFbo->getFbo().get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
 
 		mpGraphicsState->setFbo(mpVrFbo->getFbo());
-		//mpGraphicsState->setFbo(pTargetFbo);
 		mCamController.update();
 
-		switch (mRenderMode)
-		{
-		case RenderMode::RayTracingWithRayTex:
-		{
-			renderRT(pRenderContext, mpVrFbo->getFbo().get()); break;
-		}
-		case RenderMode::RasterWithRays:
-		{
-			renderRasterWithRays(pRenderContext); break;
-		}
-		case RenderMode::Raster:
-		{
-			renderRaster(pRenderContext); break;
-		}
-		}
+		mpEditor->update(pSample->getCurrentTime());
 
-		/*
-		VRSystem* pVrSystem = VRSystem::instance();
-		pVrSystem->submit(VRDisplay::Eye::Left, pTargetFbo->getColorTexture( 0 ), pRenderContext);
-		pVrSystem->submit(VRDisplay::Eye::Right, pTargetFbo->getColorTexture( 0 ), pRenderContext);
-		*/
+		if (mCameraLiveViewMode)
+		{
+			switch (mRenderMode)
+			{
+			case RenderMode::RayTracingWithRayTex:
+			{
+				renderRT(pRenderContext, mpVrFbo->getFbo().get()); break;
+			}
+			case RenderMode::RasterWithRays:
+			{
+				renderRasterWithRays(pRenderContext); break;
+			}
+			case RenderMode::Raster:
+			{
+				renderRaster(pRenderContext); break;
+			}
+			}
+		}
+		else
+		{
+			// Render editor view
+			if (mpEditor)
+			{
+				renderRaster(pRenderContext, mpEditor->getEditorCamera());
+				mpEditor->render(pRenderContext);
+			}
+		}
 
 		// Submit the views and display them
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Right), pTargetFbo->getWidth() / 2);
-		
 	}
 }
-
-/*
-void StereoRendering::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
-{
-	static uint32_t frameCount = 0u;
-
-	pRenderContext->clearFbo(pTargetFbo.get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
-
-	if (mpSceneRenderer)
-	{
-		mpSceneRenderer->update(pSample->getCurrentTime());
-
-		switch (mRenderMode)
-		{
-		case RenderMode::Mono:
-			submitToScreen(pRenderContext, pTargetFbo);
-			break;
-		case RenderMode::SinglePassStereo:
-			submitStereo(pRenderContext, pTargetFbo, true);
-			break;
-		case RenderMode::Stereo:
-			submitStereo(pRenderContext, pTargetFbo, false);
-			break;
-		default:
-			should_not_get_here();
-		}
-	}
-
-	std::string message = pSample->getFpsMsg();
-	message += "\nFrame counter: " + std::to_string(frameCount);
-
-	pSample->renderText(message, glm::vec2(10, 10));
-
-	frameCount++;
-}
-*/
 
 bool VRDXR::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
 {
-	if (mCamController.onKeyEvent(keyEvent))
+	if (mCameraLiveViewMode)
 	{
-		return true;
-	}
-
-	return false;
-}
-
-/*
-bool StereoRendering::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
-{
-	if (keyEvent.key == KeyboardEvent::Key::Space && keyEvent.type == KeyboardEvent::Type::KeyPressed)
-	{
-		if (VRSystem::instance())
+		if (mCamController.onKeyEvent(keyEvent))
 		{
-			// Cycle through modes
-			uint32_t nextMode = (uint32_t)mRenderMode + 1;
-			mRenderMode = (RenderMode)(nextMode % (mSPSSupported ? 3 : 2));
-			setRenderMode();
 			return true;
 		}
+
+		return false;
 	}
-	return mpSceneRenderer ? mpSceneRenderer->onKeyEvent(keyEvent) : false;
+
+	return mpEditor ? mpEditor->onKeyEvent(keyEvent) : false;
 }
-*/
 
 bool VRDXR::onMouseEvent(SampleCallbacks* pSample, const MouseEvent& mouseEvent)
 {
-	return mCamController.onMouseEvent(mouseEvent);
-}
+	if (mCameraLiveViewMode)
+	{
+		return mCamController.onMouseEvent(mouseEvent);
+	}
 
-/*
-bool StereoRendering::onMouseEvent(SampleCallbacks* pSample, const MouseEvent& mouseEvent)
-{
-	return mpSceneRenderer ? mpSceneRenderer->onMouseEvent(mouseEvent) : false;
+	return mpEditor ? mpEditor->onMouseEvent(pSample->getRenderContext(), mouseEvent) : false;
 }
-*/
 
 void VRDXR::onResizeSwapChain(SampleCallbacks* pSample, uint32_t width, uint32_t height)
 {
 	// VR
 	initVR(pSample->getCurrentFbo().get());
+
+	if (mpEditor)
+	{
+		mpEditor->onResizeSwapChain();
+	}
 }
 
 bool displaySpsWarning()

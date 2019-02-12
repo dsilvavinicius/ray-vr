@@ -70,7 +70,7 @@ private:
 	void calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamData);
 	void setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCamData);
 	void renderRT(RenderContext* pContext, const Fbo* pTargetFbo);
-	void renderRaster(RenderContext* pContext);
+	void renderRaster(RenderContext* pContext, Camera::SharedPtr camera = nullptr);
 	void renderRasterWithRays(RenderContext* pContext);
 	void loadScene(const std::string& filename, const Fbo* pTargetFbo);
 
@@ -98,6 +98,7 @@ private:
 	Gui::DropdownList mRenderModeList;
 	Gui::DropdownList mRayTracingVersionList;
 
+	// VR
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
@@ -105,4 +106,8 @@ private:
 	bool mShowStereoViews = true;
 
 	CameraData calculateRightEyeParams() const;
+
+	// Editor
+	SceneEditor::UniquePtr mpEditor;
+	bool mCameraLiveViewMode;
 };
