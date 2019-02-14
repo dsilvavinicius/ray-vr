@@ -17,7 +17,7 @@ float3 calcBlinnPhongLighting(float3 N, float3 L, float3 H)
 
 float4 main(VertexOut vOut) : SV_TARGET
 {
-	float3 V = normalize(-vOut.prevPosH.xyz);
+	float3 V = normalize(vOut.prevPosH.xyz - vOut.posW);
 
 	float4 finalColor = float4(0, 0, 0, 1);
 
