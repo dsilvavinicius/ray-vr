@@ -249,7 +249,7 @@ void rayGen()
 	traceRaysInvView();
 #elif VERSION == 1
 	traceRaysCamVecs();
-#elif VERSION == 2
+#else
 	traceRaysTex();
 #endif
 }
