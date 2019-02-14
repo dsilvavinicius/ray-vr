@@ -62,17 +62,13 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 
 	pGui->addDropdown("Render Mode", mRenderModeList, (uint32_t&)mRenderMode);
 	pGui->addDropdown("Ray Tracing Version", mRayTracingVersionList, (uint32_t&)mRayTracingVersion);
-}
 
-/*
-void StereoRendering::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
-{
-	if (pGui->addButton("Load Scene"))
-	{
-		loadScene();
-	}
+	pGui->addSeparator();
+	pGui->addText("Additional Camera Paramerters");
+	//pGui->addFloat3Var("Translation", mCamTranslation);
+	//pGui->addFloat3Var("Rotation", mCamRotation);
+	//pGui->addFloat3Var("Zoom", mCamZoom);
 }
-*/
 
 void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 {
@@ -163,8 +159,10 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 
 	ConstantBuffer::SharedPtr pCB = pVars->getConstantBuffer("PerFrameCB");
 
-	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
-	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
+	//float4x4 transform = buildCameraTransform();
+
+	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix()/* * transform*/);
+	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix()/* * transform*/);
 	
 	pCB["RightCamPos"] = rightEyeCamData.posW;
 	pCB["RightCamU"] = rightEyeCamData.cameraU;
@@ -180,15 +178,15 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 	{
 	case RayTracingVersion::InverseView:
 	{
-		mpRtState->getProgram()->getRayGenProgram()->addDefine("VERSION", "0"); break;
+		mpRtState->getProgram()->addDefine("VERSION", "0"); break;
 	}
 	case RayTracingVersion::CameraVectors:
 	{
-		mpRtState->getProgram()->getRayGenProgram()->addDefine("VERSION", "1"); break;
+		mpRtState->getProgram()->addDefine("VERSION", "1"); break;
 	}
 	case RayTracingVersion::RayTexture:
 	{
-		mpRtState->getProgram()->getRayGenProgram()->addDefine("VERSION", "2"); break;
+		mpRtState->getProgram()->addDefine("VERSION", "2"); break;
 	}
 	}
 
@@ -305,12 +303,6 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		}
 		}
 
-		/*
-		VRSystem* pVrSystem = VRSystem::instance();
-		pVrSystem->submit(VRDisplay::Eye::Left, pTargetFbo->getColorTexture( 0 ), pRenderContext);
-		pVrSystem->submit(VRDisplay::Eye::Right, pTargetFbo->getColorTexture( 0 ), pRenderContext);
-		*/
-
 		// Submit the views and display them
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
@@ -318,42 +310,6 @@ void VRDXR::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContex
 		
 	}
 }
-
-/*
-void StereoRendering::onFrameRender(SampleCallbacks* pSample, RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
-{
-	static uint32_t frameCount = 0u;
-
-	pRenderContext->clearFbo(pTargetFbo.get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
-
-	if (mpSceneRenderer)
-	{
-		mpSceneRenderer->update(pSample->getCurrentTime());
-
-		switch (mRenderMode)
-		{
-		case RenderMode::Mono:
-			submitToScreen(pRenderContext, pTargetFbo);
-			break;
-		case RenderMode::SinglePassStereo:
-			submitStereo(pRenderContext, pTargetFbo, true);
-			break;
-		case RenderMode::Stereo:
-			submitStereo(pRenderContext, pTargetFbo, false);
-			break;
-		default:
-			should_not_get_here();
-		}
-	}
-
-	std::string message = pSample->getFpsMsg();
-	message += "\nFrame counter: " + std::to_string(frameCount);
-
-	pSample->renderText(message, glm::vec2(10, 10));
-
-	frameCount++;
-}
-*/
 
 bool VRDXR::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
 {
@@ -365,35 +321,10 @@ bool VRDXR::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
 	return false;
 }
 
-/*
-bool StereoRendering::onKeyEvent(SampleCallbacks* pSample, const KeyboardEvent& keyEvent)
-{
-	if (keyEvent.key == KeyboardEvent::Key::Space && keyEvent.type == KeyboardEvent::Type::KeyPressed)
-	{
-		if (VRSystem::instance())
-		{
-			// Cycle through modes
-			uint32_t nextMode = (uint32_t)mRenderMode + 1;
-			mRenderMode = (RenderMode)(nextMode % (mSPSSupported ? 3 : 2));
-			setRenderMode();
-			return true;
-		}
-	}
-	return mpSceneRenderer ? mpSceneRenderer->onKeyEvent(keyEvent) : false;
-}
-*/
-
 bool VRDXR::onMouseEvent(SampleCallbacks* pSample, const MouseEvent& mouseEvent)
 {
 	return mCamController.onMouseEvent(mouseEvent);
 }
-
-/*
-bool StereoRendering::onMouseEvent(SampleCallbacks* pSample, const MouseEvent& mouseEvent)
-{
-	return mpSceneRenderer ? mpSceneRenderer->onMouseEvent(mouseEvent) : false;
-}
-*/
 
 void VRDXR::onResizeSwapChain(SampleCallbacks* pSample, uint32_t width, uint32_t height)
 {
@@ -482,6 +413,16 @@ CameraData VRDXR::calculateRightEyeParams() const
 	return data;
 }
 
+/*float4x4 VRDXR::buildCameraTransform() const
+{
+	// Additional camera transform.
+	float4x4 transform = glm::scale(float4x4(), mCamZoom);
+	transform = glm::rotate(transform, mCamRotation.x, float3(1.f, 0.f, 0.f));
+	transform = glm::rotate(transform, mCamRotation.y, float3(0.f, 1.f, 0.f));
+	transform = glm::rotate(transform, mCamRotation.z, float3(0.f, 0.f, 1.f));
+	return glm::transpose(glm::translate(transform, mCamTranslation));
+}*/
+
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {
 	VRDXR::UniquePtr pRenderer = std::make_unique<VRDXR>();
@@ -502,32 +443,3 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _
 
 	return 0;
 }
-
-/*
-#ifdef _WIN32
-int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
-#else
-int main(int argc, char** argv)
-#endif
-{
-	StereoRendering::UniquePtr pRenderer = std::make_unique<StereoRendering>();
-	SampleConfig config;
-	config.windowDesc.title = "Stereo Rendering";
-	config.windowDesc.height = 1024;
-	config.windowDesc.width = 1600;
-	config.windowDesc.resizableWindow = true;
-	config.deviceDesc.enableVR = true;
-#ifdef FALCOR_VK
-	config.deviceDesc.enableDebugLayer = false; // OpenVR requires an extension that the debug layer doesn't recognize. It causes the application to crash
-#endif
-
-#ifdef _WIN32
-	Sample::run(config, pRenderer);
-#else
-	config.argc = (uint32_t)argc;
-	config.argv = argv;
-	Sample::run(config, pRenderer);
-#endif
-	return 0;
-}
-*/

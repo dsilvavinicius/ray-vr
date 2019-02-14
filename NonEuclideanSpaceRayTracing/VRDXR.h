@@ -60,6 +60,9 @@ private:
 	
 	Camera::SharedPtr mpCamera;
 	HmdCameraController mCamController;
+	//float3 mCamTranslation = float3(0.f, 0.f, 0.f);
+	//float3 mCamRotation = float3(0.f, 0.f, 0.f);
+	//float3 mCamZoom = float3(1.f, 1.f, 1.f);
 
 	RtProgramVars::SharedPtr mpRtVars;
 	RtState::SharedPtr mpRtState;
@@ -105,4 +108,5 @@ private:
 	bool mShowStereoViews = true;
 
 	CameraData calculateRightEyeParams() const;
+	//float4x4 buildCameraTransform() const;
 };
