@@ -401,14 +401,20 @@ CameraData VRDXR::calculateRightEyeParams() const
 {
 	// Save left eye view matrix.
 	float4x4 leftView = mpCamera->getViewMatrix();
-	
+
+	auto tempCam = Camera::create();
+	tempCam->setPosition(mpCamera->getPosition());
+	tempCam->setViewMatrix(mpCamera->getRightEyeViewMatrix());
+	CameraData data = tempCam->getData();
+
+	/*
 	// Overwrite view with right eye and calculate shader parameters.
 	float4x4 rightView = mpCamera->getRightEyeViewMatrix();
 	mpCamera->setViewMatrix(rightView);
 	CameraData data = mpCamera->getData();
 	
 	// Restore left eye view matrix.
-	mpCamera->setViewMatrix(leftView);
+	mpCamera->setViewMatrix(leftView);*/
 
 	return data;
 }

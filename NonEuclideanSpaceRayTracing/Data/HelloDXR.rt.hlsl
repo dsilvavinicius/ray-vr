@@ -26,6 +26,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
 
+//#define DEBUG_VERTEX_ATTRIBS
+//#define DEBUG_RAY_GENERATION
+
 RWTexture2D<float4> gOutput;
 RWTexture2D<float4> gRightOutput;
 
@@ -60,6 +63,36 @@ struct ShadowRayData
 {
     bool hit;
 };
+
+float3 calcBlinnPhongLighting(float3 N, float3 L, float3 H)
+{
+    float3 ambient = float3(0.329412f, 0.223529f, 0.027451f);
+    float3 diffuse = float3(0.780392f, 0.568627f, 0.113725f);
+    float3 specular = float3(0.992157f, 0.941176f, 0.807843f);
+    float shininess = 27.8974f;
+
+    float3 Id = diffuse * saturate(dot(N, L));
+    float3 Is = specular * pow(saturate(dot(N, H)), shininess);
+
+    return ambient + Id + Is;
+}
+
+float4 debugVertex(float3 posW, float3 normalW)
+{
+    float3 V = normalize(gCamera.posW - posW);
+
+    float4 color = float4(0, 0, 0, 1);
+
+    for (uint l = 0; l < gLightsCount; l++)
+    {
+        LightData light = gLights[l];
+        float3 H = normalize(-light.dirW + V);
+
+        color.rgb += calcBlinnPhongLighting(normalize(normalW), normalize(-light.dirW), H);
+    }
+
+    return color;
+}
 
 [shader("miss")]
 void shadowMiss(inout ShadowRayData hitData)
@@ -127,6 +160,13 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     float3 posW = rayOrigW + hitT * rayDirW;
     // prepare the shading data
     VertexOut v = getVertexAttributes(triangleIndex, attribs);
+    
+#ifdef DEBUG_VERTEX_ATTRIBS
+    //hitData.color = debugVertex(v.posW, v.normalW);
+    //hitData.color = float4(gLeftRayDirs[DispatchRaysIndex().xy].xyz - posW, 1.f);
+    hitData.color = float4(posW, 1.f);
+    hitData.hitT = hitT;
+#else
     ShadingData sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
 
     // Shoot a reflection ray
@@ -149,9 +189,10 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     hitData.color.rgb += sd.specular * reflectColor * (roughness * roughness);
     hitData.color.rgb += sd.emissive;
     hitData.color.a = 1;
+#endif
 }
 
-float4 traceRay(RayDesc ray)
+float4 tracePrimaryRay(RayDesc ray)
 {
 	PrimaryRayData hitData;
 	hitData.depth = 0;
@@ -159,7 +200,7 @@ float4 traceRay(RayDesc ray)
 	return hitData.color;
 }
 
-float4 traceRay(float4x4 invView, float2 d, float aspectRatio)
+float4 tracePrimaryRay(float4x4 invView, float2 d, float aspectRatio)
 {
 	RayDesc ray;
 	ray.Origin = invView[3].xyz;
@@ -174,10 +215,10 @@ float4 traceRay(float4x4 invView, float2 d, float aspectRatio)
 	ray.TMin = 0;
 	ray.TMax = 100000;
 
-	return traceRay(ray);
+    return tracePrimaryRay(ray);
 }
 
-float4 traceRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
+float4 tracePrimaryRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
 {
 	RayDesc ray;
 	ray.Origin = posW; // Start our ray at the world-space camera position
@@ -187,10 +228,10 @@ float4 traceRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
 	ray.TMin = 0;
 	ray.TMax = 100000;
 
-	return traceRay(ray);
+    return tracePrimaryRay(ray);
 }
 
-float4 traceRay(float3 origin, RWTexture2D<float4> rayDirs)
+float4 tracePrimaryRay(float3 origin, RWTexture2D<float4> rayDirs)
 {
 	float3 posW = rayDirs[DispatchRaysIndex().xy].xyz;
 
@@ -202,6 +243,7 @@ float4 traceRay(float3 origin, RWTexture2D<float4> rayDirs)
 	}
 	else
 	{
+#ifndef DEBUG_RAY_GENERATION
 		RayDesc ray;
 		ray.Origin = origin;
 		//ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
@@ -209,8 +251,11 @@ float4 traceRay(float3 origin, RWTexture2D<float4> rayDirs)
 
 		ray.TMin = 0;
 		ray.TMax = 100000;
-		return traceRay(ray);
-	}
+        return tracePrimaryRay(ray);
+#else
+        return float4(posW, 1.f);
+#endif
+    }
 }
 
 // In this version the ray directions are created using the inverse view matrix.
@@ -220,8 +265,8 @@ void traceRaysInvView()
 	float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
 	float aspectRatio = viewportDims.x / viewportDims.y;
 
-	gOutput[launchIndex.xy] = traceRay(invView, d, aspectRatio);
-	gRightOutput[launchIndex.xy] = traceRay(invRightView, d, aspectRatio);
+    gOutput[launchIndex.xy] = tracePrimaryRay(invView, d, aspectRatio);
+    gRightOutput[launchIndex.xy] = tracePrimaryRay(invRightView, d, aspectRatio);
 }
 
 // In this version the ray directions are created using the camera vectors. 
@@ -231,15 +276,15 @@ void traceRaysCamVecs()
 	float2 pixelCenter = (launchIndex.xy + float2(0.5f, 0.5f)) / DispatchRaysDimensions().xy;
 	float2 ndc = float2(2, -2) * pixelCenter + float2(-1, 1);
 
-	gOutput[launchIndex.xy] = traceRay(ndc, gCamera.posW, gCamera.cameraU, gCamera.cameraV, gCamera.cameraW);
-	gRightOutput[launchIndex.xy] = traceRay(ndc, RightCamPos, RightCamU, RightCamV, RightCamW);
+    gOutput[launchIndex.xy] = tracePrimaryRay(ndc, gCamera.posW, gCamera.cameraU, gCamera.cameraV, gCamera.cameraW);
+    gRightOutput[launchIndex.xy] = tracePrimaryRay(ndc, RightCamPos, RightCamU, RightCamV, RightCamW);
 }
 
 // In this version the ray directions are provided in a texture.
 void traceRaysTex()
 {
-	gOutput[DispatchRaysIndex().xy] = traceRay(gCamera.posW, gLeftRayDirs);
-	gRightOutput[DispatchRaysIndex().xy] = traceRay(RightCamPos, gRightRayDirs);
+	gOutput[DispatchRaysIndex().xy] = tracePrimaryRay(gCamera.posW, gLeftRayDirs);
+	gRightOutput[DispatchRaysIndex().xy] = tracePrimaryRay(RightCamPos, gRightRayDirs);
 }
 
 [shader("raygeneration")]
