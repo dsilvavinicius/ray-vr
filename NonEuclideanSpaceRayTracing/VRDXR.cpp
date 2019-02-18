@@ -399,35 +399,19 @@ void VRDXR::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::Share
 
 CameraData VRDXR::calculateRightEyeParams() const
 {
-	// Save left eye view matrix.
-	float4x4 leftView = mpCamera->getViewMatrix();
+	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
+	glm::mat4 leftView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Left) * pDisplay->getWorldMatrix();
+	mpCamera->setPosition(glm::inverse(leftView) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	mpCamera->setViewMatrix(leftView);
 
 	auto tempCam = Camera::create();
-	tempCam->setPosition(mpCamera->getPosition());
-	tempCam->setViewMatrix(mpCamera->getRightEyeViewMatrix());
+	glm::mat4 rightView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Right) * pDisplay->getWorldMatrix();
+	tempCam->setPosition(glm::inverse(rightView) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	tempCam->setViewMatrix(rightView);
 	CameraData data = tempCam->getData();
-
-	/*
-	// Overwrite view with right eye and calculate shader parameters.
-	float4x4 rightView = mpCamera->getRightEyeViewMatrix();
-	mpCamera->setViewMatrix(rightView);
-	CameraData data = mpCamera->getData();
-	
-	// Restore left eye view matrix.
-	mpCamera->setViewMatrix(leftView);*/
 
 	return data;
 }
-
-/*float4x4 VRDXR::buildCameraTransform() const
-{
-	// Additional camera transform.
-	float4x4 transform = glm::scale(float4x4(), mCamZoom);
-	transform = glm::rotate(transform, mCamRotation.x, float3(1.f, 0.f, 0.f));
-	transform = glm::rotate(transform, mCamRotation.y, float3(0.f, 1.f, 0.f));
-	transform = glm::rotate(transform, mCamRotation.z, float3(0.f, 0.f, 1.f));
-	return glm::transpose(glm::translate(transform, mCamTranslation));
-}*/
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
 {

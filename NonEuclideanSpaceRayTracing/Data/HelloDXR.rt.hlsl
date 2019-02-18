@@ -163,9 +163,10 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     
 #ifdef DEBUG_VERTEX_ATTRIBS
     //hitData.color = debugVertex(v.posW, v.normalW);
-    //hitData.color = float4(gLeftRayDirs[DispatchRaysIndex().xy].xyz - posW, 1.f);
-    hitData.color = float4(posW, 1.f);
-    hitData.hitT = hitT;
+    float len = length(gLeftRayDirs[DispatchRaysIndex().xy].xyz - posW);
+    hitData.color = float4(len, len, len, 1.f);
+    //hitData.color = float4(posW, 1.f);
+    //hitData.hitT = hitT;
 #else
     ShadingData sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
 

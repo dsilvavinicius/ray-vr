@@ -135,10 +135,11 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 
 		mpGraph->getScene()->update(pCallbacks->getCurrentTime(), &mCamController);
 
+		
 		// ==== Left eye ====
         mpGraph->execute(pRenderContext);
 		pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
-
+		/*
 		// ==== Right eye ====
 		Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
 
@@ -154,7 +155,7 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
 
 		// Restore left eye view matrix.
-		camera->setViewMatrix(leftView);
+		camera->setViewMatrix(leftView);*/
 
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
