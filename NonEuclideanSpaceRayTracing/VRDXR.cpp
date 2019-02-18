@@ -399,16 +399,38 @@ void VRDXR::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::Share
 
 CameraData VRDXR::calculateRightEyeParams() const
 {
+	// Set default camera as left eye.
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 	glm::mat4 leftView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Left) * pDisplay->getWorldMatrix();
 	mpCamera->setPosition(glm::inverse(leftView) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	mpCamera->setViewMatrix(leftView);
 
-	auto tempCam = Camera::create();
+	// Save left eye position.
+	glm::vec3 leftPos = mpCamera->getPosition();
+
+	// Set default camera as right eye.
 	glm::mat4 rightView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Right) * pDisplay->getWorldMatrix();
-	tempCam->setPosition(glm::inverse(rightView) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	glm::mat4 invRightView = glm::inverse(rightView);
+	
+	mpCamera->setPosition(invRightView * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	mpCamera->setViewMatrix(rightView);
+
+	/*glm::vec4 hmdPos = invRightView * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec3 hmdTarget = glm::mat3(invRightView) * glm::vec3(0.0f, 0.0f, -1.0f);
+	glm::vec3 hmdUp = glm::mat3(invRightView) * glm::vec3(0.0f, 1.0f, 0.0f);
+
+	tempCam->setPosition(hmdPos);
+	tempCam->setTarget(hmdTarget + glm::vec3(hmdPos));
+	tempCam->setUpVector(hmdUp);
 	tempCam->setViewMatrix(rightView);
-	CameraData data = tempCam->getData();
+	tempCam->togglePersistentViewMatrix(false);
+	CameraData data = tempCam->getData();*/
+
+	CameraData data = mpCamera->getData();
+	
+	// Revert default camera to left eye.
+	mpCamera->setPosition(leftPos);
+	mpCamera->setViewMatrix(leftView);
 
 	return data;
 }
