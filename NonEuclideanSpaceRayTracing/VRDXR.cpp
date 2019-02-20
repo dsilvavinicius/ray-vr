@@ -161,17 +161,14 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 
 	//float4x4 transform = buildCameraTransform();
 
-	pCB["invView"] = mpCamera->getInvViewProjMatrix();
-	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewProjMatrix());
+	pCB["invViewProj"] = mpCamera->getInvViewProjMatrix();
+	pCB["invRightViewProj"] = glm::inverse(mpCamera->getRightEyeViewProjMatrix());
 	
 	pCB["RightCamPos"] = rightEyeCamData.posW;
 	pCB["RightCamU"] = rightEyeCamData.cameraU;
 	pCB["RightCamV"] = rightEyeCamData.cameraV;
 	pCB["RightCamW"] = rightEyeCamData.cameraW;
 
-	pCB["viewportDims"] = vec2(pTargetFbo->getWidth(), pTargetFbo->getHeight());
-	float fovY = hmd->getFovY();
-	pCB["tanHalfFovY"] = tanf(fovY * 0.5f);
 	pCB["clearColor"] = kClearColor;
 
 	switch (mRayTracingVersion)
@@ -190,14 +187,14 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 	}
 	}
 
-	mpRtVars->getRayGenVars()->setTexture("gLeftRayDirs", mpRayDirs[0]);
-	mpRtVars->getRayGenVars()->setTexture("gRightRayDirs", mpRayDirs[1]);
+	mpRtVars->getRayGenVars()->setTexture("gLeftEyePos", mpPosTex[0]);
+	mpRtVars->getRayGenVars()->setTexture("gRightEyePos", mpPosTex[1]);
 }
 
 void VRDXR::calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamData)
 {
-	pContext->clearFbo(mpRayDirsFbo.get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
-	mpGraphicsState->setFbo(mpRayDirsFbo);
+	pContext->clearFbo(mpPosFbo.get(), kClearColor, 1.0f, 0, FboAttachmentType::All);
+	mpGraphicsState->setFbo(mpPosFbo);
 
 	ConstantBuffer::SharedPtr pCB = mpRayTexVars->getConstantBuffer("PerFrameCB");
 	pCB["gRightEyePosW"] = rightEyeCamData.posW;
@@ -213,8 +210,8 @@ void VRDXR::calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamDa
 	// Restore the state
 	pContext->popGraphicsState();
 
-	pContext->blit(mpRayDirsFbo->getColorTexture(0)->getSRV(0, 1, 0, 1), mpRayDirs[0]->getRTV());
-	pContext->blit(mpRayDirsFbo->getColorTexture(0)->getSRV(0, 1, 1, 1), mpRayDirs[1]->getRTV());
+	pContext->blit(mpPosFbo->getColorTexture(0)->getSRV(0, 1, 0, 1), mpPosTex[0]->getRTV());
+	pContext->blit(mpPosFbo->getColorTexture(0)->getSRV(0, 1, 1, 1), mpPosTex[1]->getRTV());
 }
 
 void VRDXR::renderRasterWithRays(RenderContext* pContext)
@@ -251,8 +248,8 @@ void VRDXR::renderRT(RenderContext* pContext, const Fbo* pTargetFbo)
 		mpGraphicsState->setFbo(mpVrFbo->getFbo());
 		pContext->clearFbo(pTargetFbo, kClearColor, 1.0f, 0, FboAttachmentType::All);
 
-		pContext->blit(mpRayDirs[0]->getSRV(), pTargetFbo->getColorTexture(0)->getRTV(0, 0, 1));
-		pContext->blit(mpRayDirs[1]->getSRV(), pTargetFbo->getColorTexture(0)->getRTV(0, 1, 1));
+		pContext->blit(mpPosTex[0]->getSRV(), pTargetFbo->getColorTexture(0)->getRTV(0, 0, 1));
+		pContext->blit(mpPosTex[1]->getSRV(), pTargetFbo->getColorTexture(0)->getRTV(0, 1, 1));
 	}*/
 
 	// Ray tracing from ray direction textures.
@@ -369,14 +366,14 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 		mpRtOut[0] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
 		mpRtOut[1] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource);
 		
-		mpRayDirs[0] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
-		mpRayDirs[1] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
+		mpPosTex[0] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
+		mpPosTex[1] = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 1, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
 
 		Texture::SharedPtr color = Texture::create2D(renderSize.x, renderSize.y, ResourceFormat::RGBA16Float, 2, 1, nullptr, Resource::BindFlags::UnorderedAccess | Resource::BindFlags::ShaderResource | Resource::BindFlags::RenderTarget);
 		Texture::SharedPtr depthStencil = Texture::create2D(renderSize.x, renderSize.y, pTargetFbo->getDesc().getDepthStencilFormat(), 2, 1, nullptr, Texture::BindFlags::DepthStencil);
-		mpRayDirsFbo = Fbo::create();
-		mpRayDirsFbo->attachColorTarget(color, 0);
-		mpRayDirsFbo->attachDepthStencilTarget(depthStencil);
+		mpPosFbo = Fbo::create();
+		mpPosFbo->attachColorTarget(color, 0);
+		mpPosFbo->attachDepthStencilTarget(depthStencil);
 	}
 	else
 	{

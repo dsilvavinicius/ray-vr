@@ -68,7 +68,7 @@ private:
 	RtState::SharedPtr mpRtState;
 	RtSceneRenderer::SharedPtr mpRtRenderer;
 	Texture::SharedPtr mpRtOut[2];
-	Texture::SharedPtr mpRayDirs[2];
+	Texture::SharedPtr mpPosTex[2];
 
 	void calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamData);
 	void setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCamData);
@@ -104,7 +104,7 @@ private:
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;
-	Fbo::SharedPtr mpRayDirsFbo;
+	Fbo::SharedPtr mpPosFbo;
 	bool mShowStereoViews = true;
 
 	CameraData calculateRightEyeParams() const;
