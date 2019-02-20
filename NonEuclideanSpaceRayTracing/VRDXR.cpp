@@ -161,8 +161,8 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 
 	//float4x4 transform = buildCameraTransform();
 
-	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix()/* * transform*/);
-	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix()/* * transform*/);
+	pCB["invView"] = mpCamera->getInvViewProjMatrix();
+	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewProjMatrix());
 	
 	pCB["RightCamPos"] = rightEyeCamData.posW;
 	pCB["RightCamU"] = rightEyeCamData.cameraU;

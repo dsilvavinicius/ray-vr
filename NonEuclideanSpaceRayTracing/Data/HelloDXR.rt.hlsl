@@ -201,17 +201,19 @@ float4 tracePrimaryRay(RayDesc ray)
 	return hitData.color;
 }
 
-float4 tracePrimaryRay(float4x4 invView, float2 d, float aspectRatio)
+float4 tracePrimaryRay(float4x4 invView, float2 ndc)
 {
-	RayDesc ray;
-	ray.Origin = invView[3].xyz;
+    float4 nearNdc = float4(ndc, -1.f, 1.f);
+    float4 farNdc = float4(ndc, 1, 1);
 
-	// We negate the Z exis because the 'view' matrix is generated using a 
-	// Right Handed coordinate system with Z pointing towards the viewer
-	// The negation of Z axis is needed to get the rays go out in the direction away fromt he viewer.
-	// The negation of Y axis is needed because the texel coordinate system, used in the UAV we write into using launchIndex
-	// has the Y axis flipped with respect to the camera Y axis (0 is at the top and 1 at the bottom)
-	ray.Direction = normalize((d.x * invView[0].xyz * tanHalfFovY * aspectRatio) - (d.y * invView[1].xyz * tanHalfFovY) - invView[2].xyz);
+    float4 nearH = mul(nearNdc, invView);
+    float4 farH = mul(farNdc, invView);
+    float3 nearW = nearH.xyz / nearH.w;
+    float3 farW = farH.xyz / farH.w;
+
+	RayDesc ray;
+    ray.Origin = nearW;
+	ray.Direction = normalize(farW - nearW);
 
 	ray.TMin = 0;
 	ray.TMax = 100000;
@@ -262,12 +264,12 @@ float4 tracePrimaryRay(float3 origin, RWTexture2D<float4> rayDirs)
 // In this version the ray directions are created using the inverse view matrix.
 void traceRaysInvView()
 {
-	uint3 launchIndex = DispatchRaysIndex();
-	float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
-	float aspectRatio = viewportDims.x / viewportDims.y;
+    uint2 launchIndex = DispatchRaysIndex().xy;
+    float2 pixelCenter = (launchIndex + float2(0.5f, 0.5f)) / DispatchRaysDimensions().xy;
+    float2 ndc = float2(2, -2) * pixelCenter + float2(-1, 1);
 
-    gOutput[launchIndex.xy] = tracePrimaryRay(invView, d, aspectRatio);
-    gRightOutput[launchIndex.xy] = tracePrimaryRay(invRightView, d, aspectRatio);
+    gOutput[launchIndex] = tracePrimaryRay(invView, ndc);
+    gRightOutput[launchIndex] = tracePrimaryRay(invRightView, ndc);
 }
 
 // In this version the ray directions are created using the camera vectors. 
