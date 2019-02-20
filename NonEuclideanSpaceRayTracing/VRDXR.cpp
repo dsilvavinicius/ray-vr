@@ -65,14 +65,14 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 
 	pGui->addSeparator();
 	pGui->addText("Additional Camera Paramerters");
-	//pGui->addFloat3Var("Translation", mCamTranslation);
-	//pGui->addFloat3Var("Rotation", mCamRotation);
-	//pGui->addFloat3Var("Zoom", mCamZoom);
+	pGui->addFloat3Var("Translation", mCamTranslation);
+	pGui->addFloat3Var("Rotation", mCamRotation);
+	pGui->addFloat3Var("Zoom", mCamZoom);
 }
 
 void VRDXR::loadScene(const std::string& filename, const Fbo* pTargetFbo)
 {
-	mpScene = RtScene::loadFromFile(filename, RtBuildFlags::None, Model::LoadFlags::RemoveInstancing);
+	mpScene = RtScene::loadFromFile(filename, RtBuildFlags::FastTrace, Model::LoadFlags::RemoveInstancing);
 	Model::SharedPtr pModel = mpScene->getModel(0);
 	float radius = pModel->getRadius();
 
@@ -399,9 +399,18 @@ void VRDXR::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::Share
 
 CameraData VRDXR::calculateRightEyeParams() const
 {
-	// Set default camera as left eye.
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
-	glm::mat4 leftView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Left) * pDisplay->getWorldMatrix();
+	
+	// Get HMD world matrix and apply additional camera transformations.
+	glm::mat4 hmdW = pDisplay->getWorldMatrix();
+	hmdW = glm::translate(hmdW, mCamTranslation);
+	hmdW = glm::rotate(hmdW, mCamRotation.x, vec3(1.f, 0.f, 0.f));
+	hmdW = glm::rotate(hmdW, mCamRotation.y, vec3(0.f, 1.f, 0.f));
+	hmdW = glm::rotate(hmdW, mCamRotation.z, vec3(0.f, 0.f, 1.f));
+	hmdW = glm::scale(hmdW, mCamZoom);
+	
+	// Set default camera as left eye.
+	glm::mat4 leftView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Left) * hmdW;
 	mpCamera->setPosition(glm::inverse(leftView) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	mpCamera->setViewMatrix(leftView);
 
@@ -409,11 +418,12 @@ CameraData VRDXR::calculateRightEyeParams() const
 	glm::vec3 leftPos = mpCamera->getPosition();
 
 	// Set default camera as right eye.
-	glm::mat4 rightView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Right) * pDisplay->getWorldMatrix();
+	glm::mat4 rightView = pDisplay->getOffsetMatrix(VRDisplay::Eye::Right) * hmdW;
 	glm::mat4 invRightView = glm::inverse(rightView);
 	
 	mpCamera->setPosition(invRightView * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	mpCamera->setViewMatrix(rightView);
+	mpCamera->setRightEyeMatrices(rightView, pDisplay->getProjectionMatrix(VRDisplay::Eye::Right));
 
 	/*glm::vec4 hmdPos = invRightView * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	glm::vec3 hmdTarget = glm::mat3(invRightView) * glm::vec3(0.0f, 0.0f, -1.0f);
