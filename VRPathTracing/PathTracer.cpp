@@ -98,11 +98,12 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
     mpGraph->addEdge("GBuffer.emissive", "GlobalIllumination.emissive");
     mpGraph->addEdge("GBuffer.matlExtra", "GlobalIllumination.matlExtra");
 
-    mpGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
+    //mpGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
 
-    mpGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
+    //mpGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
 
-    mpGraph->markOutput("ToneMapping.dst");
+	//mpGraph->markOutput("ToneMapping.dst");
+    mpGraph->markOutput("GlobalIllumination.output");
 
     // When GI pass changes, tell temporal accumulation to reset
     pGIPass->setPassChangedCB([this]() {(*mpGraph->getPassesDictionary())["_dirty"] = true; });
@@ -138,12 +139,14 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		// Left eye
 		setupCamera(VRDisplay::Eye::Left);
         mpGraph->execute(pRenderContext);
-		pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		//pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		pRenderContext->blit(mpGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		
 		// Right eye
 		setupCamera(VRDisplay::Eye::Right);
 		mpGraph->execute(pRenderContext);
-		pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		//pRenderContext->blit(mpGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		pRenderContext->blit(mpGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
 
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
