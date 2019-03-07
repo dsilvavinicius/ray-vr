@@ -135,27 +135,15 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 
 		mpGraph->getScene()->update(pCallbacks->getCurrentTime(), &mCamController);
 
-		
-		// ==== Left eye ====
+		// Left eye
+		setupCamera(VRDisplay::Eye::Left);
         mpGraph->execute(pRenderContext);
 		pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
-		/*
-		// ==== Right eye ====
-		Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
-
-		// Save left eye view matrix.
-		float4x4 leftView = camera->getViewMatrix();
-
-		// Overwrite view with right eye and calculate shader parameters.
-		float4x4 rightView = camera->getRightEyeViewMatrix();
-		camera->setViewMatrix(rightView);
-
-		// Render
+		
+		// Right eye
+		setupCamera(VRDisplay::Eye::Right);
 		mpGraph->execute(pRenderContext);
 		pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
-
-		// Restore left eye view matrix.
-		camera->setViewMatrix(leftView);*/
 
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
@@ -235,6 +223,26 @@ void PathTracer::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::
 		dstRect.w = pTargetFbo->getHeight();
 		pContext->blit(pTexture->getSRV(0, 1, 0, 1), pTargetFbo->getRenderTargetView(0), uvec4(-1), dstRect);
 	}
+}
+
+void PathTracer::setupCamera(const VRDisplay::Eye& eye)
+{
+	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
+
+	// Get HMD world matrix and apply additional camera transformations.
+	glm::mat4 hmdW = pDisplay->getWorldMatrix();
+	/*hmdW = glm::translate(hmdW, mCamTranslation);
+	hmdW = glm::rotate(hmdW, mCamRotation.x, vec3(1.f, 0.f, 0.f));
+	hmdW = glm::rotate(hmdW, mCamRotation.y, vec3(0.f, 1.f, 0.f));
+	hmdW = glm::rotate(hmdW, mCamRotation.z, vec3(0.f, 0.f, 1.f));
+	hmdW = glm::scale(hmdW, mCamZoom);*/
+
+	Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
+
+	glm::mat4 view = pDisplay->getOffsetMatrix(eye) * hmdW;
+	camera->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	camera->setViewMatrix(view);
+	camera->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
