@@ -63,6 +63,20 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
     {
         mpGraph->renderUI(pGui, nullptr);
     }
+
+	if (pGui->addIntVar("Material ID", mMaterialId, 0, 1))
+	{
+		Scene::SharedPtr scene = mpGraph->getScene();
+
+		for (uint i = 0; i < scene->getModelCount(); ++i)
+		{
+			Model::SharedPtr model = scene->getModel(i);
+			for (uint j = 0; j < model->getMeshCount(); ++j)
+			{
+				model->getMesh(j)->getMaterial()->setID(mMaterialId);
+			}
+		}
+	}
 }
 
 void PathTracer::toggleCameraPathState()

@@ -55,7 +55,7 @@ GBufferOut ps(VertexOut vsOut)
     gOut.diffuseOpacity = float4(sd.diffuse, sd.opacity);
     gOut.specRough      = float4(sd.specular, sd.linearRoughness);
     gOut.emissive       = float4(sd.emissive, 0.f);
-    gOut.matlExtra      = float4(normalize(vsOut.normalW), 0.f);
+    gOut.matlExtra      = float4(normalize(vsOut.normalW), gMaterial.id);
 
     return gOut;
 }

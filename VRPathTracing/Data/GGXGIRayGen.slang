@@ -46,6 +46,7 @@ void GGXGlobalIllumRayGen()
     float4 specRough = gSpecMatl[launchIndex];
     float4 emissive = gEmissive[launchIndex];
     float3 geomN = gExtraMatl[launchIndex].xyz;
+    float matId = gExtraMatl[launchIndex].w;
 
     // Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
     bool isGeometryValid = (posW.w != 0.0f);
@@ -78,11 +79,23 @@ void GGXGlobalIllumRayGen()
         sd.linearRoughness = specRough.a;
         sd.roughness = roughness;
 
-        // Direct lighting to a random light in the scene
-        if (gDoDirectGI) shadeColor += ggxDirect(randSeed, sd);
+        if(matId == 0)
+        {
+            // Raster
+            shadeColor += ggxDirect(sd);
 
-        // Indirect lighting for global illumination
-        if (gDoIndirectGI && (gMaxDepth > 0)) shadeColor += ggxIndirect(randSeed, sd, geomN);
+        }
+        else
+        {
+            // Ray tracing
+            // Direct lighting to a random light in the scene
+            if (gDoDirectGI)
+                shadeColor += ggxDirect(randSeed, sd);
+
+            // Indirect lighting for global illumination
+            if (gDoIndirectGI && (gMaxDepth > 0))
+                shadeColor += ggxIndirect(randSeed, sd, geomN);
+        }
 
         // Zero out any bad samples
         bool colorsNan = any(isnan(shadeColor));

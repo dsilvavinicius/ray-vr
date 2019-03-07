@@ -58,4 +58,5 @@ private:
 	
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;
+	int mMaterialId = 0;
 };
