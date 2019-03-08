@@ -89,11 +89,11 @@ void GGXGlobalIllumRayGen()
         }
         case 1: // Raster with shadows
         {
-            //shadeColor += ggxDirect(sd);
-            //break;
         }
         case 2: // Full mirror reflection
         {
+            shadeColor += tracePrimaryRay(sd.posW).rgb;
+            break;
         }
         case 3: // Path tracing
         {

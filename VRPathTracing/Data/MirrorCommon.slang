@@ -1,4 +1,5 @@
 __import Raytracing;
+__import GGXGICommon;
 
 struct PrimaryRayData
 {
@@ -51,10 +52,9 @@ bool checkLightHit(uint lightIndex, float3 origin)
     ray.TMin = 0.001;
     ray.TMax = max(0.01, length(direction));
 
-    ShadowRayData rayData;
-    rayData.hit = true;
-    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 1 /* ray index */, hitProgramCount, 1, ray, rayData);
-    return rayData.hit;
+    ShadowRayPayload rayData = { 0.0f };
+    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0 /* ray index */, hitProgramCount, 1, ray, rayData);
+    return rayData.visFactor;
 }
 
 float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, uint hitDepth)
@@ -63,14 +63,16 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
     if (hitDepth == 0)
     {
         PrimaryRayData secondaryRay;
+        secondaryRay.color = float4(0.f, 0.f, 0.f, 1.f);
         secondaryRay.depth.r = 1;
         RayDesc ray;
         ray.Origin = worldOrigin;
         ray.Direction = reflect(worldRayDir, v.normalW);
         ray.TMin = 0.001;
         ray.TMax = 100000;
-        TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, secondaryRay);
-        reflectColor = secondaryRay.hitT == -1 ? 0 : secondaryRay.color.rgb;
+        TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 0, ray, secondaryRay);
+        reflectColor = secondaryRay.color.rgb;
+
         float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
         reflectColor *= 20 / falloff;
     }
@@ -81,36 +83,25 @@ float4 tracePrimaryRay(RayDesc ray)
 {
     PrimaryRayData hitData;
     hitData.depth = 0;
-    TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 0 /* ray index*/, hitProgramCount, 0, ray, hitData);
+    TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 0, ray, hitData);
     return hitData.color;
 }
 
-/*float4 tracePrimaryRay(float3 origin, RWTexture2D<float4> rayDirs)
+float4 tracePrimaryRay(float3 posW)
 {
-    float3 posW = rayDirs[DispatchRaysIndex().xy].xyz;
-
-    float epsilon = 1.0e-5;
-    float3 diff = posW - clearColor.xyz;
-    if (dot(diff, diff) < epsilon)
-    {
-        return clearColor;
-    }
-    else
-    {
 #ifndef DEBUG_RAY_GENERATION
-        RayDesc ray;
-        ray.Origin = origin;
-		//ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
-        ray.Direction = normalize(posW.xyz - origin);
+    RayDesc ray;
+    ray.Origin = gCamera.posW;
+	//ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
+    ray.Direction = normalize(posW.xyz - gCamera.posW);
 
-        ray.TMin = 0;
-        ray.TMax = 100000;
-        return tracePrimaryRay(ray);
+    ray.TMin = 0;
+    ray.TMax = 100000;
+    return tracePrimaryRay(ray);
 #else
-        return float4(posW, 1.f);
+    return float4(posW, 1.f);
 #endif
-    }
-}*/
+}
 
 /**  Evaluates direct lighting without shadows as a raster program would do.
 */

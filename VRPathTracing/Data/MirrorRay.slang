@@ -32,6 +32,7 @@
 __import Raytracing;
 __import MirrorCommon;
 __import GGXGICommon;
+__import Helpers;
 
 [shader("anyhit")]
 void primaryAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
@@ -43,7 +44,12 @@ void primaryAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttr
 [shader("miss")]
 void primaryMiss(inout PrimaryRayData hitData)
 {
-    hitData.color = float4(0.38f, 0.52f, 0.10f, 1);
+    // Sample the environment map
+    /*float2 uv = dirToSphericalCrd(WorldRayDirection());
+    float2 dims;
+    gEnvMap.GetDimensions(dims.x, dims.y);
+    hitData.color = gEnvMap[uint2(uv * dims)];*/
+    hitData.color = float4(1.f, 1.f, 1.f, 1.f);
     hitData.hitT = -1;
 }
 
