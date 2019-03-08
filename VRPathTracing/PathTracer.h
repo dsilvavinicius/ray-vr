@@ -30,6 +30,7 @@
 #include "FalcorExperimental.h"
 
 using namespace Falcor;
+using namespace std;
 
 class PathTracer : public Renderer
 {
@@ -58,5 +59,5 @@ private:
 	
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;
-	int mMaterialId = 0;
+	vector< vector< int > > mMaterialIds;
 };

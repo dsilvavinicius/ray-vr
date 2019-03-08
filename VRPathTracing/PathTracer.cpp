@@ -29,6 +29,7 @@
 #include "RenderPasses/GGXGlobalIllumination.h"
 #include "RenderPasses/GBufferRaster.h"
 #include "RenderPasses/TemporalAccumulation.h"
+#include <sstream>
 
 void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 {
@@ -64,18 +65,32 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
         mpGraph->renderUI(pGui, nullptr);
     }
 
-	if (pGui->addIntVar("Material ID", mMaterialId, 0, 1))
+	// Material IDs.
+	if (pGui->beginGroup("Material IDs", true))
 	{
 		Scene::SharedPtr scene = mpGraph->getScene();
 
 		for (uint i = 0; i < scene->getModelCount(); ++i)
 		{
 			Model::SharedPtr model = scene->getModel(i);
-			for (uint j = 0; j < model->getMeshCount(); ++j)
+
+			stringstream ss; ss << "Model " << i;
+			if (pGui->beginGroup(ss.str().c_str(), true))
 			{
-				model->getMesh(j)->getMaterial()->setID(mMaterialId);
+				for (uint j = 0; j < model->getMeshCount(); ++j)
+				{
+					stringstream ss; ss << " Mesh " << j;
+					if (pGui->addIntVar(ss.str().c_str(), mMaterialIds[i][j], 0, 1))
+					{
+						model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
+					}
+				}
+
+				pGui->endGroup();
 			}
 		}
+
+		pGui->endGroup();
 	}
 }
 
@@ -131,6 +146,18 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
         RtScene::SharedPtr pScene = RtScene::loadFromFile("Arcade/Arcade.fscene");
 		mpGraph->setScene(pScene);
 		initVR(pCallbacks->getCurrentFbo().get());
+		
+		// Init material ids.
+		mMaterialIds = vector< vector< int > >( pScene->getModelCount() );
+		for (uint i = 0; i < pScene->getModelCount(); ++i)
+		{
+			mMaterialIds[i] = vector< int >( pScene->getModel(i)->getMeshCount() );
+			for (uint j = 0; j < mMaterialIds[i].size(); ++j)
+			{
+				mMaterialIds[i][j] = 0;
+				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(0);
+			}
+		}
     }
 
 	//Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
