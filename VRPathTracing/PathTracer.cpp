@@ -80,7 +80,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 				for (uint j = 0; j < model->getMeshCount(); ++j)
 				{
 					stringstream ss; ss << " Mesh " << j;
-					if (pGui->addIntVar(ss.str().c_str(), mMaterialIds[i][j], 0, 1))
+					if (pGui->addIntVar(ss.str().c_str(), mMaterialIds[i][j], 0, 3))
 					{
 						model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
 					}

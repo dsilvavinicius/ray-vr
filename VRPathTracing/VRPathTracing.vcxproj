@@ -141,6 +141,11 @@
     <None Include="Data\GGXGIIndirectRay.slang" />
     <None Include="Data\GGXGIRayGen.slang" />
     <None Include="Data\GGXGIShadowRay.slang" />
+    <None Include="Data\MirrorCommon.slang" />
+    <None Include="Data\MirrorRay.slang">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+    </None>
     <None Include="Data\RasterPrimary.slang" />
   </ItemGroup>
   <ItemGroup>

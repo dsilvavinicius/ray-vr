@@ -54,5 +54,11 @@
     <None Include="Data\RasterPrimary.slang">
       <Filter>Data</Filter>
     </None>
+    <None Include="Data\MirrorRay.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\MirrorCommon.slang">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
 </Project>

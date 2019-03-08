@@ -29,6 +29,7 @@ import ShaderCommon;
 import Shading;
 import Helpers;
 import GGXGICommon;
+import MirrorCommon;
 
 [shader("raygeneration")]
 void GGXGlobalIllumRayGen()
@@ -79,15 +80,23 @@ void GGXGlobalIllumRayGen()
         sd.linearRoughness = specRough.a;
         sd.roughness = roughness;
 
-        if(matId == 0)
+        switch (matId)
         {
-            // Raster
-            shadeColor += ggxDirect(sd);
-
+        case 0: // Raster
+        {
+            shadeColor += rasterNoShadows(sd);
+            break;
         }
-        else
+        case 1: // Raster with shadows
         {
-            // Ray tracing
+            //shadeColor += ggxDirect(sd);
+            //break;
+        }
+        case 2: // Full mirror reflection
+        {
+        }
+        case 3: // Path tracing
+        {
             // Direct lighting to a random light in the scene
             if (gDoDirectGI)
                 shadeColor += ggxDirect(randSeed, sd);
@@ -95,6 +104,8 @@ void GGXGlobalIllumRayGen()
             // Indirect lighting for global illumination
             if (gDoIndirectGI && (gMaxDepth > 0))
                 shadeColor += ggxIndirect(randSeed, sd, geomN);
+            break;
+        }
         }
 
         // Zero out any bad samples

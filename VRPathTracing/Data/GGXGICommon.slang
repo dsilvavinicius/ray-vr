@@ -125,21 +125,6 @@ float3 ggxDirect(inout uint rndSeed, ShadingData sd)
     return shadowMult * sr.color.rgb;
 }
 
-/**  Evaluates direct lighting without shadows as a raster program would do. All light sources are considered not occluded.
-*/
-float3 ggxDirect(ShadingData sd)
-{
-    float3 finalColor = float3(0, 0, 0);
-
-    [unroll]
-    for (uint l = 0; l < gLightsCount; l++)
-    {
-        finalColor += evalMaterial(sd, gLights[l], 1).color.rgb;
-    }
-
-    return finalColor;
-}
-
 /** Helper for shooting a ray for indirect lighting. Assumes hit group #1 and miss shader #1
 
     \return Color sampled by the ray.

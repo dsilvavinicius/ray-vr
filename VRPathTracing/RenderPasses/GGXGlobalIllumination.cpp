@@ -33,6 +33,7 @@ namespace {
     const char* kFileRayGen = "GGXGIRayGen.slang";
     const char* kFileRayTrace = "GGXGIIndirectRay.slang";
     const char* kFileShadowRay = "GGXGIShadowRay.slang";
+	const char* kFileMirrorRay = "MirrorRay.slang";
 
     // Entry-point names
     const char* kEntryPointRayGen = "GGXGlobalIllumRayGen";
@@ -42,6 +43,10 @@ namespace {
     const char* kEntryIndirectMiss = "IndirectMiss";
     const char* kEntryIndirectAnyHit = "IndirectAnyHit";
     const char* kEntryIndirectClosestHit = "IndirectClosestHit";
+
+	const char* kEntryMirrorMiss = "primaryMiss";
+	const char* kEntryMirrorAnyHit = "primaryAnyHit";
+	const char* kEntryMirrorClosestHit = "primaryClosestHit";
 };
 
 GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary &params)
@@ -106,6 +111,11 @@ void GGXGlobalIllumination::initialize(RenderContext* pContext, const RenderData
     desc.addShaderLibrary(kFileRayTrace);
     desc.addMiss(1, kEntryIndirectMiss);
     desc.addHitGroup(1, kEntryIndirectClosestHit, kEntryIndirectAnyHit);
+
+	// Add ray type #2 (full mirror reflection rays)
+	desc.addShaderLibrary(kFileMirrorRay);
+	desc.addMiss(2, kEntryMirrorMiss);
+	desc.addHitGroup(2, kEntryMirrorClosestHit, kEntryMirrorAnyHit);
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     mpProgram = RtProgram::create(desc);
