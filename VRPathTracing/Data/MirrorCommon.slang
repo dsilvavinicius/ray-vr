@@ -86,7 +86,7 @@ float4 tracePrimaryRay(float3 posW)
 
 /**  Evaluates direct lighting without shadows as a raster program would do.
 */
-float3 rasterNoShadows(ShadingData sd)
+float3 raster(ShadingData sd)
 {
     float3 finalColor = float3(0, 0, 0);
 
@@ -94,6 +94,25 @@ float3 rasterNoShadows(ShadingData sd)
     for (uint l = 0; l < gLightsCount; l++)
     {
         finalColor += evalMaterial(sd, gLights[l], 1).color.rgb;
+    }
+
+    return finalColor;
+}
+
+/**  Evaluates direct lighting using rays for shadows only.
+*/
+float3 directWithShadows(ShadingData sd)
+{
+    float3 finalColor = float3(0, 0, 0);
+
+    [unroll]
+    for (uint i = 0; i < gLightsCount; i++)
+    {
+        float distToLight = length(gLights[i].posW - sd.posW);
+        float3 L = -normalize(gLights[i].dirW);
+        float visFactor = shootShadowRay(sd.posW, L, 0.001, distToLight);
+
+        finalColor += visFactor * evalMaterial(sd, gLights[i], 1).color.xyz;
     }
 
     return finalColor;

@@ -76,17 +76,8 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 
     // Shoot a reflection ray
     float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r);
-    float3 color = 0;
-
-    [unroll]
-    for (int i = 0; i < gLightsCount; i++)
-    {
-        float distToLight = length(gLights[i].posW - posW);
-        float3 L = -normalize(gLights[i].dirW);
-        float visFactor = shootShadowRay(sd.posW, L, 0.001, distToLight);
-
-        color += visFactor * evalMaterial(sd, gLights[i], 1).color.xyz;
-    }
+    
+    float3 color = directWithShadows(sd);
 
     hitData.color.rgb = color;
     hitData.hitT = hitT;

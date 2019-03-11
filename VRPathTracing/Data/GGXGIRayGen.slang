@@ -84,11 +84,13 @@ void GGXGlobalIllumRayGen()
         {
         case 0: // Raster
         {
-            shadeColor += rasterNoShadows(sd);
+            shadeColor += raster(sd);
             break;
         }
         case 1: // Raster with shadows
         {
+            shadeColor += directWithShadows(sd);
+            break;
         }
         case 2: // Full mirror reflection
         {
