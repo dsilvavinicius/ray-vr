@@ -65,6 +65,12 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
         mpGraph->renderUI(pGui, nullptr);
     }
 
+	mDropList.clear();
+	mDropList.push_back({ 0, "Raster" });
+	mDropList.push_back({ 1, "Direct Light With Shadows" });
+	mDropList.push_back({ 2, "Mirror-like Reflections" });
+	mDropList.push_back({ 3, "Path Tracing" });
+
 	// Material IDs.
 	if (pGui->beginGroup("Material IDs", true))
 	{
@@ -80,7 +86,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 				for (uint j = 0; j < model->getMeshCount(); ++j)
 				{
 					stringstream ss; ss << " Mesh " << j;
-					if (pGui->addIntVar(ss.str().c_str(), mMaterialIds[i][j], 0, 3))
+					if (pGui->addDropdown(ss.str().c_str(), mDropList, mMaterialIds[i][j]))
 					{
 						model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
 					}
@@ -152,10 +158,10 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 		initVR(pCallbacks->getCurrentFbo().get());
 		
 		// Init material ids.
-		mMaterialIds = vector< vector< int > >( pScene->getModelCount() );
+		mMaterialIds = vector< vector< uint > >( pScene->getModelCount() );
 		for (uint i = 0; i < pScene->getModelCount(); ++i)
 		{
-			mMaterialIds[i] = vector< int >( pScene->getModel(i)->getMeshCount() );
+			mMaterialIds[i] = vector< uint >( pScene->getModel(i)->getMeshCount() );
 			for (uint j = 0; j < mMaterialIds[i].size(); ++j)
 			{
 				mMaterialIds[i][j] = 0;

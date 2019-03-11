@@ -59,5 +59,6 @@ private:
 	
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;
-	vector< vector< int > > mMaterialIds;
+	vector< vector< uint > > mMaterialIds;
+	Gui::DropdownList mDropList;
 };
