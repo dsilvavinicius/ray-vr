@@ -44,9 +44,3 @@ void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAtt
     if (evalRtAlphaTest(attribs))
         IgnoreHit();
 }
-
-// What code is executed when we have a new closest hitpoint?
-[shader("closesthit")]
-void ShadowClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
-{
-}

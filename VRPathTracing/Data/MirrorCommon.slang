@@ -8,11 +8,6 @@ struct PrimaryRayData
     float hitT;
 };
 
-struct ShadowRayData
-{
-    bool hit;
-};
-
 float3 calcBlinnPhongLighting(float3 N, float3 L, float3 H)
 {
     float3 ambient = float3(0.329412f, 0.223529f, 0.027451f);
@@ -41,20 +36,6 @@ float4 debugVertex(float3 posW, float3 normalW)
     }
 
     return color;
-}
-
-bool checkLightHit(uint lightIndex, float3 origin)
-{
-    float3 direction = gLights[lightIndex].posW - origin;
-    RayDesc ray;
-    ray.Origin = origin;
-    ray.Direction = normalize(direction);
-    ray.TMin = 0.001;
-    ray.TMax = max(0.01, length(direction));
-
-    ShadowRayPayload rayData = { 0.0f };
-    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0 /* ray index */, hitProgramCount, 0, ray, rayData);
-    return rayData.visFactor;
 }
 
 float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, uint hitDepth)

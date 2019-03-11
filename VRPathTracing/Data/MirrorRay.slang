@@ -80,11 +80,12 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 
     [unroll]
     for (int i = 0; i < gLightsCount; i++)
-    {        
-        if (checkLightHit(i, posW) == false)
-        {
-            color += evalMaterial(sd, gLights[i], 1).color.xyz;
-        }
+    {
+        float distToLight = length(gLights[i].posW - posW);
+        float3 L = -normalize(gLights[i].dirW);
+        float visFactor = shootShadowRay(sd.posW, L, 0.001, distToLight);
+
+        color += visFactor * evalMaterial(sd, gLights[i], 1).color.xyz;
     }
 
     hitData.color.rgb = color;
