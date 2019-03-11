@@ -115,7 +115,11 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 {
     mpGraph = RenderGraph::create("Path Tracer");
     mpGraph->addPass(GBufferRaster::create(), "GBuffer");
-    auto pGIPass = GGXGlobalIllumination::create();
+	
+	auto GGXGIParams = Dictionary();
+	GGXGIParams["useBlackEnvMap"] = true;
+	auto pGIPass = GGXGlobalIllumination::create(GGXGIParams);
+	
     mpGraph->addPass(pGIPass, "GlobalIllumination");
     mpGraph->addPass(TemporalAccumulation::create(), "TemporalAccumulation");
     mpGraph->addPass(ToneMapping::create(), "ToneMapping");

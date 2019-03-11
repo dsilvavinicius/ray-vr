@@ -104,13 +104,13 @@ void GGXGlobalIllumRayGen()
             // Indirect lighting for global illumination
             if (gDoIndirectGI && (gMaxDepth > 0))
                 shadeColor += ggxIndirect(randSeed, sd, geomN);
+
+            // Zero out any bad samples
+            bool colorsNan = any(isnan(shadeColor));
+            shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
             break;
         }
         }
-
-        // Zero out any bad samples
-        bool colorsNan = any(isnan(shadeColor));
-        shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
     }
     
     gOutput[launchIndex] = float4(shadeColor, 1.0f);

@@ -45,11 +45,10 @@ void primaryAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttr
 void primaryMiss(inout PrimaryRayData hitData)
 {
     // Sample the environment map
-    /*float2 uv = dirToSphericalCrd(WorldRayDirection());
+    float2 uv = dirToSphericalCrd(WorldRayDirection());
     float2 dims;
     gEnvMap.GetDimensions(dims.x, dims.y);
-    hitData.color = gEnvMap[uint2(uv * dims)];*/
-    hitData.color = float4(1.f, 1.f, 1.f, 1.f);
+    hitData.color = gEnvMap[uint2(uv * dims)];
     hitData.hitT = -1;
 }
 

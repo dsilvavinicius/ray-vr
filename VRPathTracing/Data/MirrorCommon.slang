@@ -53,7 +53,7 @@ bool checkLightHit(uint lightIndex, float3 origin)
     ray.TMax = max(0.01, length(direction));
 
     ShadowRayPayload rayData = { 0.0f };
-    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0 /* ray index */, hitProgramCount, 1, ray, rayData);
+    TraceRay(gRtScene, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, 0xFF, 0 /* ray index */, hitProgramCount, 0, ray, rayData);
     return rayData.visFactor;
 }
 
@@ -63,14 +63,14 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
     if (hitDepth == 0)
     {
         PrimaryRayData secondaryRay;
-        secondaryRay.color = float4(0.f, 0.f, 0.f, 1.f);
+        //secondaryRay.color = float4(1.f, 1.f, 1.f, 1.f);
         secondaryRay.depth.r = 1;
         RayDesc ray;
         ray.Origin = worldOrigin;
         ray.Direction = reflect(worldRayDir, v.normalW);
         ray.TMin = 0.001;
         ray.TMax = 100000;
-        TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 0, ray, secondaryRay);
+        TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
         reflectColor = secondaryRay.color.rgb;
 
         float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
@@ -83,7 +83,7 @@ float4 tracePrimaryRay(RayDesc ray)
 {
     PrimaryRayData hitData;
     hitData.depth = 0;
-    TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 0, ray, hitData);
+    TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, hitData);
     return hitData.color;
 }
 

@@ -117,6 +117,7 @@ void GGXGlobalIllumination::initialize(RenderContext* pContext, const RenderData
 	desc.addMiss(2, kEntryMirrorMiss);
 	desc.addHitGroup(2, kEntryMirrorClosestHit, kEntryMirrorAnyHit);
 
+
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     mpProgram = RtProgram::create(desc);
     mpState->setProgram(mpProgram);
