@@ -39,15 +39,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
         std::string filename;
         if (openFileDialog(Scene::kFileExtensionFilters, filename))
         {
-            ProgressBar::SharedPtr pBar = ProgressBar::create("Loading Scene", 100);
-
-            RtScene::SharedPtr pScene = RtScene::loadFromFile(filename);
-            if (pScene != nullptr)
-            {
-                Fbo::SharedPtr pFbo = pCallbacks->getCurrentFbo();
-                pScene->setCamerasAspectRatio(float(pFbo->getWidth()) / float(pFbo->getHeight()));
-                mpGraph->setScene(pScene);
-            }
+			loadModel(pCallbacks, filename);
         }
     }
 
@@ -117,6 +109,33 @@ void PathTracer::toggleCameraPathState()
     }
 }
 
+void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
+{
+	ProgressBar::SharedPtr pBar = ProgressBar::create("Loading Scene", 100);
+
+	RtScene::SharedPtr pScene = RtScene::loadFromFile(filename);
+	
+	if (pScene != nullptr)
+	{
+		Fbo::SharedPtr pFbo = pCallbacks->getCurrentFbo();
+		pScene->setCamerasAspectRatio(float(pFbo->getWidth()) / float(pFbo->getHeight()));
+		mpGraph->setScene(pScene);
+		initVR(pCallbacks->getCurrentFbo().get());
+
+		// Init material ids.
+		mMaterialIds = vector< vector< uint > >(pScene->getModelCount());
+		for (uint i = 0; i < pScene->getModelCount(); ++i)
+		{
+			mMaterialIds[i] = vector< uint >(pScene->getModel(i)->getMeshCount());
+			for (uint j = 0; j < mMaterialIds[i].size(); ++j)
+			{
+				mMaterialIds[i][j] = 0;
+				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(0);
+			}
+		}
+	}
+}
+
 void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderContext)
 {
     mpGraph = RenderGraph::create("Path Tracer");
@@ -150,25 +169,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
     // Initialize the graph's record of what the swapchain size is, for texture creation
     mpGraph->onResize(pCallbacks->getCurrentFbo().get());
 
-    {
-        ProgressBar::SharedPtr pBar = ProgressBar::create("Loading Scene", 100);
-
-        RtScene::SharedPtr pScene = RtScene::loadFromFile("Arcade/Arcade.fscene");
-		mpGraph->setScene(pScene);
-		initVR(pCallbacks->getCurrentFbo().get());
-		
-		// Init material ids.
-		mMaterialIds = vector< vector< uint > >( pScene->getModelCount() );
-		for (uint i = 0; i < pScene->getModelCount(); ++i)
-		{
-			mMaterialIds[i] = vector< uint >( pScene->getModel(i)->getMeshCount() );
-			for (uint j = 0; j < mMaterialIds[i].size(); ++j)
-			{
-				mMaterialIds[i][j] = 0;
-				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(0);
-			}
-		}
-    }
+	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 
 	//Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
 	//mCamController.attachCamera(camera);

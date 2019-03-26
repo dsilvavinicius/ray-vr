@@ -47,6 +47,8 @@ public:
 private:
     void toggleCameraPathState();
 
+	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
+
     bool mDisableCameraPath = false;
     RenderGraph::SharedPtr mpGraph;
 
