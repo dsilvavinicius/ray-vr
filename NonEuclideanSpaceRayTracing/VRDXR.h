@@ -90,6 +90,7 @@ private:
 
 	enum class RayTracingVersion
 	{
+		InverseViewProj,
 		InverseView,
 		CameraVectors,
 		RayTexture

@@ -38,6 +38,11 @@ __import Raytracing;
 
 shared cbuffer PerFrameCB
 {
+    float4x4 invView;
+    float4x4 invRightView;
+    float2 viewportDims;
+    float tanHalfFovY;
+
     float4x4 invViewProj;
 	float4x4 invRightViewProj;
 
@@ -218,6 +223,28 @@ float4 tracePrimaryRay(float4x4 invView, float2 ndc)
     return tracePrimaryRay(ray);
 }
 
+float4 tracePrimaryRay(float4x4 invView, float2 d, float aspect)
+{
+    RayDesc ray;
+    ray.Origin = invView[3].xyz;
+
+    // We negate the Z exis because the 'view' matrix is generated using a 
+    // Right Handed coordinate system with Z pointing towards the viewer
+    // The negation of Z axis is needed to get the rays go out in the
+    // direction away from the viewer.
+    // The negation of Y axis is needed because the texel coordinate system,
+    // used in the UAV we write into using launchIndex
+    // has the Y axis flipped with respect to the camera Y axis
+    // (0 is at the top and 1 at the bottom)
+    ray.Direction = normalize((d.x * invView[0].xyz * tanHalfFovY * aspect)
+                        - (d.y * invView[1].xyz * tanHalfFovY) - invView[2].xyz);
+    
+    ray.TMin = 0;
+    ray.TMax = 100000;
+
+    return tracePrimaryRay(ray);
+}
+
 float4 tracePrimaryRay(float2 ndc, float3 posW, float3 camU, float3 camV, float3 camW)
 {
 	RayDesc ray;
@@ -259,7 +286,7 @@ float4 tracePrimaryRay(float3 origin, RWTexture2D<float4> rayDirs)
 }
 
 // In this version the ray directions are created using the inverse view matrix.
-void traceRaysInvView()
+void traceRaysInvViewProj()
 {
     uint2 launchIndex = DispatchRaysIndex().xy;
     float2 pixelCenter = (launchIndex + float2(0.5f, 0.5f)) / DispatchRaysDimensions().xy;
@@ -267,6 +294,16 @@ void traceRaysInvView()
 
     gOutput[launchIndex] = tracePrimaryRay(invViewProj, ndc);
     gRightOutput[launchIndex] = tracePrimaryRay(invRightViewProj, ndc);
+}
+
+void traceRaysInvView()
+{
+    uint3 launchIndex = DispatchRaysIndex();
+    float2 d = (((launchIndex.xy + 0.5) / viewportDims) * 2.f - 1.f);
+    float aspectRatio = viewportDims.x / viewportDims.y;
+
+    gOutput[launchIndex.xy] = tracePrimaryRay(invView, d, aspectRatio);
+    gRightOutput[launchIndex.xy] = tracePrimaryRay(invRightView, d, aspectRatio);
 }
 
 // In this version the ray directions are created using the camera vectors. 
@@ -291,9 +328,11 @@ void traceRaysTex()
 void rayGen()
 {
 #if VERSION == 0
-	traceRaysInvView();
+    traceRaysInvViewProj();
 #elif VERSION == 1
-	traceRaysCamVecs();
+    traceRaysInvView();
+#elif VERSION == 2
+    traceRaysCamVecs();
 #else
 	traceRaysTex();
 #endif

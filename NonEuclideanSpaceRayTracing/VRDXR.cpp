@@ -161,6 +161,11 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 
 	//float4x4 transform = buildCameraTransform();
 
+	pCB["invView"] = glm::inverse(mpCamera->getViewMatrix());
+	pCB["invRightView"] = glm::inverse(mpCamera->getRightEyeViewMatrix());
+	pCB["viewportDims"] = vec2(hmd->getRecommendedRenderSize().x, hmd->getRecommendedRenderSize().y);
+	pCB["tanHalfFovY"] = tanf(hmd->getFovY() * 0.5f);
+
 	pCB["invViewProj"] = mpCamera->getInvViewProjMatrix();
 	pCB["invRightViewProj"] = glm::inverse(mpCamera->getRightEyeViewProjMatrix());
 	
@@ -173,17 +178,21 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 
 	switch (mRayTracingVersion)
 	{
-	case RayTracingVersion::InverseView:
+	case RayTracingVersion::InverseViewProj:
 	{
 		mpRtState->getProgram()->addDefine("VERSION", "0"); break;
 	}
-	case RayTracingVersion::CameraVectors:
+	case RayTracingVersion::InverseView:
 	{
 		mpRtState->getProgram()->addDefine("VERSION", "1"); break;
 	}
-	case RayTracingVersion::RayTexture:
+	case RayTracingVersion::CameraVectors:
 	{
 		mpRtState->getProgram()->addDefine("VERSION", "2"); break;
+	}
+	case RayTracingVersion::RayTexture:
+	{
+		mpRtState->getProgram()->addDefine("VERSION", "3"); break;
 	}
 	}
 
@@ -348,6 +357,7 @@ void VRDXR::initVR(Fbo* pTargetFbo)
 		mRenderModeList.push_back({ (int)RenderMode::RasterWithRays, "Raster Using Rays for Blinn-Phong model" });
 		mRenderModeList.push_back({ (int)RenderMode::RayTracingWithRayTex, "Ray Tracing" });
 
+		mRayTracingVersionList.push_back({ (int)RayTracingVersion::InverseViewProj, "Inverse View Proj" });
 		mRayTracingVersionList.push_back({ (int)RayTracingVersion::InverseView, "Inverse View" });
 		mRayTracingVersionList.push_back({ (int)RayTracingVersion::CameraVectors, "Camera Vectors" });
 		mRayTracingVersionList.push_back({ (int)RayTracingVersion::RayTexture, "Ray Texture" });
