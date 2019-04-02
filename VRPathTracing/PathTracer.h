@@ -52,7 +52,8 @@ private:
     bool mDisableCameraPath = false;
     RenderGraph::SharedPtr mpGraph;
 
-	HmdCameraController mCamController;
+	FirstPersonCameraController mCamController;
+	Camera::SharedPtr mFpsCam; // This camera receives mouse and keyboard input.
 
 	// VR
 	void initVR(Fbo* pTargetFbo);

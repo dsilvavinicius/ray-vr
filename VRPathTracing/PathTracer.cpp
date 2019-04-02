@@ -171,8 +171,9 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 
 	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 
-	//Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
-	//mCamController.attachCamera(camera);
+	mFpsCam = Camera::create();
+	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
+	mCamController.attachCamera(mFpsCam);
 }
 
 void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
@@ -185,8 +186,9 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
     if (mpGraph->getScene() != nullptr)
     {
 		pRenderContext->clearFbo(mpVrFbo->getFbo().get(), clearColor, 1.0f, 0, FboAttachmentType::All);
-
-		mpGraph->getScene()->update(pCallbacks->getCurrentTime(), &mCamController);
+		
+		mCamController.update();
+		mpGraph->getScene()->update(pCallbacks->getCurrentTime());
 
 		// Left eye
 		setupCamera(VRDisplay::Eye::Left);
@@ -284,13 +286,9 @@ void PathTracer::setupCamera(const VRDisplay::Eye& eye)
 {
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 
-	// Get HMD world matrix and apply additional camera transformations.
+	// Get HMD world matrix and apply additional camera transformation.
 	glm::mat4 hmdW = pDisplay->getWorldMatrix();
-	/*hmdW = glm::translate(hmdW, mCamTranslation);
-	hmdW = glm::rotate(hmdW, mCamRotation.x, vec3(1.f, 0.f, 0.f));
-	hmdW = glm::rotate(hmdW, mCamRotation.y, vec3(0.f, 1.f, 0.f));
-	hmdW = glm::rotate(hmdW, mCamRotation.z, vec3(0.f, 0.f, 1.f));
-	hmdW = glm::scale(hmdW, mCamZoom);*/
+	hmdW = glm::translate(hmdW, -mFpsCam->getPosition());
 
 	Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
 
