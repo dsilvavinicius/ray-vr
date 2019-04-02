@@ -63,24 +63,49 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	mDropList.push_back({ 2, "Mirror-like Reflections" });
 	mDropList.push_back({ 3, "Path Tracing" });
 
+	Scene::SharedPtr scene = mpGraph->getScene();
+
+	if (pGui->addCheckBox("Meshes Visible", mInstancesVisible))
+	{
+		for (uint i = 0; i < scene->getModelCount(); ++i)
+		{
+			Model::SharedPtr model = scene->getModel(i);
+			for (uint j = 0; j < model->getMeshCount(); ++j)
+			{
+				model->getMeshInstance(j, 0)->setVisible(mInstancesVisible);
+			}
+		}
+	}
+
 	// Material IDs.
 	if (pGui->beginGroup("Material IDs", true))
 	{
-		Scene::SharedPtr scene = mpGraph->getScene();
-
 		for (uint i = 0; i < scene->getModelCount(); ++i)
 		{
 			Model::SharedPtr model = scene->getModel(i);
 
-			stringstream ss; ss << "Model " << i;
+			stringstream ss; ss << "Model " << i << ", instances: " << model->getInstanceCount();
 			if (pGui->beginGroup(ss.str().c_str(), true))
 			{
 				for (uint j = 0; j < model->getMeshCount(); ++j)
 				{
-					stringstream ss; ss << " Mesh " << j;
-					if (pGui->addDropdown(ss.str().c_str(), mDropList, mMaterialIds[i][j]))
+					stringstream ss; ss << "Mesh " << j << ", instances: " << model->getMeshInstanceCount(j);
+					
+					if (pGui->beginGroup(ss.str().c_str(), false))
 					{
-						model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
+						if (pGui->addDropdown(ss.str().c_str(), mDropList, mMaterialIds[i][j]))
+						{
+							model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
+						}
+						
+						auto instance = model->getMeshInstance(j, 0);
+						
+						if (pGui->addButton("Toggle Visibility"))
+						{
+							instance->setVisible(!instance->isVisible());
+						}
+
+						pGui->endGroup();
 					}
 				}
 
@@ -129,8 +154,9 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 			mMaterialIds[i] = vector< uint >(pScene->getModel(i)->getMeshCount());
 			for (uint j = 0; j < mMaterialIds[i].size(); ++j)
 			{
-				mMaterialIds[i][j] = 0;
-				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(0);
+				uint id = 0;
+				mMaterialIds[i][j] = id;
+				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(id);
 			}
 		}
 	}
@@ -287,8 +313,7 @@ void PathTracer::setupCamera(const VRDisplay::Eye& eye)
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 
 	// Get HMD world matrix and apply additional camera transformation.
-	glm::mat4 hmdW = pDisplay->getWorldMatrix();
-	hmdW = glm::translate(hmdW, -mFpsCam->getPosition());
+	glm::mat4 hmdW = pDisplay->getWorldMatrix() * mFpsCam->getViewMatrix();
 
 	Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
 

@@ -50,6 +50,7 @@ private:
 	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
 
     bool mDisableCameraPath = false;
+	bool mInstancesVisible = true;
     RenderGraph::SharedPtr mpGraph;
 
 	FirstPersonCameraController mCamController;
