@@ -35,7 +35,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 {
     if (pGui->addButton("Load Scene"))
     {
-        assert(mpGraph != nullptr);
+        assert(mpLeftEyeGraph != nullptr);
         std::string filename;
         if (openFileDialog(Scene::kFileExtensionFilters, filename))
         {
@@ -52,9 +52,24 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
         toggleCameraPathState();
     }
 
-    if (mpGraph != nullptr)
+    if (mpLeftEyeGraph != nullptr)
     {
-        mpGraph->renderUI(pGui, nullptr);
+		if (pGui->beginGroup("Render Graphs"))
+		{
+			if (pGui->beginGroup("Left Eye"))
+			{
+				mpLeftEyeGraph->renderUI(pGui, nullptr);
+				pGui->endGroup();
+			}
+			
+			if (pGui->beginGroup("Right Eye"))
+			{
+				mpRightEyeGraph->renderUI(pGui, nullptr);
+				pGui->endGroup();
+			}
+			
+			pGui->endGroup();
+		}
     }
 
 	mDropList.clear();
@@ -63,7 +78,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	mDropList.push_back({ 2, "Mirror-like Reflections" });
 	mDropList.push_back({ 3, "Path Tracing" });
 
-	Scene::SharedPtr scene = mpGraph->getScene();
+	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
 
 	if (pGui->addCheckBox("Meshes Visible", mInstancesVisible))
 	{
@@ -119,7 +134,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 void PathTracer::toggleCameraPathState()
 {
-    Scene::SharedPtr pScene = mpGraph->getScene();
+    Scene::SharedPtr pScene = mpLeftEyeGraph->getScene();
     if (pScene != nullptr && pScene->getPathCount() > 0)
     {
         mDisableCameraPath = !mDisableCameraPath;
@@ -144,7 +159,8 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 	{
 		Fbo::SharedPtr pFbo = pCallbacks->getCurrentFbo();
 		pScene->setCamerasAspectRatio(float(pFbo->getWidth()) / float(pFbo->getHeight()));
-		mpGraph->setScene(pScene);
+		mpLeftEyeGraph->setScene(pScene);
+		mpRightEyeGraph->setScene(pScene);
 		initVR(pCallbacks->getCurrentFbo().get());
 
 		// Init material ids.
@@ -162,38 +178,49 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 	}
 }
 
+RenderGraph::SharedPtr PathTracer::createRenderGraph(SampleCallbacks* pCallbacks) const
+{
+	auto renderGraph = RenderGraph::create("Path Tracer");
+	renderGraph->addPass(GBufferRaster::create(), "GBuffer");
+
+	auto params = Dictionary();
+	params["useBlackEnvMap"] = true;
+	params["doAccumulation"] = false;
+
+	auto pGIPass = GGXGlobalIllumination::create(params);
+
+	renderGraph->addPass(pGIPass, "GlobalIllumination");
+	renderGraph->addPass(TemporalAccumulation::create(params), "TemporalAccumulation");
+	renderGraph->addPass(ToneMapping::create(), "ToneMapping");
+
+	renderGraph->addEdge("GBuffer.posW", "GlobalIllumination.posW");
+	renderGraph->addEdge("GBuffer.normW", "GlobalIllumination.normW");
+	renderGraph->addEdge("GBuffer.diffuseOpacity", "GlobalIllumination.diffuseOpacity");
+	renderGraph->addEdge("GBuffer.specRough", "GlobalIllumination.specRough");
+	renderGraph->addEdge("GBuffer.emissive", "GlobalIllumination.emissive");
+	renderGraph->addEdge("GBuffer.matlExtra", "GlobalIllumination.matlExtra");
+
+	renderGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
+
+	//renderGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
+
+	//renderGraph->markOutput("ToneMapping.dst");
+	renderGraph->markOutput("TemporalAccumulation.output");
+	//renderGraph->markOutput("GlobalIllumination.output");
+
+	// When GI pass changes, tell temporal accumulation to reset
+	pGIPass->setPassChangedCB([&]() {(*renderGraph->getPassesDictionary())["_dirty"] = true; });
+
+	// Initialize the graph's record of what the swapchain size is, for texture creation
+	renderGraph->onResize(pCallbacks->getCurrentFbo().get());
+
+	return renderGraph;
+}
+
 void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderContext)
 {
-    mpGraph = RenderGraph::create("Path Tracer");
-    mpGraph->addPass(GBufferRaster::create(), "GBuffer");
-	
-	auto GGXGIParams = Dictionary();
-	GGXGIParams["useBlackEnvMap"] = true;
-	auto pGIPass = GGXGlobalIllumination::create(GGXGIParams);
-	
-    mpGraph->addPass(pGIPass, "GlobalIllumination");
-    mpGraph->addPass(TemporalAccumulation::create(), "TemporalAccumulation");
-    mpGraph->addPass(ToneMapping::create(), "ToneMapping");
-
-    mpGraph->addEdge("GBuffer.posW", "GlobalIllumination.posW");
-    mpGraph->addEdge("GBuffer.normW", "GlobalIllumination.normW");
-    mpGraph->addEdge("GBuffer.diffuseOpacity", "GlobalIllumination.diffuseOpacity");
-    mpGraph->addEdge("GBuffer.specRough", "GlobalIllumination.specRough");
-    mpGraph->addEdge("GBuffer.emissive", "GlobalIllumination.emissive");
-    mpGraph->addEdge("GBuffer.matlExtra", "GlobalIllumination.matlExtra");
-
-    //mpGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
-
-    //mpGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
-
-	//mpGraph->markOutput("ToneMapping.dst");
-    mpGraph->markOutput("GlobalIllumination.output");
-
-    // When GI pass changes, tell temporal accumulation to reset
-    pGIPass->setPassChangedCB([this]() {(*mpGraph->getPassesDictionary())["_dirty"] = true; });
-
-    // Initialize the graph's record of what the swapchain size is, for texture creation
-    mpGraph->onResize(pCallbacks->getCurrentFbo().get());
+	mpLeftEyeGraph = createRenderGraph(pCallbacks);
+	mpRightEyeGraph = createRenderGraph(pCallbacks);
 
 	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 
@@ -209,24 +236,30 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
     const glm::vec4 clearColor(0.38f, 0.52f, 0.10f, 1);
     pRenderContext->clearFbo(pTargetFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
 
-    if (mpGraph->getScene() != nullptr)
+    if (mpLeftEyeGraph->getScene() != nullptr)
     {
 		pRenderContext->clearFbo(mpVrFbo->getFbo().get(), clearColor, 1.0f, 0, FboAttachmentType::All);
 		
+		/*bool hasCameraMoved = mCamMovement.any();
+		(*mpLeftEyeGraph->getPassesDictionary())["_camMoved"] = hasCameraMoved;
+		(*mpRightEyeGraph->getPassesDictionary())["_camMoved"] = hasCameraMoved;*/
+
 		mCamController.update();
-		mpGraph->getScene()->update(pCallbacks->getCurrentTime());
+		mpLeftEyeGraph->getScene()->update(pCallbacks->getCurrentTime());
 
 		// Left eye
 		setupCamera(VRDisplay::Eye::Left);
-        mpGraph->execute(pRenderContext);
-		//pRenderContext->blit(mpGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
-		pRenderContext->blit(mpGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		mpLeftEyeGraph->execute(pRenderContext);
+		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		//pRenderContext->blit(mpLeftEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		//pRenderContext->blit(mpLeftEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		
 		// Right eye
 		setupCamera(VRDisplay::Eye::Right);
-		mpGraph->execute(pRenderContext);
-		//pRenderContext->blit(mpGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
-		pRenderContext->blit(mpGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		mpRightEyeGraph->execute(pRenderContext);
+		pRenderContext->blit(mpRightEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		//pRenderContext->blit(mpRightEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		//pRenderContext->blit(mpRightEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
 
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);
@@ -247,15 +280,85 @@ bool PathTracer::onKeyEvent(SampleCallbacks* pCallbacks, const KeyboardEvent& ke
     }
 
     bool handled = false;
-    if (mpGraph->getScene() != nullptr) handled = mpGraph->onKeyEvent(keyEvent);
-    return handled ? true : mCamController.onKeyEvent(keyEvent);
+	if (mpLeftEyeGraph->getScene() != nullptr)
+	{
+		handled = mpLeftEyeGraph->onKeyEvent(keyEvent);
+		mpRightEyeGraph->onKeyEvent(keyEvent);
+	}
+
+	if (!handled)
+	{
+		handled = mCamController.onKeyEvent(keyEvent);
+
+		/*if(handled)
+		{
+			bool keyPressed = (keyEvent.type == KeyboardEvent::Type::KeyPressed);
+
+			switch (keyEvent.key)
+			{
+			case KeyboardEvent::Key::W:
+				mCamMovement[CamMovementSource::Forward] = keyPressed;
+				break;
+			case KeyboardEvent::Key::S:
+				mCamMovement[CamMovementSource::Backward] = keyPressed;
+				break;
+			case KeyboardEvent::Key::A:
+				mCamMovement[CamMovementSource::Right] = keyPressed;
+				break;
+			case KeyboardEvent::Key::D:
+				mCamMovement[CamMovementSource::Left] = keyPressed;
+				break;
+			case KeyboardEvent::Key::Q:
+				mCamMovement[CamMovementSource::Down] = keyPressed;
+				break;
+			case KeyboardEvent::Key::E:
+				mCamMovement[CamMovementSource::Up] = keyPressed;
+				break;
+			default:
+				break;
+			}
+		}*/
+	}
+    
+	return handled;
 }
 
 bool PathTracer::onMouseEvent(SampleCallbacks* pCallbacks, const MouseEvent& mouseEvent)
 {
     bool handled = false;
-    if (mpGraph->getScene() != nullptr) handled = mpGraph->onMouseEvent(mouseEvent);
-    return handled ? true : mCamController.onMouseEvent(mouseEvent);
+	if (mpLeftEyeGraph->getScene() != nullptr)
+	{
+		handled = mpLeftEyeGraph->onMouseEvent(mouseEvent);
+		mpRightEyeGraph->onMouseEvent(mouseEvent);
+	}
+
+	if (!handled)
+	{
+		handled = mCamController.onMouseEvent(mouseEvent);
+
+		/*if (handled)
+		{
+			switch (mouseEvent.type)
+			{
+			case MouseEvent::Type::LeftButtonDown:
+				mCamMovement[CamMovementSource::RotationXY] = true;
+				break;
+			case MouseEvent::Type::LeftButtonUp:
+				mCamMovement[CamMovementSource::RotationXY] = false;
+				break;
+			case MouseEvent::Type::RightButtonDown:
+				mCamMovement[CamMovementSource::RotationZ] = true;
+				break;
+			case MouseEvent::Type::RightButtonUp:
+				mCamMovement[CamMovementSource::RotationZ] = false;
+				break;
+			default:
+				break;
+			}
+		}*/
+	}
+
+	return handled;
 }
 
 void PathTracer::onDataReload(SampleCallbacks* pCallbacks)
@@ -265,7 +368,7 @@ void PathTracer::onDataReload(SampleCallbacks* pCallbacks)
 
 void PathTracer::onResizeSwapChain(SampleCallbacks* pCallbacks, uint32_t width, uint32_t height)
 {
-    if (mpGraph)
+    if (mpLeftEyeGraph)
     {
 		initVR(pCallbacks->getCurrentFbo().get());
     }
@@ -283,10 +386,11 @@ void PathTracer::initVR(Fbo* pTargetFbo)
 
 		mpVrFbo = VrFbo::create(vrFboDesc);
 
-		mpGraph->onResize(mpVrFbo->getFbo().get());
-		if (mpGraph->getScene() != nullptr)
+		mpLeftEyeGraph->onResize(mpVrFbo->getFbo().get());
+		mpRightEyeGraph->onResize(mpVrFbo->getFbo().get());
+		if (mpLeftEyeGraph->getScene() != nullptr)
 		{
-			mpGraph->getScene()->setCamerasAspectRatio(float(mpVrFbo->getFbo()->getWidth()) / float(mpVrFbo->getFbo()->getHeight()));
+			mpLeftEyeGraph->getScene()->setCamerasAspectRatio(float(mpVrFbo->getFbo()->getWidth()) / float(mpVrFbo->getFbo()->getHeight()));
 		}
 	}
 	else
@@ -315,7 +419,7 @@ void PathTracer::setupCamera(const VRDisplay::Eye& eye)
 	// Get HMD world matrix and apply additional camera transformation.
 	glm::mat4 hmdW = pDisplay->getWorldMatrix() * mFpsCam->getViewMatrix();
 
-	Camera::SharedPtr camera = mpGraph->getScene()->getActiveCamera();
+	Camera::SharedPtr camera = mpLeftEyeGraph->getScene()->getActiveCamera();
 
 	glm::mat4 view = pDisplay->getOffsetMatrix(eye) * hmdW;
 	camera->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));

@@ -46,15 +46,32 @@ public:
 
 private:
     void toggleCameraPathState();
+	RenderGraph::SharedPtr createRenderGraph(SampleCallbacks* pCallbacks) const;
 
 	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
 
     bool mDisableCameraPath = false;
 	bool mInstancesVisible = true;
-    RenderGraph::SharedPtr mpGraph;
+    RenderGraph::SharedPtr mpLeftEyeGraph;
+	RenderGraph::SharedPtr mpRightEyeGraph;
 
 	FirstPersonCameraController mCamController;
 	Camera::SharedPtr mFpsCam; // This camera receives mouse and keyboard input.
+
+	/*enum CamMovementSource
+	{
+		Forward,
+		Backward,
+		Right,
+		Left,
+		Up,
+		Down,
+		RotationXY,
+		RotationZ,
+		Count
+	};
+
+	std::bitset<CamMovementSource::Count> mCamMovement;*/
 
 	// VR
 	void initVR(Fbo* pTargetFbo);

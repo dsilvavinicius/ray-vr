@@ -33,6 +33,9 @@ namespace {
 
     // Key used to look up dirty state in the graph's shared dictionary
     const char *kDirtyFlag = "_dirty";
+
+	// Key used to look up for camera movement
+	//const char *kCamMovedFlag = "_camMoved";
 };
 
 TemporalAccumulation::SharedPtr TemporalAccumulation::create(const Dictionary &params)
@@ -99,10 +102,10 @@ void TemporalAccumulation::execute(RenderContext* pContext, const RenderData* pR
     // If the camera in our current scene has moved, or the GUI pass settings changed, we want to reset accumulation
     auto& pDict = pRenderData->getDictionary();
     bool giDirty = pDict.keyExists(kDirtyFlag) && bool(pDict[kDirtyFlag]);
-    if (hasCameraMoved() || giDirty)
+	//bool camMoved = pDict.keyExists(kCamMovedFlag) && bool(pDict[kCamMovedFlag]);
+    if (giDirty /*|| camMoved*/)
     {
         mAccumCount = 0;
-        mpLastCameraMatrix = mpScene->getActiveCamera()->getViewMatrix();
 
         if (giDirty) pDict[kDirtyFlag] = false; // Reset the flag
     }
@@ -132,25 +135,10 @@ void TemporalAccumulation::renderUI(Gui* pGui, const char* uiGroup)
     pGui->addText((std::string("Frames accumulated: ") + std::to_string(mAccumCount)).c_str());
 }
 
-bool TemporalAccumulation::hasCameraMoved()
-{
-    // Has our camera moved?
-    return mpScene &&                   // No scene?  Then the answer is no
-        mpScene->getActiveCamera() &&   // No camera in our scene?  Then the answer is no
-        (mpLastCameraMatrix != mpScene->getActiveCamera()->getViewMatrix());   // Compare the current matrix with the last one
-}
-
 void TemporalAccumulation::setScene(const std::shared_ptr<Scene>& pScene)
 {
     // Reset accumulation on loading a new scene
     mAccumCount = 0;
-
-    // When our renderer moves around we want to reset accumulation, so stash the scene pointer
-    mpScene = pScene;
-
-    // Grab a copy of the current scene's camera matrix (if it exists)
-    if (mpScene && mpScene->getActiveCamera())
-        mpLastCameraMatrix = mpScene->getActiveCamera()->getViewMatrix();
 }
 
 void TemporalAccumulation::onResize(uint32_t width, uint32_t height)

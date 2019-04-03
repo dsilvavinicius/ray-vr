@@ -78,9 +78,6 @@ private:
 
     void initialize(const Dictionary& dict);
 
-    // A helper utility to determine if the current scene (if any) has had any camera motion
-    bool hasCameraMoved();
-
     // State for our accumulation shader
     GraphicsVars::SharedPtr     mpVars;
     GraphicsProgram::SharedPtr  mpProgram;
@@ -88,10 +85,6 @@ private:
     FullScreenPass::UniquePtr   mpPass;
 
     Fbo::SharedPtr              mpInternalFbo;
-
-    // We stash a copy of our current scene.  Why?  To detect if changes have occurred.
-    Scene::SharedPtr    mpScene;
-    mat4                mpLastCameraMatrix;
 
     // Is our accumulation enabled?
     bool mDoAccumulation = true;
