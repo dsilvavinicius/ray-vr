@@ -47,6 +47,8 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 
+	pGui->addCheckBox("Use HMD", mUseHMD);
+
     if (pGui->addButton(mDisableCameraPath ? "Enable Camera Path" : "Disable Camera Path"))
     {
         toggleCameraPathState();
@@ -417,11 +419,17 @@ void PathTracer::setupCamera(const VRDisplay::Eye& eye)
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 
 	// Get HMD world matrix and apply additional camera transformation.
-	glm::mat4 hmdW = pDisplay->getWorldMatrix() * mFpsCam->getViewMatrix();
+	glm::mat4 world = mUseHMD ? pDisplay->getWorldMatrix() : mFpsCam->getViewMatrix();
+
+	if (mUseHMD)
+	{
+		// Use FPS cam position to offset HMD.
+		world = glm::translate(world, -mFpsCam->getPosition());
+	}
 
 	Camera::SharedPtr camera = mpLeftEyeGraph->getScene()->getActiveCamera();
 
-	glm::mat4 view = pDisplay->getOffsetMatrix(eye) * hmdW;
+	glm::mat4 view = pDisplay->getOffsetMatrix(eye) * world;
 	camera->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	camera->setViewMatrix(view);
 	camera->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
