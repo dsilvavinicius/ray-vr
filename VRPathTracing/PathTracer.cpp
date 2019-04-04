@@ -43,16 +43,51 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
         }
     }
 
-    pGui->addSeparator();
+	if (pGui->addButton("Take Screenshot"))
+	{
+		FileDialogFilterVec filters(1, FileDialogFilter("png", "Portable Network Graphics"));
+		std::string fullFilename;
+		
+		if (saveFileDialog(filters, fullFilename))
+		{
+			size_t lastBackslash = fullFilename.find_last_of("\\");
+			string filename = fullFilename.substr(lastBackslash + 1);
+			string directory = fullFilename.substr(0, lastBackslash);
+			pCallbacks->captureScreen(filename, directory);
+		}
+	}
+
+	if (pGui->addButton("Record Video"))
+	{
+		pCallbacks->initVideoCapture();
+	}
+
+	if (pGui->addButton(mDisableCameraPath ? "Enable Camera Path" : "Disable Camera Path"))
+	{
+		toggleCameraPathState();
+	}
+
+	pGui->addSeparator();
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 
 	pGui->addCheckBox("Use HMD", mUseHMD);
 
-    if (pGui->addButton(mDisableCameraPath ? "Enable Camera Path" : "Disable Camera Path"))
-    {
-        toggleCameraPathState();
-    }
+	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
+
+	if (pGui->addCheckBox("Meshes Visible", mInstancesVisible))
+	{
+		for (uint i = 0; i < scene->getModelCount(); ++i)
+		{
+			Model::SharedPtr model = scene->getModel(i);
+			for (uint j = 0; j < model->getMeshCount(); ++j)
+			{
+				model->getMeshInstance(j, 0)->setVisible(mInstancesVisible);
+			}
+		}
+	}
+
+	pGui->addSeparator();
 
     if (mpLeftEyeGraph != nullptr)
     {
@@ -79,20 +114,6 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	mDropList.push_back({ 1, "Direct Light With Shadows" });
 	mDropList.push_back({ 2, "Mirror-like Reflections" });
 	mDropList.push_back({ 3, "Path Tracing" });
-
-	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
-
-	if (pGui->addCheckBox("Meshes Visible", mInstancesVisible))
-	{
-		for (uint i = 0; i < scene->getModelCount(); ++i)
-		{
-			Model::SharedPtr model = scene->getModel(i);
-			for (uint j = 0; j < model->getMeshCount(); ++j)
-			{
-				model->getMeshInstance(j, 0)->setVisible(mInstancesVisible);
-			}
-		}
-	}
 
 	// Material IDs.
 	if (pGui->beginGroup("Material IDs", true))
