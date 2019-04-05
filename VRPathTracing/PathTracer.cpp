@@ -97,6 +97,26 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 		}
 	}
 
+	Gui::DropdownList dropList;
+	dropList.push_back({ 0, "Raster" });
+	dropList.push_back({ 1, "Direct Light With Shadows" });
+	dropList.push_back({ 2, "Mirror-like Reflections" });
+	dropList.push_back({ 3, "Path Tracing" });
+
+	if (pGui->addDropdown("Global Material ID", dropList, mGlobalMaterialId))
+	{
+		for (uint i = 0; i < scene->getModelCount(); ++i)
+		{
+			Model::SharedPtr model = scene->getModel(i);
+
+			for (uint j = 0; j < model->getMeshCount(); ++j)
+			{
+				mMaterialIds[i][j] = mGlobalMaterialId;
+				model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
+			}
+		}
+	}
+
 	pGui->addSeparator();
 
     if (mpLeftEyeGraph != nullptr)
@@ -119,12 +139,6 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 		}
     }
 
-	mDropList.clear();
-	mDropList.push_back({ 0, "Raster" });
-	mDropList.push_back({ 1, "Direct Light With Shadows" });
-	mDropList.push_back({ 2, "Mirror-like Reflections" });
-	mDropList.push_back({ 3, "Path Tracing" });
-
 	// Material IDs.
 	if (pGui->beginGroup("Material IDs", true))
 	{
@@ -141,7 +155,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 					
 					if (pGui->beginGroup(ss.str().c_str(), false))
 					{
-						if (pGui->addDropdown(ss.str().c_str(), mDropList, mMaterialIds[i][j]))
+						if (pGui->addDropdown(ss.str().c_str(), dropList, mMaterialIds[i][j]))
 						{
 							model->getMesh(j)->getMaterial()->setID(mMaterialIds[i][j]);
 						}
