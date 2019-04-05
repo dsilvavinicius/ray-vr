@@ -56,7 +56,7 @@ private:
 	RenderGraph::SharedPtr mpRightEyeGraph;
 
 	FirstPersonCameraController mCamController;
-	bool mUseHMD = true;
+	bool mUseHMD = false;
 
 	/*enum CamMovementSource
 	{
