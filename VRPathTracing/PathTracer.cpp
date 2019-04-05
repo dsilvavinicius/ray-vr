@@ -31,6 +31,16 @@
 #include "RenderPasses/TemporalAccumulation.h"
 #include <sstream>
 
+namespace
+{
+	enum SceneCamera
+	{
+		Default,
+		Hmd,
+		Fps
+	};
+}
+
 void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 {
     if (pGui->addButton("Load Scene"))
@@ -62,16 +72,16 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 		pCallbacks->initVideoCapture();
 	}
 
-	if (pGui->addButton(mDisableCameraPath ? "Enable Camera Path" : "Disable Camera Path"))
-	{
-		toggleCameraPathState();
-	}
-
 	pGui->addSeparator();
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 
 	pGui->addCheckBox("Use HMD", mUseHMD);
+
+	if (pGui->addCheckBox("Camera Path", mCameraPath))
+	{
+		toggleCameraPathState();
+	}
 
 	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
 
@@ -160,14 +170,14 @@ void PathTracer::toggleCameraPathState()
     Scene::SharedPtr pScene = mpLeftEyeGraph->getScene();
     if (pScene != nullptr && pScene->getPathCount() > 0)
     {
-        mDisableCameraPath = !mDisableCameraPath;
-        if (mDisableCameraPath)
+        if (mCameraPath)
         {
-            pScene->getPath(0)->detachObject(pScene->getActiveCamera());
+			mUseHMD = false;
+			pScene->getPath(0)->attachObject(pScene->getCamera(SceneCamera::Fps));
         }
         else
         {
-            pScene->getPath(0)->attachObject(pScene->getActiveCamera());
+			pScene->getPath(0)->detachObject(pScene->getCamera(SceneCamera::Fps));
         }
     }
 }
@@ -198,6 +208,10 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(id);
 			}
 		}
+
+		// Additional FPS and HMD cameras.
+		pScene->addCamera(Camera::create());
+		pScene->addCamera(Camera::create());
 	}
 }
 
@@ -247,9 +261,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 
 	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 
-	mFpsCam = Camera::create();
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
-	mCamController.attachCamera(mFpsCam);
 }
 
 void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRenderContext, const Fbo::SharedPtr& pTargetFbo)
@@ -259,7 +271,9 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
     const glm::vec4 clearColor(0.38f, 0.52f, 0.10f, 1);
     pRenderContext->clearFbo(pTargetFbo.get(), clearColor, 1.0f, 0, FboAttachmentType::All);
 
-    if (mpLeftEyeGraph->getScene() != nullptr)
+	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
+
+    if (scene != nullptr)
     {
 		pRenderContext->clearFbo(mpVrFbo->getFbo().get(), clearColor, 1.0f, 0, FboAttachmentType::All);
 		
@@ -267,8 +281,16 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		(*mpLeftEyeGraph->getPassesDictionary())["_camMoved"] = hasCameraMoved;
 		(*mpRightEyeGraph->getPassesDictionary())["_camMoved"] = hasCameraMoved;*/
 
-		mCamController.update();
-		mpLeftEyeGraph->getScene()->update(pCallbacks->getCurrentTime());
+		if (mUseHMD)
+		{
+			scene->setActiveCamera(SceneCamera::Hmd);
+		}
+		else
+		{
+			scene->setActiveCamera(SceneCamera::Fps);
+		}
+		
+		scene->update(pCallbacks->getCurrentTime(), &mCamController);
 
 		// Left eye
 		setupCamera(VRDisplay::Eye::Left);
@@ -439,21 +461,25 @@ void PathTracer::setupCamera(const VRDisplay::Eye& eye)
 {
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 
-	// Get HMD world matrix and apply additional camera transformation.
-	glm::mat4 world = mUseHMD ? pDisplay->getWorldMatrix() : mFpsCam->getViewMatrix();
+	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
+
+	glm::mat4 world = scene->getActiveCamera()->getViewMatrix();
 
 	if (mUseHMD)
 	{
+		// Get HMD world matrix and apply additional camera transformation.
+		world = pDisplay->getWorldMatrix();
 		// Use FPS cam position to offset HMD.
-		world = glm::translate(world, -mFpsCam->getPosition());
+		world = glm::translate(world, -scene->getActiveCamera()->getPosition());
 	}
 
-	Camera::SharedPtr camera = mpLeftEyeGraph->getScene()->getActiveCamera();
-
+	scene->setActiveCamera(SceneCamera::Default);
+	Camera::SharedPtr defaultCam = scene->getActiveCamera();
+	
 	glm::mat4 view = pDisplay->getOffsetMatrix(eye) * world;
-	camera->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	camera->setViewMatrix(view);
-	camera->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
+	defaultCam->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	defaultCam->setViewMatrix(view);
+	defaultCam->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)

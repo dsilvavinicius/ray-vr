@@ -50,13 +50,12 @@ private:
 
 	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
 
-    bool mDisableCameraPath = false;
+    bool mCameraPath = false;
 	bool mInstancesVisible = true;
     RenderGraph::SharedPtr mpLeftEyeGraph;
 	RenderGraph::SharedPtr mpRightEyeGraph;
 
 	FirstPersonCameraController mCamController;
-	Camera::SharedPtr mFpsCam; // This camera receives mouse and keyboard input.
 	bool mUseHMD = true;
 
 	/*enum CamMovementSource
