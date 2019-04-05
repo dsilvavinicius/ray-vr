@@ -76,7 +76,7 @@ private:
 	// VR
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
-	void setupCamera(const VRDisplay::Eye& eye);
+	uint setupCamera(const VRDisplay::Eye& eye);
 	
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;

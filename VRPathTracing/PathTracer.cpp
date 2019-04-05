@@ -307,13 +307,14 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		scene->update(pCallbacks->getCurrentTime(), &mCamController);
 
 		// Left eye
-		setupCamera(VRDisplay::Eye::Left);
+		uint camIdx = setupCamera(VRDisplay::Eye::Left);
 		mpLeftEyeGraph->execute(pRenderContext);
 		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		
 		// Right eye
+		scene->setActiveCamera(camIdx);
 		setupCamera(VRDisplay::Eye::Right);
 		mpRightEyeGraph->execute(pRenderContext);
 		pRenderContext->blit(mpRightEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
@@ -471,11 +472,13 @@ void PathTracer::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::
 	}
 }
 
-void PathTracer::setupCamera(const VRDisplay::Eye& eye)
+uint PathTracer::setupCamera(const VRDisplay::Eye& eye)
 {
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 
 	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
+	
+	uint camIdx = scene->getActiveCameraIndex();
 
 	glm::mat4 world = scene->getActiveCamera()->getViewMatrix();
 
@@ -494,6 +497,8 @@ void PathTracer::setupCamera(const VRDisplay::Eye& eye)
 	defaultCam->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	defaultCam->setViewMatrix(view);
 	defaultCam->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
+
+	return camIdx;
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
