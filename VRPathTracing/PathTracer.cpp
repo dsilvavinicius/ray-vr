@@ -53,25 +53,6 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
         }
     }
 
-	if (pGui->addButton("Take Screenshot"))
-	{
-		FileDialogFilterVec filters(1, FileDialogFilter("png", "Portable Network Graphics"));
-		std::string fullFilename;
-		
-		if (saveFileDialog(filters, fullFilename))
-		{
-			size_t lastBackslash = fullFilename.find_last_of("\\");
-			string filename = fullFilename.substr(lastBackslash + 1);
-			string directory = fullFilename.substr(0, lastBackslash);
-			pCallbacks->captureScreen(filename, directory);
-		}
-	}
-
-	if (pGui->addButton("Record Video"))
-	{
-		pCallbacks->initVideoCapture();
-	}
-
 	pGui->addSeparator();
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
