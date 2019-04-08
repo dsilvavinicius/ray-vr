@@ -43,6 +43,8 @@ namespace
 
 void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 {
+	pGui->addSeparator();
+
     if (pGui->addButton("Load Scene"))
     {
         assert(mpLeftEyeGraph != nullptr);
@@ -52,6 +54,10 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 			loadModel(pCallbacks, filename);
         }
     }
+
+	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
+
+	scene->renderUI(pGui, "Scene");
 
 	pGui->addSeparator();
 
@@ -63,8 +69,6 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	{
 		toggleCameraPathState();
 	}
-
-	Scene::SharedPtr scene = mpLeftEyeGraph->getScene();
 
 	if (pGui->addCheckBox("Meshes Visible", mInstancesVisible))
 	{
