@@ -31,6 +31,7 @@ __import DefaultVS;
 shared cbuffer PerFrameCB
 {
 	float3 gRightEyePosW;
+    bool gLeftEyeOnly;
 };
 
 struct GeometryOut
@@ -59,18 +60,21 @@ void main(triangle VertexOut input[3], inout TriangleStream<GeometryOut> outStre
     }
     outStream.RestartStrip();
 
-    // Right Eye
-    for (int i = 0; i < 3; i++) 
+    if (!gLeftEyeOnly)
     {
-        gsOut.rtIndex = 1;
-        gsOut.vsOut = input[i];
+        // Right Eye
+        for (int i = 0; i < 3; i++)
+        {
+            gsOut.rtIndex = 1;
+            gsOut.vsOut = input[i];
 
-        float4 posW = float4(input[i].posW, 1.0f);
-        gsOut.vsOut.posH = mul(posW, gCamera.rightEyeViewProjMat);
-        //gsOut.vsOut.prevPosH = mul(posW, gCamera.rightEyePrevViewProjMat);
-        gsOut.vsOut.prevPosH = float4(gRightEyePosW, 1.0f);
+            float4 posW = float4(input[i].posW, 1.0f);
+            gsOut.vsOut.posH = mul(posW, gCamera.rightEyeViewProjMat);
+            //gsOut.vsOut.prevPosH = mul(posW, gCamera.rightEyePrevViewProjMat);
+            gsOut.vsOut.prevPosH = float4(gRightEyePosW, 1.0f);
 
-        outStream.Append(gsOut);
+            outStream.Append(gsOut);
+        }
+        outStream.RestartStrip();
     }
-    outStream.RestartStrip();
 }

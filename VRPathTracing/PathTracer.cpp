@@ -63,6 +63,8 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 
+	pGui->addCheckBox("Left Eye Only", mLeftEyeOnly);
+
 	pGui->addCheckBox("Use HMD", mUseHMD);
 
 	if (pGui->addCheckBox("Camera Path", mCameraPath))
@@ -298,13 +300,16 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		
-		// Right eye
-		scene->setActiveCamera(camIdx);
-		setupCamera(VRDisplay::Eye::Right);
-		mpRightEyeGraph->execute(pRenderContext);
-		pRenderContext->blit(mpRightEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
-		//pRenderContext->blit(mpRightEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
-		//pRenderContext->blit(mpRightEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		if (!mLeftEyeOnly)
+		{
+			// Right eye
+			scene->setActiveCamera(camIdx);
+			setupCamera(VRDisplay::Eye::Right);
+			mpRightEyeGraph->execute(pRenderContext);
+			pRenderContext->blit(mpRightEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+			//pRenderContext->blit(mpRightEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+			//pRenderContext->blit(mpRightEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+		}
 
 		mpVrFbo->submitToHmd(pRenderContext);
 		blitTexture(pRenderContext, pTargetFbo.get(), mpVrFbo->getEyeResourceView(VRDisplay::Eye::Left), 0);

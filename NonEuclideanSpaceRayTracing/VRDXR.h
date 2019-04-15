@@ -102,6 +102,8 @@ private:
 	Gui::DropdownList mRenderModeList;
 	Gui::DropdownList mRayTracingVersionList;
 
+	bool mLeftEyeOnly = false;
+
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
 	VrFbo::UniquePtr mpVrFbo;

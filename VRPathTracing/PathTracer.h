@@ -57,6 +57,7 @@ private:
 
 	FirstPersonCameraController mCamController;
 	bool mUseHMD = false;
+	bool mLeftEyeOnly = false;
 
 	/*enum CamMovementSource
 	{

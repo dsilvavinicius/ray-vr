@@ -60,6 +60,8 @@ void VRDXR::onGuiRender(SampleCallbacks* pSample, Gui* pGui)
 		pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 	}
 
+	pGui->addCheckBox("Left Eye Only", mLeftEyeOnly);
+
 	pGui->addDropdown("Render Mode", mRenderModeList, (uint32_t&)mRenderMode);
 	pGui->addDropdown("Ray Tracing Version", mRayTracingVersionList, (uint32_t&)mRayTracingVersion);
 
@@ -137,6 +139,9 @@ void VRDXR::onLoad(SampleCallbacks* pSample, RenderContext* pRenderContext)
 
 void VRDXR::renderRaster(RenderContext* pContext)
 {
+	ConstantBuffer::SharedPtr pCB = mpStereoVars->getConstantBuffer("PerFrameCB");
+	pCB["gLeftEyeOnly"] = mLeftEyeOnly;
+
 	mpGraphicsState->setProgram(mpStereoProgram);
 	pContext->setGraphicsVars(mpStereoVars);
 
@@ -175,6 +180,7 @@ void VRDXR::setPerFrameVars(const Fbo* pTargetFbo, const CameraData& rightEyeCam
 	pCB["RightCamW"] = rightEyeCamData.cameraW;
 
 	pCB["clearColor"] = kClearColor;
+	pCB["leftEyeOnly"] = mLeftEyeOnly;
 
 	switch (mRayTracingVersion)
 	{
@@ -207,6 +213,7 @@ void VRDXR::calcRayDirs(RenderContext* pContext, const CameraData& rightEyeCamDa
 
 	ConstantBuffer::SharedPtr pCB = mpRayTexVars->getConstantBuffer("PerFrameCB");
 	pCB["gRightEyePosW"] = rightEyeCamData.posW;
+	pCB["gLeftEyeOnly"] = mLeftEyeOnly;
 
 	mpGraphicsState->setProgram(mpRayTexProgram);
 	pContext->setGraphicsVars(mpRayTexVars);
@@ -229,6 +236,7 @@ void VRDXR::renderRasterWithRays(RenderContext* pContext)
 
 	ConstantBuffer::SharedPtr pCB = mpRayRasterVars->getConstantBuffer("PerFrameCB");
 	pCB["gRightEyePosW"] = rightEyeCamData.posW;
+	pCB["gLeftEyeOnly"] = mLeftEyeOnly;
 
 	mpGraphicsState->setProgram(mpRayRasterProgram);
 	pContext->setGraphicsVars(mpRayRasterVars);

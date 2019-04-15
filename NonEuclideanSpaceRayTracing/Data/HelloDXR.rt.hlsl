@@ -52,6 +52,7 @@ shared cbuffer PerFrameCB
 	float3 RightCamW;
 
 	float4 clearColor;
+    bool leftEyeOnly;
 };
 
 struct PrimaryRayData
@@ -293,7 +294,11 @@ void traceRaysInvViewProj()
     float2 ndc = float2(2, -2) * pixelCenter + float2(-1, 1);
 
     gOutput[launchIndex] = tracePrimaryRay(invViewProj, ndc);
-    gRightOutput[launchIndex] = tracePrimaryRay(invRightViewProj, ndc);
+
+    if (!leftEyeOnly)
+    {
+        gRightOutput[launchIndex] = tracePrimaryRay(invRightViewProj, ndc);
+    }
 }
 
 void traceRaysInvView()
@@ -303,7 +308,11 @@ void traceRaysInvView()
     float aspectRatio = viewportDims.x / viewportDims.y;
 
     gOutput[launchIndex.xy] = tracePrimaryRay(invView, d, aspectRatio);
-    gRightOutput[launchIndex.xy] = tracePrimaryRay(invRightView, d, aspectRatio);
+
+    if (!leftEyeOnly)
+    {
+        gRightOutput[launchIndex.xy] = tracePrimaryRay(invRightView, d, aspectRatio);
+    }
 }
 
 // In this version the ray directions are created using the camera vectors. 
@@ -314,14 +323,22 @@ void traceRaysCamVecs()
 	float2 ndc = float2(2, -2) * pixelCenter + float2(-1, 1);
 
     gOutput[launchIndex.xy] = tracePrimaryRay(ndc, gCamera.posW, gCamera.cameraU, gCamera.cameraV, gCamera.cameraW);
-    gRightOutput[launchIndex.xy] = tracePrimaryRay(ndc, RightCamPos, RightCamU, RightCamV, RightCamW);
+    
+    if (!leftEyeOnly)
+    {
+        gRightOutput[launchIndex.xy] = tracePrimaryRay(ndc, RightCamPos, RightCamU, RightCamV, RightCamW);
+    }
 }
 
 // In this version the ray directions are provided in a texture.
 void traceRaysTex()
 {
 	gOutput[DispatchRaysIndex().xy] = tracePrimaryRay(gCamera.posW, gLeftEyePos);
-	gRightOutput[DispatchRaysIndex().xy] = tracePrimaryRay(RightCamPos, gRightEyePos);
+
+    if (!leftEyeOnly)
+    {
+        gRightOutput[DispatchRaysIndex().xy] = tracePrimaryRay(RightCamPos, gRightEyePos);
+    }
 }
 
 [shader("raygeneration")]
