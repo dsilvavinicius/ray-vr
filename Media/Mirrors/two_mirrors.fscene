@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "two_mirrors.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/two_mirrors.fbx",
             "name": "two_mirrors",
             "material": {
                 "shading_model": "spec_gloss"
@@ -54,6 +54,20 @@
             ],
             "opening_angle": 180.0,
             "penumbra_angle": 0.0
+        },
+        {
+            "name": "DirLight0",
+            "type": "dir_light",
+            "intensity": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "direction": [
+                0.0,
+                -1.0,
+                0.0
+            ]
         }
     ],
     "cameras": [
