@@ -1,0 +1,99 @@
+{
+    "version": 2,
+    "scene_unit": 1.0,
+    "camera_speed": 1.0,
+    "lighting_scale": 1.0,
+    "active_camera": "Camera0",
+    "models": [
+        {
+            "file": "C:\\Users\\tiago.novello\\Documents\\one_mirror.fbx",
+            "name": "one_mirror",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "one_mirror0",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        }
+    ],
+    "lights": [
+        {
+            "name": "DirLight0",
+            "type": "dir_light",
+            "intensity": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "direction": [
+                0.0,
+                -1.0,
+                0.0
+            ]
+        },
+        {
+            "name": "PointLight0",
+            "type": "point_light",
+            "intensity": [
+                1.0,
+                1.0,
+                1.0
+            ],
+            "pos": [
+                -0.08507061004638672,
+                11.358200073242188,
+                6.989236831665039
+            ],
+            "direction": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "opening_angle": 180.0,
+            "penumbra_angle": 0.0
+        }
+    ],
+    "cameras": [
+        {
+            "name": "Camera0",
+            "pos": [
+                -4.2659149169921879,
+                8.28884506225586,
+                -27.992719650268556
+            ],
+            "target": [
+                -4.2659149169921879,
+                8.28884506225586,
+                -28.992719650268556
+            ],
+            "up": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "focal_length": 21.0,
+            "depth_range": [
+                0.10000000149011612,
+                1000.0
+            ],
+            "aspect_ratio": 1.7776999473571778
+        }
+    ]
+}
