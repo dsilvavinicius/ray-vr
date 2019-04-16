@@ -1,5 +1,6 @@
 __import Raytracing;
 __import GGXGICommon;
+#include "HostDeviceSharedMacros.h"
 
 struct PrimaryRayData
 {
@@ -108,8 +109,19 @@ float3 directWithShadows(ShadingData sd)
     [unroll]
     for (uint i = 0; i < gLightsCount; i++)
     {
-        float distToLight = length(gLights[i].posW - sd.posW);
-        float3 L = -normalize(gLights[i].dirW);
+        float3 dirToLight = gLights[i].posW - sd.posW;
+        float distToLight = length(dirToLight);
+
+        float3 L;
+        if (gLights[i].type == LightPoint)
+        {
+            L = normalize(dirToLight);
+        }
+        else
+        {
+            L = -normalize(gLights[i].dirW);
+        }
+        
         float visFactor = shootShadowRay(sd.posW, L, 0.001, distToLight);
 
         finalColor += visFactor * evalMaterial(sd, gLights[i], 1).color.xyz;
