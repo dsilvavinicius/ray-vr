@@ -118,8 +118,19 @@ float3 ggxDirect(inout uint rndSeed, ShadingData sd)
     ShadingResult sr = evalMaterial(sd, gLights[lightIndex], 1.0f);
 
     // Shoot our shadow ray to our randomly selected light
-    float distToLight = length(ld.posW - sd.posW);
-    float3 L = -normalize(ld.dirW);
+    float3 dirToLight = ld.posW - sd.posW;
+    float distToLight = length(dirToLight);
+
+    float3 L;
+    if (ld.type == LightPoint)
+    {
+        L = normalize(dirToLight);
+    }
+    else
+    {
+        L = -normalize(ld.dirW);
+    }
+
     float shadowMult = float(gLightsCount) * shootShadowRay(sd.posW, L, gMinT, distToLight);
 
     return shadowMult * sr.color.rgb;
