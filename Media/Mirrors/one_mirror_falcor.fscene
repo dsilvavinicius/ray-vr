@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\one_mirror.fbx",
+            "file": "one_mirror.fbx",
             "name": "one_mirror",
             "material": {
                 "shading_model": "metal_rough"
