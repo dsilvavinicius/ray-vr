@@ -216,10 +216,10 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 	}
 }
 
-RenderGraph::SharedPtr PathTracer::createRenderGraph(SampleCallbacks* pCallbacks) const
+void PathTracer::createRenderGraph(SampleCallbacks* pCallbacks, RenderGraph::SharedPtr& outRenderGraph)
 {
-	auto renderGraph = RenderGraph::create("Path Tracer");
-	renderGraph->addPass(GBufferRaster::create(), "GBuffer");
+	outRenderGraph = RenderGraph::create("Path Tracer");
+	outRenderGraph->addPass(GBufferRaster::create(), "GBuffer");
 
 	auto params = Dictionary();
 	params["useBlackEnvMap"] = true;
@@ -227,38 +227,36 @@ RenderGraph::SharedPtr PathTracer::createRenderGraph(SampleCallbacks* pCallbacks
 
 	auto pGIPass = GGXGlobalIllumination::create(params);
 
-	renderGraph->addPass(pGIPass, "GlobalIllumination");
-	renderGraph->addPass(TemporalAccumulation::create(params), "TemporalAccumulation");
-	renderGraph->addPass(ToneMapping::create(), "ToneMapping");
+	outRenderGraph->addPass(pGIPass, "GlobalIllumination");
+	outRenderGraph->addPass(TemporalAccumulation::create(params), "TemporalAccumulation");
+	outRenderGraph->addPass(ToneMapping::create(), "ToneMapping");
 
-	renderGraph->addEdge("GBuffer.posW", "GlobalIllumination.posW");
-	renderGraph->addEdge("GBuffer.normW", "GlobalIllumination.normW");
-	renderGraph->addEdge("GBuffer.diffuseOpacity", "GlobalIllumination.diffuseOpacity");
-	renderGraph->addEdge("GBuffer.specRough", "GlobalIllumination.specRough");
-	renderGraph->addEdge("GBuffer.emissive", "GlobalIllumination.emissive");
-	renderGraph->addEdge("GBuffer.matlExtra", "GlobalIllumination.matlExtra");
+	outRenderGraph->addEdge("GBuffer.posW", "GlobalIllumination.posW");
+	outRenderGraph->addEdge("GBuffer.normW", "GlobalIllumination.normW");
+	outRenderGraph->addEdge("GBuffer.diffuseOpacity", "GlobalIllumination.diffuseOpacity");
+	outRenderGraph->addEdge("GBuffer.specRough", "GlobalIllumination.specRough");
+	outRenderGraph->addEdge("GBuffer.emissive", "GlobalIllumination.emissive");
+	outRenderGraph->addEdge("GBuffer.matlExtra", "GlobalIllumination.matlExtra");
 
-	renderGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
+	outRenderGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
 
-	//renderGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
+	//outRenderGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
 
-	//renderGraph->markOutput("ToneMapping.dst");
-	renderGraph->markOutput("TemporalAccumulation.output");
-	//renderGraph->markOutput("GlobalIllumination.output");
+	//outRenderGraph->markOutput("ToneMapping.dst");
+	outRenderGraph->markOutput("TemporalAccumulation.output");
+	//outRenderGraph->markOutput("GlobalIllumination.output");
 
 	// When GI pass changes, tell temporal accumulation to reset
-	pGIPass->setPassChangedCB([&]() {(*renderGraph->getPassesDictionary())["_dirty"] = true; });
+	pGIPass->setPassChangedCB([&]() {(*outRenderGraph->getPassesDictionary())["_dirty"] = true; });
 
 	// Initialize the graph's record of what the swapchain size is, for texture creation
-	renderGraph->onResize(pCallbacks->getCurrentFbo().get());
-
-	return renderGraph;
+	outRenderGraph->onResize(pCallbacks->getCurrentFbo().get());
 }
 
 void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderContext)
 {
-	mpLeftEyeGraph = createRenderGraph(pCallbacks);
-	mpRightEyeGraph = createRenderGraph(pCallbacks);
+	createRenderGraph(pCallbacks, mpLeftEyeGraph);
+	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
 	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 
