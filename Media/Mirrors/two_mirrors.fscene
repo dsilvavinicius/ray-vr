@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/two_mirrors.fbx",
+            "file": "two_mirrors.fbx",
             "name": "two_mirrors",
             "material": {
                 "shading_model": "spec_gloss"
