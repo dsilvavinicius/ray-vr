@@ -46,7 +46,7 @@ public:
 
 private:
     void toggleCameraPathState();
-	RenderGraph::SharedPtr createRenderGraph(SampleCallbacks* pCallbacks) const;
+	void createRenderGraph(SampleCallbacks* pCallbacks, RenderGraph::SharedPtr& outRenderGraph);
 
 	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
 
