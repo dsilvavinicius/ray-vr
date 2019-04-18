@@ -94,12 +94,9 @@ void GGXGlobalIllumRayGen()
                 break;
             }
             case REFLECTIONS:
-            {
-                shadeColor += tracePrimaryRay(sd.posW).rgb;
-                break;
-            }
             case PERFECT_MIRROR:
             {
+                shadeColor += tracePrimaryRay(sd.posW).rgb;
                 break;
             }
             case PATH_TRACING: // Path tracing

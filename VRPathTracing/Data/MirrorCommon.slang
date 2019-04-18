@@ -1,6 +1,7 @@
 __import Raytracing;
 __import GGXGICommon;
 #include "HostDeviceSharedMacros.h"
+#include "ShaderTypes.h"
 
 struct PrimaryRayData
 {
@@ -55,8 +56,11 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
         TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
         reflectColor = secondaryRay.color.rgb;
 
-        float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
-        reflectColor *= 20 / falloff;
+        if (gMaterial.id != PERFECT_MIRROR)
+        {
+            float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
+            reflectColor *= 20 / falloff;
+        }
     }
     return reflectColor;
 }
