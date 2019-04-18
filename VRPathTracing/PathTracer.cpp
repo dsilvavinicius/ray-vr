@@ -29,6 +29,7 @@
 #include "RenderPasses/GGXGlobalIllumination.h"
 #include "RenderPasses/GBufferRaster.h"
 #include "RenderPasses/TemporalAccumulation.h"
+#include "Data/ShaderTypes.h"
 #include <sstream>
 
 namespace
@@ -85,10 +86,11 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	}
 
 	Gui::DropdownList dropList;
-	dropList.push_back({ 0, "Raster" });
-	dropList.push_back({ 1, "Direct Light With Shadows" });
-	dropList.push_back({ 2, "Mirror-like Reflections" });
-	dropList.push_back({ 3, "Path Tracing" });
+	dropList.push_back({ RASTER, "Raster" });
+	dropList.push_back({ RASTER_PLUS_SHADOWS, "Raster plus Shadows" });
+	dropList.push_back({ REFLECTIONS, "Reflections" });
+	dropList.push_back({ PERFECT_MIRROR, "Perfect Mirror" });
+	dropList.push_back({ PATH_TRACING, "Path Tracing" });
 
 	if (pGui->addDropdown("Global Material ID", dropList, mGlobalMaterialId))
 	{
