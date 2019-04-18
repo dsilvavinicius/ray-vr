@@ -43,7 +43,7 @@ float4 debugVertex(float3 posW, float3 normalW)
 float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, uint hitDepth)
 {
     float3 reflectColor = float3(0, 0, 0);
-    if (hitDepth < 1)
+    if (hitDepth < gMaxDepth)
     {
         PrimaryRayData secondaryRay;
         //secondaryRay.color = float4(1.f, 1.f, 1.f, 1.f);
