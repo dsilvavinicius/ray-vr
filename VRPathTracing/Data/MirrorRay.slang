@@ -33,6 +33,7 @@ __import Raytracing;
 __import MirrorCommon;
 __import GGXGICommon;
 __import Helpers;
+#include "ShaderTypes.h"
 
 [shader("anyhit")]
 void primaryAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
@@ -72,19 +73,26 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     //hitData.color = float4(posW, 1.f);
     //hitData.hitT = hitT;
 #else
-    ShadingData sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
-
     // Shoot a reflection ray
     float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r);
-    
-    float3 color = directWithShadows(sd);
 
-    hitData.color.rgb = color;
+    if (gMaterial.id == PERFECT_MIRROR)
+    {
+        hitData.color.rgb = reflectColor;
+    }
+    else
+    {
+        ShadingData sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
+        float3 color = directWithShadows(sd);
+        hitData.color.rgb = color;
+
+        // A very non-PBR inaccurate way to do reflections
+        float roughness = min(0.5, max(1e-8, sd.roughness));
+        hitData.color.rgb += sd.specular * reflectColor * (roughness * roughness);
+        hitData.color.rgb += sd.emissive;
+    }
+
     hitData.hitT = hitT;
-    // A very non-PBR inaccurate way to do reflections
-    float roughness = min(0.5, max(1e-8, sd.roughness));
-    hitData.color.rgb += sd.specular * reflectColor * (roughness * roughness);
-    hitData.color.rgb += sd.emissive;
     hitData.color.a = 1;
 #endif
 }

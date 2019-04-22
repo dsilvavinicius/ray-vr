@@ -129,6 +129,7 @@
     <ClCompile Include="RenderPasses\TemporalAccumulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Data\ShaderTypes.h" />
     <ClInclude Include="PathTracer.h" />
     <ClInclude Include="RenderPasses\GBuffer.h" />
     <ClInclude Include="RenderPasses\GBufferRaster.h" />

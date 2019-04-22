@@ -30,6 +30,7 @@ import Shading;
 import Helpers;
 import GGXGICommon;
 import MirrorCommon;
+#include "ShaderTypes.h"
 
 [shader("raygeneration")]
 void GGXGlobalIllumRayGen()
@@ -82,36 +83,37 @@ void GGXGlobalIllumRayGen()
 
         switch (matId)
         {
-        case 0: // Raster
-        {
-            shadeColor += raster(sd);
-            break;
-        }
-        case 1: // Raster with shadows
-        {
-            shadeColor += directWithShadows(sd);
-            break;
-        }
-        case 2: // Full mirror reflection
-        {
-            shadeColor += tracePrimaryRay(sd.posW).rgb;
-            break;
-        }
-        case 3: // Path tracing
-        {
-            // Direct lighting to a random light in the scene
-            if (gDoDirectGI)
-                shadeColor += ggxDirect(randSeed, sd);
+            case RASTER:
+            {
+                shadeColor += raster(sd);
+                break;
+            }
+            case RASTER_PLUS_SHADOWS:
+            {
+                shadeColor += directWithShadows(sd);
+                break;
+            }
+            case REFLECTIONS:
+            case PERFECT_MIRROR:
+            {
+                shadeColor += tracePrimaryRay(sd.posW).rgb;
+                break;
+            }
+            case PATH_TRACING: // Path tracing
+            {
+                // Direct lighting to a random light in the scene
+                if (gDoDirectGI)
+                    shadeColor += ggxDirect(randSeed, sd);
 
-            // Indirect lighting for global illumination
-            if (gDoIndirectGI && (gMaxDepth > 0))
-                shadeColor += ggxIndirect(randSeed, sd, geomN);
+                // Indirect lighting for global illumination
+                if (gDoIndirectGI && (gMaxDepth > 0))
+                    shadeColor += ggxIndirect(randSeed, sd, geomN);
 
-            // Zero out any bad samples
-            bool colorsNan = any(isnan(shadeColor));
-            shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
-            break;
-        }
+                // Zero out any bad samples
+                bool colorsNan = any(isnan(shadeColor));
+                shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
+                break;
+            }
         }
     }
     

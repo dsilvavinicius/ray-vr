@@ -1,6 +1,7 @@
 __import Raytracing;
 __import GGXGICommon;
 #include "HostDeviceSharedMacros.h"
+#include "ShaderTypes.h"
 
 struct PrimaryRayData
 {
@@ -42,11 +43,11 @@ float4 debugVertex(float3 posW, float3 normalW)
 float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, uint hitDepth)
 {
     float3 reflectColor = float3(0, 0, 0);
-    if (hitDepth == 0)
+    if (hitDepth < gMaxDepth)
     {
         PrimaryRayData secondaryRay;
         //secondaryRay.color = float4(1.f, 1.f, 1.f, 1.f);
-        secondaryRay.depth.r = 1;
+        secondaryRay.depth.r = hitDepth + 1;
         RayDesc ray;
         ray.Origin = worldOrigin;
         ray.Direction = reflect(worldRayDir, v.normalW);
@@ -55,8 +56,11 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
         TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
         reflectColor = secondaryRay.color.rgb;
 
-        float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
-        reflectColor *= 20 / falloff;
+        if (gMaterial.id != PERFECT_MIRROR)
+        {
+            float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
+            reflectColor *= 20 / falloff;
+        }
     }
     return reflectColor;
 }

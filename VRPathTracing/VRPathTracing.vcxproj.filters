@@ -34,6 +34,9 @@
     <ClInclude Include="RenderPasses\TemporalAccumulation.h">
       <Filter>RenderPasses</Filter>
     </ClInclude>
+    <ClInclude Include="Data\ShaderTypes.h">
+      <Filter>Data</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang">
