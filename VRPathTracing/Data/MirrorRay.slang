@@ -74,9 +74,31 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     //hitData.hitT = hitT;
 #else
     // Shoot a reflection ray
-    float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r);
+	
+	if ( gMaterial.id == TORUS)
+	{
+		VertexOut v1 = getVertexAttributes(triangleIndex, float3(0,0,1));
+		VertexOut v2 = getVertexAttributes(triangleIndex, float3(0,1,0));
+		VertexOut v3 = getVertexAttributes(triangleIndex, float3(1,0,0));
 
-    if (gMaterial.id == PERFECT_MIRROR)
+		float len1 = length(v2.posW - v1.posW);
+		float len2 = length(v3.posW - v1.posW);
+
+		if (len1 < len2)
+		{
+			posW = posW + len1*v.normalW;
+		}
+		else
+		{
+			posW = posW + len2*v.normalW;
+		}
+
+	}
+    
+	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r);
+
+
+    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS)
     {
         hitData.color.rgb = reflectColor;
     }

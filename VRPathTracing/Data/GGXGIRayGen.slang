@@ -93,12 +93,15 @@ void GGXGlobalIllumRayGen()
                 shadeColor += directWithShadows(sd);
                 break;
             }
+
+			case TORUS:
             case REFLECTIONS:
             case PERFECT_MIRROR:
             {
                 shadeColor += tracePrimaryRay(sd.posW).rgb;
                 break;
             }
+
             case PATH_TRACING: // Path tracing
             {
                 // Direct lighting to a random light in the scene

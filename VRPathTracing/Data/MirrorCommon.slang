@@ -50,13 +50,22 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
         secondaryRay.depth.r = hitDepth + 1;
         RayDesc ray;
         ray.Origin = worldOrigin;
-        ray.Direction = reflect(worldRayDir, v.normalW);
-        ray.TMin = 0.001;
+
+		if ( gMaterial.id == TORUS) 
+		{
+			ray.Direction = worldRayDir;
+		}
+		else
+		{
+			ray.Direction = reflect(worldRayDir, v.normalW);
+		}
+        
+		ray.TMin = 0.001;
         ray.TMax = 100000;
         TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
         reflectColor = secondaryRay.color.rgb;
 
-        if (gMaterial.id != PERFECT_MIRROR)
+        if (gMaterial.id != PERFECT_MIRROR && gMaterial.id != TORUS)
         {
             float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
             reflectColor *= 20 / falloff;
