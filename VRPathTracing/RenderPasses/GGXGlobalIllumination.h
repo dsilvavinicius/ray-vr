@@ -74,8 +74,8 @@ private:
 
     EnvMapMode mEnvMapMode = EnvMapMode::Scene;
 
-    int32_t         mUserSpecifiedRayDepth = 2; ///<  What is the current maximum ray depth
-    const int32_t   mMaxPossibleRayDepth = 4;   ///<  The largest ray depth we support (without recompile)
+    int32_t         mUserSpecifiedRayDepth = 4; ///<  What is the current maximum ray depth
+    const int32_t   mMaxPossibleRayDepth = 20;   ///<  The largest ray depth we support (without recompile)
 
     // A frame counter; needs to start at a different value than passes, since it uses to seed the RNG
     uint32_t mFrameCount = 0x1234u; ///< A frame counter to vary random numbers over time

@@ -45,6 +45,12 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
     float3 reflectColor = float3(0, 0, 0);
     if (hitDepth < gMaxDepth)
     {
+		//fog
+		float color = (float)hitDepth/gMaxDepth;
+			  color *=color;
+			  color *=color;
+			  color *=color;
+			  
         PrimaryRayData secondaryRay;
         //secondaryRay.color = float4(1.f, 1.f, 1.f, 1.f);
         secondaryRay.depth.r = hitDepth + 1;
@@ -63,7 +69,7 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
 		ray.TMin = 0.001;
         ray.TMax = 100000;
         TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
-        reflectColor = secondaryRay.color.rgb;
+        reflectColor += secondaryRay.color.rgb + color;
 
         if (gMaterial.id != PERFECT_MIRROR && gMaterial.id != TORUS)
         {

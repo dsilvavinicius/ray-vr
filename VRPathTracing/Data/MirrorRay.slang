@@ -73,16 +73,29 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     //hitData.color = float4(posW, 1.f);
     //hitData.hitT = hitT;
 #else
-    // Shoot a reflection ray
-	
+    // translate the ray's origin
 	if ( gMaterial.id == TORUS)
 	{
-		VertexOut v1 = getVertexAttributes(triangleIndex, float3(0,0,1));
-		VertexOut v2 = getVertexAttributes(triangleIndex, float3(0,1,0));
-		VertexOut v3 = getVertexAttributes(triangleIndex, float3(1,0,0));
+	    uint3 indices = getIndices(triangleIndex);
+       
+        float3 v1 = asfloat(gPositions.Load3((indices[0] * 3) * 4));
+			   v1 = mul(float4(v1, 1.f), gWorldMat[0]).xyz;
 
-		float len1 = length(v2.posW - v1.posW);
-		float len2 = length(v3.posW - v1.posW);
+		float3 v2 = asfloat(gPositions.Load3((indices[1] * 3) * 4));
+		       v2 = mul(float4(v2, 1.f), gWorldMat[0]).xyz;
+
+		float3 v3 = asfloat(gPositions.Load3((indices[2] * 3) * 4));
+	           v3 = mul(float4(v3, 1.f), gWorldMat[0]).xyz;
+
+		float len1 = length(v2 - v1);
+		float len2 = length(v3 - v1);
+
+		//VertexOut v1 = getVertexAttributes(triangleIndex, float3(0,0,1));
+		//VertexOut v2 = getVertexAttributes(triangleIndex, float3(0,1,0));
+		//VertexOut v3 = getVertexAttributes(triangleIndex, float3(1,0,0));
+
+		//float len1 = length(v2.posW - v1.posW);
+		//float len2 = length(v3.posW - v1.posW);
 
 		if (len1 < len2)
 		{
