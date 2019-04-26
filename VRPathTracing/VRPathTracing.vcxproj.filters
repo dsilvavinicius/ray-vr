@@ -37,6 +37,7 @@
     <ClInclude Include="Data\ShaderTypes.h">
       <Filter>Data</Filter>
     </ClInclude>
+    <ClInclude Include="CameraAttachment.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang">

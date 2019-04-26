@@ -28,6 +28,7 @@
 #pragma once
 #include "Falcor.h"
 #include "FalcorExperimental.h"
+#include "CameraAttachment.h"
 
 using namespace Falcor;
 using namespace std;
@@ -56,23 +57,13 @@ private:
 	RenderGraph::SharedPtr mpRightEyeGraph;
 
 	FirstPersonCameraController mCamController;
+	CameraAttachment<Falcor::Mesh>::SharedPtr mCamAttachment;
+	uint mAttachedModel = 0;
+	uint mAttachedMesh = 0;
+	uint mAttachedInstance = 0;
+
 	bool mUseHMD = false;
 	bool mLeftEyeOnly = false;
-
-	/*enum CamMovementSource
-	{
-		Forward,
-		Backward,
-		Right,
-		Left,
-		Up,
-		Down,
-		RotationXY,
-		RotationZ,
-		Count
-	};
-
-	std::bitset<CamMovementSource::Count> mCamMovement;*/
 
 	// VR
 	void initVR(Fbo* pTargetFbo);

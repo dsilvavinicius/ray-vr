@@ -73,6 +73,75 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 		toggleCameraPathState();
 	}
 
+	// Camera attachment. One mesh instance can be selected to be attached to the camera.
+	if (pGui->beginGroup("Camera Attachment"))
+	{
+		Gui::DropdownList modelAttachmentDrop;
+		modelAttachmentDrop.push_back({ 0, "None" });
+
+		for (uint i = 0; i < scene->getModelCount(); ++i)
+		{
+			stringstream ss; ss << "Model " << i;
+			modelAttachmentDrop.push_back({i + 1, ss.str().c_str()});
+		}
+		
+		if (pGui->addDropdown("Model", modelAttachmentDrop, mAttachedModel))
+		{
+			mAttachedMesh = 0;
+			mAttachedInstance = 0;
+			mCamAttachment = nullptr;
+		}
+		
+		Gui::DropdownList meshAttachmentDrop;
+		meshAttachmentDrop.push_back({ 0, "None" });
+		
+		if (mAttachedModel > 0)
+		{
+			uint meshes = scene->getModel(mAttachedModel - 1)->getMeshCount();
+			for (uint i = 0; i < meshes; ++i)
+			{
+				stringstream ss; ss << "Mesh " << i;
+				meshAttachmentDrop.push_back({i+1, ss.str().c_str()});
+			}
+
+			if (pGui->addDropdown("Mesh", meshAttachmentDrop, mAttachedMesh))
+			{
+				mAttachedInstance = 0;
+				mCamAttachment = nullptr;
+			}
+
+			Gui::DropdownList instanceAttachmentDrop;
+			instanceAttachmentDrop.push_back({ 0, "None" });
+
+			if (mAttachedMesh > 0)
+			{
+				uint instances = scene->getModel(mAttachedModel - 1)->getMeshInstanceCount(mAttachedMesh - 1);
+				for (uint i = 0; i < instances; ++i)
+				{
+					stringstream ss; ss << "Instance " << i;
+					instanceAttachmentDrop.push_back({ i + 1 , ss.str().c_str() });
+				}
+
+				if (pGui->addDropdown("Instance", instanceAttachmentDrop, mAttachedInstance))
+				{
+					if (mAttachedInstance != 0)
+					{
+						Camera::SharedPtr camera = scene->getCamera(SceneCamera::Default);
+						ObjectInstance<Mesh>::SharedPtr instance = scene->getModel(mAttachedModel - 1)->getMeshInstance(mAttachedMesh - 1, mAttachedInstance - 1);
+						scene->getPath(0)->detachObject(instance);
+						mCamAttachment = CameraAttachment<Mesh>::create(camera, instance);
+					}
+					else
+					{
+						mCamAttachment = nullptr;
+					}
+				}
+			}
+		}
+
+		pGui->endGroup();
+	}
+
 	if (pGui->addCheckBox("Meshes Visible", mInstancesVisible))
 	{
 		for (uint i = 0; i < scene->getModelCount(); ++i)
@@ -291,11 +360,23 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		{
 			scene->setActiveCamera(SceneCamera::Fps);
 		}
-		
+
 		scene->update(pCallbacks->getCurrentTime(), &mCamController);
 
 		// Left eye
 		uint camIdx = setupCamera(VRDisplay::Eye::Left);
+
+		if (mCamAttachment)
+		{
+			mCamAttachment->update();
+		}
+
+		// DEBUG
+		/*{
+			ObjectInstance<Mesh>::SharedPtr instance = scene->getModel(0)->getMeshInstance(0, 0);
+			instance->setTranslation(vec3(5.f, 5.f, 5.f), true);
+		}*/
+
 		mpLeftEyeGraph->execute(pRenderContext);
 		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
@@ -340,35 +421,6 @@ bool PathTracer::onKeyEvent(SampleCallbacks* pCallbacks, const KeyboardEvent& ke
 	if (!handled)
 	{
 		handled = mCamController.onKeyEvent(keyEvent);
-
-		/*if(handled)
-		{
-			bool keyPressed = (keyEvent.type == KeyboardEvent::Type::KeyPressed);
-
-			switch (keyEvent.key)
-			{
-			case KeyboardEvent::Key::W:
-				mCamMovement[CamMovementSource::Forward] = keyPressed;
-				break;
-			case KeyboardEvent::Key::S:
-				mCamMovement[CamMovementSource::Backward] = keyPressed;
-				break;
-			case KeyboardEvent::Key::A:
-				mCamMovement[CamMovementSource::Right] = keyPressed;
-				break;
-			case KeyboardEvent::Key::D:
-				mCamMovement[CamMovementSource::Left] = keyPressed;
-				break;
-			case KeyboardEvent::Key::Q:
-				mCamMovement[CamMovementSource::Down] = keyPressed;
-				break;
-			case KeyboardEvent::Key::E:
-				mCamMovement[CamMovementSource::Up] = keyPressed;
-				break;
-			default:
-				break;
-			}
-		}*/
 	}
     
 	return handled;
@@ -386,27 +438,6 @@ bool PathTracer::onMouseEvent(SampleCallbacks* pCallbacks, const MouseEvent& mou
 	if (!handled)
 	{
 		handled = mCamController.onMouseEvent(mouseEvent);
-
-		/*if (handled)
-		{
-			switch (mouseEvent.type)
-			{
-			case MouseEvent::Type::LeftButtonDown:
-				mCamMovement[CamMovementSource::RotationXY] = true;
-				break;
-			case MouseEvent::Type::LeftButtonUp:
-				mCamMovement[CamMovementSource::RotationXY] = false;
-				break;
-			case MouseEvent::Type::RightButtonDown:
-				mCamMovement[CamMovementSource::RotationZ] = true;
-				break;
-			case MouseEvent::Type::RightButtonUp:
-				mCamMovement[CamMovementSource::RotationZ] = false;
-				break;
-			default:
-				break;
-			}
-		}*/
 	}
 
 	return handled;
