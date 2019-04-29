@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "six_mirrors_room.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/six_mirrors_room.fbx",
             "name": "six_mirrors_room",
             "material": {
                 "shading_model": "metal_rough"
@@ -33,7 +33,7 @@
             ]
         },
         {
-            "file": "suzanne_2.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/suzanne_2.fbx",
             "name": "suzanne",
             "material": {
                 "shading_model": "metal_rough"
@@ -60,7 +60,7 @@
             ]
         },
         {
-            "file": "six_mirrors_room_only_edges.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/six_mirrors_room_only_edges.fbx",
             "name": "six_mirrors_room_only_edges",
             "material": {
                 "shading_model": "metal_rough"
@@ -81,6 +81,33 @@
                     "rotation": [
                         0.0,
                         -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors\\hand.fbx",
+            "name": "hand",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "hand0",
+                    "translation": [
+                        1.6933538913726807,
+                        4.207431793212891,
+                        0.08905410766601563
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        -75.80028533935547,
                         -0.0
                     ]
                 }
