@@ -25,10 +25,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
-
-//#define DEBUG_VERTEX_ATTRIBS
-//#define DEBUG_RAY_GENERATION
-
 __import Raytracing;
 __import MirrorCommon;
 __import GGXGICommon;
@@ -66,15 +62,6 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     float3 posW = rayOrigW + hitT * rayDirW;
     // prepare the shading data
     VertexOut v = getVertexAttributes(triangleIndex, attribs);
-    
-#ifdef DEBUG_VERTEX_ATTRIBS
-    //hitData.color = debugVertex(v.posW, v.normalW);
-    float len = length(gLeftRayDirs[DispatchRaysIndex().xy].xyz - posW);
-	hitData.distance += len;
-    hitData.color = float4(len, len, len, 1.f);
-    //hitData.color = float4(posW, 1.f);
-    //hitData.hitT = hitT;
-#else
 
     // translate the ray's origin
 	if ( gMaterial.id == TORUS)
@@ -111,7 +98,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 
 	}
     
-    hitData.distance += length(hitT * rayDirW);
+    hitData.distance += hitT;
 
 	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
@@ -134,5 +121,4 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 
     hitData.hitT = hitT;
     hitData.color.a = 1;
-#endif
 }

@@ -91,7 +91,6 @@ float4 tracePrimaryRay(RayDesc ray)
 
 float4 tracePrimaryRay(float3 posW)
 {
-#ifndef DEBUG_RAY_GENERATION
     RayDesc ray;
     ray.Origin = gCamera.posW;
 	//ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
@@ -100,9 +99,6 @@ float4 tracePrimaryRay(float3 posW)
     ray.TMin = 0;
     ray.TMax = 100000;
     return tracePrimaryRay(ray);
-#else
-    return float4(posW, 1.f);
-#endif
 }
 
 /**  Evaluates direct lighting without shadows as a raster program would do.

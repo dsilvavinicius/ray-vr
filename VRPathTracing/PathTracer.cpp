@@ -366,6 +366,8 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		// Left eye
 		uint camIdx = setupCamera(VRDisplay::Eye::Left);
 
+		// TODO: Manage collision with the fundamental domain boundary.
+
 		if (mCamAttachment)
 		{
 			mCamAttachment->update();
