@@ -62,6 +62,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     float hitT = RayTCurrent();
     uint triangleIndex = PrimitiveIndex();
 
+
     float3 posW = rayOrigW + hitT * rayDirW;
     // prepare the shading data
     VertexOut v = getVertexAttributes(triangleIndex, attribs);
@@ -69,10 +70,12 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 #ifdef DEBUG_VERTEX_ATTRIBS
     //hitData.color = debugVertex(v.posW, v.normalW);
     float len = length(gLeftRayDirs[DispatchRaysIndex().xy].xyz - posW);
+	hitData.distance += len;
     hitData.color = float4(len, len, len, 1.f);
     //hitData.color = float4(posW, 1.f);
     //hitData.hitT = hitT;
 #else
+
     // translate the ray's origin
 	if ( gMaterial.id == TORUS)
 	{
@@ -108,7 +111,9 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 
 	}
     
-	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r);
+    hitData.distance += length(hitT * rayDirW);
+
+	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
 
     if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS)
