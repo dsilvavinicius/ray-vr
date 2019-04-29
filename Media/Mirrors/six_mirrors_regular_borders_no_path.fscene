@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/six_mirrors_room.fbx",
+            "file": "six_mirrors_room.fbx",
             "name": "six_mirrors_room",
             "material": {
                 "shading_model": "metal_rough"
@@ -33,7 +33,7 @@
             ]
         },
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/suzanne_2.fbx",
+            "file": "suzanne_2.fbx",
             "name": "suzanne",
             "material": {
                 "shading_model": "metal_rough"
@@ -60,7 +60,7 @@
             ]
         },
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/six_mirrors_room_only_edges.fbx",
+            "file": "six_mirrors_room_only_edges.fbx",
             "name": "six_mirrors_room_only_edges",
             "material": {
                 "shading_model": "metal_rough"
@@ -87,7 +87,7 @@
             ]
         },
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors\\hand.fbx",
+            "file": "hand.fbx",
             "name": "hand",
             "material": {
                 "shading_model": "metal_rough"
