@@ -332,6 +332,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 
 	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 
+	mControllerManager = ControllerManager::create(mpLeftEyeGraph->getScene());
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
 }
 
@@ -372,6 +373,8 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		{
 			mCamAttachment->update(world);
 		}
+
+		mControllerManager->update();
 
 		mpLeftEyeGraph->execute(pRenderContext);
 		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));

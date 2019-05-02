@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ControllerAttachment.cpp" />
     <ClCompile Include="PathTracer.cpp" />
     <ClCompile Include="RenderPasses\GBufferRaster.cpp" />
     <ClCompile Include="RenderPasses\GGXGlobalIllumination.cpp" />
@@ -130,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CameraAttachment.h" />
+    <ClInclude Include="ControllerAttachment.h" />
     <ClInclude Include="Data\ShaderTypes.h" />
     <ClInclude Include="PathTracer.h" />
     <ClInclude Include="RenderPasses\GBuffer.h" />

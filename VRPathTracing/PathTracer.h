@@ -29,6 +29,7 @@
 #include "Falcor.h"
 #include "FalcorExperimental.h"
 #include "CameraAttachment.h"
+#include "ControllerAttachment.h"
 
 using namespace Falcor;
 using namespace std;
@@ -61,6 +62,8 @@ private:
 	uint mAttachedModel = 0;
 	uint mAttachedMesh = 0;
 	uint mAttachedInstance = 0;
+
+	ControllerManager::UniquePtr mControllerManager;
 
 	bool mUseHMD = false;
 	bool mLeftEyeOnly = false;
