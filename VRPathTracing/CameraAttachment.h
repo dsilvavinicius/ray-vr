@@ -9,23 +9,23 @@ class CameraAttachment
 public:
 	using SharedPtr = std::shared_ptr<CameraAttachment<T>>;
 	
-	static SharedPtr create(Falcor::Camera::SharedConstPtr camera, typename Falcor::ObjectInstance<T>::SharedPtr attachment) { return SharedPtr(new CameraAttachment(camera, attachment)); }
+	static SharedPtr create(Falcor::Camera::SharedPtr camera, typename Falcor::ObjectInstance<T>::SharedPtr attachment) { return SharedPtr(new CameraAttachment(camera, attachment)); }
 
 	~CameraAttachment();
 	
 	void update();
 
 private:
-	CameraAttachment(Falcor::Camera::SharedConstPtr camera, typename Falcor::ObjectInstance<T>::SharedPtr attachment);
+	CameraAttachment(Falcor::Camera::SharedPtr camera, typename Falcor::ObjectInstance<T>::SharedPtr attachment);
 	void update(float3 translation, float3 up, float3 target);
-	Falcor::Camera::SharedConstPtr mCamera;
+	Falcor::Camera::SharedPtr mCamera;
 	typename Falcor::ObjectInstance<T>::SharedPtr mAttachment;
 
 	mat4 mOriginalTransform; // The original transformation of the attached object. It is restored when the attachment ends.
 };
 
 template< typename T >
-CameraAttachment< T >::CameraAttachment(Falcor::Camera::SharedConstPtr camera, typename Falcor::ObjectInstance<T>::SharedPtr attachment)
+CameraAttachment< T >::CameraAttachment(Falcor::Camera::SharedPtr camera, typename Falcor::ObjectInstance<T>::SharedPtr attachment)
 	: mOriginalTransform(attachment->getTransformMatrix()),
 	mCamera(camera),
 	mAttachment(attachment)
@@ -47,16 +47,14 @@ void CameraAttachment<T>::update()
 	const mat4& view = mCamera->getViewMatrix();
 	float3 up(view[0][1], view[1][1], view[2][1]);
 	float3 target(view[0][2], view[1][2], view[2][2]);
-	
-	update(mCamera->getPosition() + target * 1.0f, up, target);
+
+	update(mCamera->getPosition(), up, target);
 }
 
 template< typename T >
-void CameraAttachment<T>::update(float3 translation, float3 up, float3 target)
+void CameraAttachment<T>::update(float3 position, float3 up, float3 target)
 {
-	mAttachment->setTranslation(translation, false);
-	mAttachment->setUpVector(up);
-	mAttachment->setTarget(translation + target);
+	mAttachment->move(position, position + target, up);
 }
 
 #endif
