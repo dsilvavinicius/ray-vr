@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "C:\\Users\\dsilva.vinicius\\Documents\\non_euclidean_space_ray_tracing\\NonEuclideanSpaceRayTracing\\Media\\Mirrors/six_mirrors_room.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/six_mirrors_room.fbx",
             "name": "six_mirrors_room",
             "material": {
                 "shading_model": "metal_rough"
@@ -29,11 +29,29 @@
                         -0.0,
                         -0.0
                     ]
+                },
+                {
+                    "name": "six_mirrors_room1",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.20000000298023225,
+                        0.20000000298023225,
+                        0.20000000298023225
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
                 }
             ]
         },
         {
-            "file": "C:\\Users\\dsilva.vinicius\\Documents\\non_euclidean_space_ray_tracing\\NonEuclideanSpaceRayTracing\\Media\\Mirrors/suzanne_3.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/suzanne_3.fbx",
             "name": "suzanne",
             "material": {
                 "shading_model": "metal_rough"
@@ -60,7 +78,7 @@
             ]
         },
         {
-            "file": "C:\\Users\\dsilva.vinicius\\Documents\\non_euclidean_space_ray_tracing\\NonEuclideanSpaceRayTracing\\Media\\Mirrors/six_mirrors_room_only_edges.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors/six_mirrors_room_only_edges.fbx",
             "name": "six_mirrors_room_only_edges",
             "material": {
                 "shading_model": "metal_rough"
@@ -87,18 +105,45 @@
             ]
         },
         {
-            "file": "C:\\Users\\dsilva.vinicius\\Documents\\non_euclidean_space_ray_tracing\\NonEuclideanSpaceRayTracing\\Media\\Mirrors/hand.fbx",
-            "name": "hand",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors\\hand1.fbx",
+            "name": "hand1",
             "material": {
                 "shading_model": "metal_rough"
             },
             "instances": [
                 {
-                    "name": "hand0",
+                    "name": "hand11",
                     "translation": [
                         0.0,
+                        1.231830358505249,
+                        0.22201138734817506
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "rotation": [
+                        7.392995834350586,
+                        12.86548137664795,
+                        -150.93214416503907
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Mirrors\\right_hand.fbx",
+            "name": "right_hand",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "right_hand0",
+                    "translation": [
                         0.0,
-                        0.0
+                        1.1896158456802369,
+                        0.5953620076179504
                     ],
                     "scaling": [
                         1.0,
@@ -108,7 +153,7 @@
                     "rotation": [
                         0.0,
                         -0.0,
-                        -0.0
+                        -161.5610809326172
                     ]
                 }
             ]
@@ -119,14 +164,14 @@
             "name": "PointLight0",
             "type": "point_light",
             "intensity": [
-                0.0,
-                0.0,
-                100.0
+                5.0,
+                5.0,
+                5.0
             ],
             "pos": [
-                0.8639321327209473,
-                2.257521152496338,
-                0.15520191192626954
+                1.656942367553711,
+                3.557903289794922,
+                1.1247315406799317
             ],
             "direction": [
                 0.0,
@@ -140,14 +185,14 @@
             "name": "PointLight1",
             "type": "point_light",
             "intensity": [
-                0.0,
-                100.0,
-                100.0
+                5.0,
+                5.0,
+                5.0
             ],
             "pos": [
-                -0.9603747129440308,
-                2.3233184814453127,
-                0.0014929771423339844
+                -1.7901314496994019,
+                0.41491371393203738,
+                -1.3896284103393555
             ],
             "direction": [
                 0.0,
