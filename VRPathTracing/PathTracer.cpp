@@ -364,13 +364,14 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		scene->update(pCallbacks->getCurrentTime(), &mCamController);
 
 		// Left eye
-		uint camIdx = setupCamera(VRDisplay::Eye::Left);
+		pair<uint, mat4> camIdxAndWorldMat = setupCamera(VRDisplay::Eye::Left);
+		uint camIdx = camIdxAndWorldMat.first;
+		mat4 world = camIdxAndWorldMat.second;
 
-		// DEBUG
-		/*{
-			ObjectInstance<Mesh>::SharedPtr instance = scene->getModel(0)->getMeshInstance(0, 0);
-			instance->setTranslation(vec3(5.f, 5.f, 5.f), true);
-		}*/
+		if (mCamAttachment)
+		{
+			mCamAttachment->update(world);
+		}
 
 		mpLeftEyeGraph->execute(pRenderContext);
 		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
@@ -489,7 +490,7 @@ void PathTracer::blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::
 	}
 }
 
-uint PathTracer::setupCamera(const VRDisplay::Eye& eye)
+pair<uint, mat4> PathTracer::setupCamera(const VRDisplay::Eye& eye)
 {
 	VRDisplay* pDisplay = VRSystem::instance()->getHMD().get();
 
@@ -507,11 +508,6 @@ uint PathTracer::setupCamera(const VRDisplay::Eye& eye)
 		world = glm::translate(world, -scene->getActiveCamera()->getPosition());
 	}
 
-	if(mCamAttachment)
-	{
-		mCamAttachment->update(world);
-	}
-
 	scene->setActiveCamera(SceneCamera::Default);
 	Camera::SharedPtr defaultCam = scene->getActiveCamera();
 	
@@ -520,7 +516,7 @@ uint PathTracer::setupCamera(const VRDisplay::Eye& eye)
 	defaultCam->setViewMatrix(view);
 	defaultCam->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
 
-	return camIdx;
+	return pair<uint, mat4>(camIdx, world);
 }
 
 int WINAPI WinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ LPSTR lpCmdLine, _In_ int nShowCmd)
