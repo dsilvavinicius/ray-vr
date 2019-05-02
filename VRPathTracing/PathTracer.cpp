@@ -330,7 +330,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 	createRenderGraph(pCallbacks, mpLeftEyeGraph);
 	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
-	loadModel(pCallbacks, "Arcade/Arcade.fscene");
+	loadModel(pCallbacks, "Mirrors/six_mirrors_regular_borders_small_scale.fscene");
 
 	mControllerManager = ControllerManager::create(mpLeftEyeGraph->getScene());
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
