@@ -129,7 +129,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 						Camera::SharedPtr camera = scene->getCamera(SceneCamera::Default);
 						ObjectInstance<Mesh>::SharedPtr instance = scene->getModel(mAttachedModel - 1)->getMeshInstance(mAttachedMesh - 1, mAttachedInstance - 1);
 						scene->getPath(0)->detachObject(instance);
-						mCamAttachment = CameraAttachment<Mesh>::create(camera, instance);
+						mCamAttachment = CameraAttachment<Mesh>::create(instance);
 					}
 					else
 					{
@@ -366,13 +366,6 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		// Left eye
 		uint camIdx = setupCamera(VRDisplay::Eye::Left);
 
-		// TODO: Manage collision with the fundamental domain boundary.
-
-		if (mCamAttachment)
-		{
-			mCamAttachment->update();
-		}
-
 		// DEBUG
 		/*{
 			ObjectInstance<Mesh>::SharedPtr instance = scene->getModel(0)->getMeshInstance(0, 0);
@@ -512,6 +505,11 @@ uint PathTracer::setupCamera(const VRDisplay::Eye& eye)
 		world = pDisplay->getWorldMatrix();
 		// Use FPS cam position to offset HMD.
 		world = glm::translate(world, -scene->getActiveCamera()->getPosition());
+	}
+
+	if(mCamAttachment)
+	{
+		mCamAttachment->update(world);
 	}
 
 	scene->setActiveCamera(SceneCamera::Default);
