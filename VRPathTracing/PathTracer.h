@@ -28,8 +28,7 @@
 #pragma once
 #include "Falcor.h"
 #include "FalcorExperimental.h"
-#include "CameraAttachment.h"
-#include "ControllerAttachment.h"
+#include "Avatar.h"
 
 using namespace Falcor;
 using namespace std;
@@ -59,11 +58,10 @@ private:
 
 	FirstPersonCameraController mCamController;
 	CameraAttachment<Falcor::Mesh>::SharedPtr mCamAttachment;
+	Avatar::UniquePtr mAvatar;
 	uint mAttachedModel = 0;
 	uint mAttachedMesh = 0;
 	uint mAttachedInstance = 0;
-
-	ControllerManager::UniquePtr mControllerManager;
 
 	bool mUseHMD = false;
 	bool mLeftEyeOnly = false;

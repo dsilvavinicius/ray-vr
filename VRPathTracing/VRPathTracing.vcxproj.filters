@@ -22,7 +22,8 @@
     <ClCompile Include="RenderPasses\TemporalAccumulation.cpp">
       <Filter>RenderPasses</Filter>
     </ClCompile>
-    <ClCompile Include="ControllerAttachment.cpp" />
+    <ClCompile Include="ControllerManager.cpp" />
+    <ClCompile Include="Avatar.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PathTracer.h" />
@@ -42,7 +43,8 @@
       <Filter>Data</Filter>
     </ClInclude>
     <ClInclude Include="CameraAttachment.h" />
-    <ClInclude Include="ControllerAttachment.h" />
+    <ClInclude Include="ControllerManager.h" />
+    <ClInclude Include="Avatar.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang">

@@ -51,33 +51,6 @@
             ]
         },
         {
-            "file": "suzanne_3.fbx",
-            "name": "suzanne",
-            "material": {
-                "shading_model": "metal_rough"
-            },
-            "instances": [
-                {
-                    "name": "suzanne0",
-                    "translation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        -0.0,
-                        -0.0
-                    ]
-                }
-            ]
-        },
-        {
             "file": "six_mirrors_room_only_edges.fbx",
             "name": "six_mirrors_room_only_edges",
             "material": {

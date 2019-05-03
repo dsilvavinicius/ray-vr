@@ -263,7 +263,7 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 
 	if (pScene != nullptr)
 	{
-		mControllerManager = ControllerManager::create(pScene);
+		mAvatar = Avatar::create(pScene);
 
 		Fbo::SharedPtr pFbo = pCallbacks->getCurrentFbo();
 		pScene->setCamerasAspectRatio(float(pFbo->getWidth()) / float(pFbo->getHeight()));
@@ -374,7 +374,10 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 			mCamAttachment->update(world);
 		}
 
-		mControllerManager->update();
+		if (mAvatar)
+		{
+			mAvatar->update(world);
+		}
 
 		mpLeftEyeGraph->execute(pRenderContext);
 		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));

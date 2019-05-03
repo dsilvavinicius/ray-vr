@@ -1,5 +1,4 @@
-#ifndef CAMERA_ATTACHMENT
-#define CAMERA_ATTACHMENT
+#pragma once
 
 #include "Falcor.h"
 
@@ -44,5 +43,3 @@ void CameraAttachment<T>::update(const mat4& view)
 
 	mAttachment->move(pos, pos + target, up);
 }
-
-#endif

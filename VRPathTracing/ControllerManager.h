@@ -1,5 +1,4 @@
-#ifndef CONTROLLER_ATTACHMENT
-#define CONTROLLER_ATTACHMENT
+#pragma once
 
 #include<Falcor.h>
 
@@ -23,6 +22,4 @@ private:
 	MeshInstance mLeftHand;
 	MeshInstance mRightHand;
 };
-
-#endif
 
