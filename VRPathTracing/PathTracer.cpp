@@ -260,9 +260,11 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 	ProgressBar::SharedPtr pBar = ProgressBar::create("Loading Scene", 100);
 
 	RtScene::SharedPtr pScene = RtScene::loadFromFile(filename);
-	
+
 	if (pScene != nullptr)
 	{
+		mControllerManager = ControllerManager::create(pScene);
+
 		Fbo::SharedPtr pFbo = pCallbacks->getCurrentFbo();
 		pScene->setCamerasAspectRatio(float(pFbo->getWidth()) / float(pFbo->getHeight()));
 		mpLeftEyeGraph->setScene(pScene);
@@ -331,8 +333,6 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
 	loadModel(pCallbacks, "Mirrors/six_mirrors_regular_borders_small_scale.fscene");
-
-	mControllerManager = ControllerManager::create(mpLeftEyeGraph->getScene());
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
 }
 

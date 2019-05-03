@@ -7,6 +7,9 @@
     <Filter Include="RenderPasses">
       <UniqueIdentifier>{54b2a735-d8e1-47b9-96ca-7a392c4f953b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Media">
+      <UniqueIdentifier>{ca7247e3-b245-42fc-bcd8-c36e2f32d78d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="PathTracer.cpp" />
@@ -65,6 +68,9 @@
     </None>
     <None Include="Data\MirrorCommon.slang">
       <Filter>Data</Filter>
+    </None>
+    <None Include="..\Media\Mirrors\six_mirrors_regular_borders_small_scale.fscene">
+      <Filter>Media</Filter>
     </None>
   </ItemGroup>
 </Project>

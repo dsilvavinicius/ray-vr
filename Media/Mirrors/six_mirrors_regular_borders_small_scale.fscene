@@ -103,60 +103,6 @@
                     ]
                 }
             ]
-        },
-        {
-            "file": "left_hand.fbx",
-            "name": "hand1",
-            "material": {
-                "shading_model": "metal_rough"
-            },
-            "instances": [
-                {
-                    "name": "hand11",
-                    "translation": [
-                        0.0,
-                        1.231830358505249,
-                        0.22201138734817506
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "rotation": [
-                        7.392995834350586,
-                        12.86548137664795,
-                        -150.93214416503907
-                    ]
-                }
-            ]
-        },
-        {
-            "file": "right_hand.fbx",
-            "name": "right_hand",
-            "material": {
-                "shading_model": "metal_rough"
-            },
-            "instances": [
-                {
-                    "name": "right_hand0",
-                    "translation": [
-                        0.0,
-                        1.1896158456802369,
-                        0.5953620076179504
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        -0.0,
-                        -161.5610809326172
-                    ]
-                }
-            ]
         }
     ],
     "lights": [

@@ -140,6 +140,7 @@
     <ClInclude Include="RenderPasses\TemporalAccumulation.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Media\Mirrors\six_mirrors_regular_borders_small_scale.fscene" />
     <None Include="Data\Accumulate.slang" />
     <None Include="Data\GGXGICommon.slang" />
     <None Include="Data\GGXGIIndirectRay.slang" />

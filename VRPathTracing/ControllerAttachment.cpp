@@ -1,18 +1,22 @@
 #include "ControllerAttachment.h"
+#include <FalcorExperimental.h>
 #include <sstream>
+
 
 ControllerManager::ControllerManager(Scene::SharedPtr scene)
 {
-	Model::SharedPtr leftHandModel = scene->getModel(3);
-	Model::SharedPtr rightHandModel = scene->getModel(4);
+	RtModel::SharedPtr leftHandModel =  RtModel::createFromFile("Avatar/left_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
+	RtModel::SharedPtr rightHandModel = RtModel::createFromFile("Avatar/right_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
 
 	if(leftHandModel)
 	{
+		scene->addModelInstance(leftHandModel, "Left Hand");
 		mLeftHand = leftHandModel->getMeshInstance(0, 0);
 	}
 	
 	if (rightHandModel)
 	{
+		scene->addModelInstance(rightHandModel, "Right Hand");
 		mRightHand = rightHandModel->getMeshInstance(0, 0);
 	}
 }
