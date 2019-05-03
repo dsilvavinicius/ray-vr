@@ -1,7 +1,7 @@
 #include "Avatar.h"
 #include "FalcorExperimental.h"
 
-Avatar::Avatar(const Scene::SharedPtr& scene)
+Avatar::Avatar(RtScene::SharedPtr& scene)
 	: mHands(ControllerManager::create(scene))
 {
 	RtModel::SharedPtr model = RtModel::createFromFile("Avatar/suzanne.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);

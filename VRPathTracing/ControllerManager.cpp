@@ -1,24 +1,30 @@
 #include "ControllerManager.h"
-#include <FalcorExperimental.h>
 #include <sstream>
 
 
-ControllerManager::ControllerManager(Scene::SharedPtr scene)
+ControllerManager::ControllerManager(RtScene::SharedPtr& scene)
 {
 	RtModel::SharedPtr leftHandModel =  RtModel::createFromFile("Avatar/left_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
 	RtModel::SharedPtr rightHandModel = RtModel::createFromFile("Avatar/right_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
 
-	if(leftHandModel)
+	mLeftHand = addModelToScene(scene, leftHandModel, "Left Hand", 0);
+	mRightHand = addModelToScene(scene, rightHandModel, "Right Hand", 1);
+}
+
+ControllerManager::MeshInstance ControllerManager::addModelToScene(RtScene::SharedPtr& scene, RtModel::SharedPtr& model, const std::string& name, uint controllerIdx)
+{
+	MeshInstance instance;
+
+	if (model)
 	{
-		scene->addModelInstance(leftHandModel, "Left Hand");
-		mLeftHand = leftHandModel->getMeshInstance(0, 0);
+		scene->addModelInstance(model, name);
+		instance = model->getMeshInstance(0, 0);
+		VRController::SharedPtr controller = VRSystem::instance()->getController(controllerIdx);
+		float3 aim(0.f, 1.f, 0.f);
+		controller->setControllerAimPoint(aim);
 	}
-	
-	if (rightHandModel)
-	{
-		scene->addModelInstance(rightHandModel, "Right Hand");
-		mRightHand = rightHandModel->getMeshInstance(0, 0);
-	}
+
+	return instance;
 }
 
 void ControllerManager::update()
@@ -35,10 +41,11 @@ void ControllerManager::update(const VRController::SharedPtr& controller, const 
 	if (controller && hand)
 	{
 		mat4 world = controller->getToWorldMatrix();
-		float3 up(world[0][1], world[1][1], world[2][1]);
-		float3 target(world[0][2], world[1][2], world[2][2]);
+		
+		float3 up = controller->getControllerVector();
+		float3 target = controller->getControllerAimPoint();
 		float3 pos = controller->getControllerCenter();
 
-		hand->move(pos, pos + target, up);
+		hand->move(pos, target, up);
 	}
 }
