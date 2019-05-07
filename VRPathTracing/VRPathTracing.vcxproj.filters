@@ -24,6 +24,9 @@
     </ClCompile>
     <ClCompile Include="ControllerManager.cpp" />
     <ClCompile Include="Avatar.cpp" />
+    <ClCompile Include="RenderPasses\Blur.cpp">
+      <Filter>RenderPasses</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PathTracer.h" />
@@ -45,6 +48,9 @@
     <ClInclude Include="CameraAttachment.h" />
     <ClInclude Include="ControllerManager.h" />
     <ClInclude Include="Avatar.h" />
+    <ClInclude Include="RenderPasses\Blur.h">
+      <Filter>RenderPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang">

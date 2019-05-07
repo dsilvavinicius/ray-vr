@@ -29,6 +29,7 @@
 #include "RenderPasses/GGXGlobalIllumination.h"
 #include "RenderPasses/GBufferRaster.h"
 #include "RenderPasses/TemporalAccumulation.h"
+#include "RenderPasses/Blur.h"
 #include "Data/ShaderTypes.h"
 #include <sstream>
 
@@ -303,6 +304,7 @@ void PathTracer::createRenderGraph(SampleCallbacks* pCallbacks, RenderGraph::Sha
 
 	outRenderGraph->addPass(pGIPass, "GlobalIllumination");
 	outRenderGraph->addPass(TemporalAccumulation::create(params), "TemporalAccumulation");
+	outRenderGraph->addPass(Blur::create(params), "Blur");
 	outRenderGraph->addPass(ToneMapping::create(), "ToneMapping");
 
 	outRenderGraph->addEdge("GBuffer.posW", "GlobalIllumination.posW");
@@ -314,11 +316,12 @@ void PathTracer::createRenderGraph(SampleCallbacks* pCallbacks, RenderGraph::Sha
 
 	outRenderGraph->addEdge("GlobalIllumination.output", "TemporalAccumulation.input");
 
-	//outRenderGraph->addEdge("TemporalAccumulation.output", "ToneMapping.src");
+	outRenderGraph->addEdge("TemporalAccumulation.output", "Blur.src");
 
 	//outRenderGraph->markOutput("ToneMapping.dst");
-	outRenderGraph->markOutput("TemporalAccumulation.output");
+	//outRenderGraph->markOutput("TemporalAccumulation.output");
 	//outRenderGraph->markOutput("GlobalIllumination.output");
+	outRenderGraph->markOutput("Blur.dst");
 
 	// When GI pass changes, tell temporal accumulation to reset
 	pGIPass->setPassChangedCB([&]() {(*outRenderGraph->getPassesDictionary())["_dirty"] = true; });
@@ -380,9 +383,10 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 		}
 
 		mpLeftEyeGraph->execute(pRenderContext);
-		pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		//pRenderContext->blit(mpLeftEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		//pRenderContext->blit(mpLeftEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
+		pRenderContext->blit(mpLeftEyeGraph->getOutput("Blur.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 0, 1));
 		
 		if (!mLeftEyeOnly)
 		{
@@ -390,9 +394,10 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 			scene->setActiveCamera(camIdx);
 			setupCamera(VRDisplay::Eye::Right);
 			mpRightEyeGraph->execute(pRenderContext);
-			pRenderContext->blit(mpRightEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+			//pRenderContext->blit(mpRightEyeGraph->getOutput("TemporalAccumulation.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
 			//pRenderContext->blit(mpRightEyeGraph->getOutput("ToneMapping.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
 			//pRenderContext->blit(mpRightEyeGraph->getOutput("GlobalIllumination.output")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
+			pRenderContext->blit(mpRightEyeGraph->getOutput("Blur.dst")->getSRV(), mpVrFbo->getFbo()->getColorTexture(0)->getRTV(0, 1, 1));
 		}
 
 		mpVrFbo->submitToHmd(pRenderContext);

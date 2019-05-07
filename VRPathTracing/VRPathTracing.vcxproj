@@ -126,6 +126,7 @@
     <ClCompile Include="Avatar.cpp" />
     <ClCompile Include="ControllerManager.cpp" />
     <ClCompile Include="PathTracer.cpp" />
+    <ClCompile Include="RenderPasses\Blur.cpp" />
     <ClCompile Include="RenderPasses\GBufferRaster.cpp" />
     <ClCompile Include="RenderPasses\GGXGlobalIllumination.cpp" />
     <ClCompile Include="RenderPasses\TemporalAccumulation.cpp" />
@@ -136,6 +137,7 @@
     <ClInclude Include="ControllerManager.h" />
     <ClInclude Include="Data\ShaderTypes.h" />
     <ClInclude Include="PathTracer.h" />
+    <ClInclude Include="RenderPasses\Blur.h" />
     <ClInclude Include="RenderPasses\GBuffer.h" />
     <ClInclude Include="RenderPasses\GBufferRaster.h" />
     <ClInclude Include="RenderPasses\GGXGlobalIllumination.h" />
