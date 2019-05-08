@@ -13,10 +13,24 @@ public:
 
 	void update(const mat4& cameraView);
 
+	void toggleHead();
+	void toggleHands();
+
+	void renderUI(Gui* pGui, const char* uiGroup);
+
 private:
+	struct Head
+	{
+		bool enabled = true;
+		Model::SharedPtr model;
+		CameraAttachment<Mesh>::SharedPtr camAttachment;
+	};
+
 	Avatar(RtScene::SharedPtr& scene);
 
+	RtScene::SharedPtr mScene;
+
 	ControllerManager::UniquePtr mHands;
-	CameraAttachment<Mesh>::SharedPtr mHead;
+	Head mHead;
 };
 

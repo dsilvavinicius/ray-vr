@@ -3,37 +3,62 @@
 
 
 ControllerManager::ControllerManager(RtScene::SharedPtr& scene)
+	: mScene(scene)
 {
-	RtModel::SharedPtr leftHandModel =  RtModel::createFromFile("Avatar/left_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
-	RtModel::SharedPtr rightHandModel = RtModel::createFromFile("Avatar/right_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
+	mLeftHand.controllerIdx = 0;
+	mLeftHand.name = "left_hand_copy";
+	mLeftHand.model = RtModel::createFromFile("Avatar/left_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
+	
+	
+	mRightHand.controllerIdx = 1;
+	mRightHand.name = "right_hand_copy";
+	mRightHand.model = RtModel::createFromFile("Avatar/right_hand.fbx", RtBuildFlags::None, Model::LoadFlags::BuffersAsShaderResource);
 
-	mLeftHand = addModelToScene(scene, leftHandModel, "Left Hand", 0);
-	mRightHand = addModelToScene(scene, rightHandModel, "Right Hand", 1);
+	toggle();
 }
 
-ControllerManager::MeshInstance ControllerManager::addModelToScene(RtScene::SharedPtr& scene, RtModel::SharedPtr& model, const std::string& name, uint controllerIdx)
+void ControllerManager::toggle()
 {
-	MeshInstance instance;
+	toggle(mLeftHand);
+	toggle(mRightHand);
+}
 
-	if (model)
+void ControllerManager::toggle(Hand& hand)
+{
+	if (hand.instance)
 	{
-		scene->addModelInstance(model, name);
-		instance = model->getMeshInstance(0, 0);
-		VRController::SharedPtr controller = VRSystem::instance()->getController(controllerIdx);
-		float3 aim(0.f, 1.f, 0.f);
-		controller->setControllerAimPoint(aim);
+		// Disable case
+		for (uint i = 0; i < mScene->getModelCount(); ++i)
+		{
+			if (mScene->getModel(i)->getName().compare(hand.name) == 0)
+			{
+				mScene->deleteModelInstance(i, 0);
+				mScene->deleteModel(i);
+				break;
+			}
+		}
+		hand.instance = nullptr;
 	}
-
-	return instance;
+	else
+	{
+		if (hand.model)
+		{
+			mScene->addModelInstance(hand.model, hand.name);
+			hand.instance = hand.model->getMeshInstance(0, 0);
+			VRController::SharedPtr controller = VRSystem::instance()->getController(hand.controllerIdx);
+			float3 aim(0.f, 1.f, 0.f);
+			controller->setControllerAimPoint(aim);
+		}
+	}
 }
 
 void ControllerManager::update()
 {
-	VRController::SharedPtr leftController = VRSystem::instance()->getController(0);
-	VRController::SharedPtr rightController = VRSystem::instance()->getController(1);
+	VRController::SharedPtr leftController = VRSystem::instance()->getController(mLeftHand.controllerIdx);
+	VRController::SharedPtr rightController = VRSystem::instance()->getController(mRightHand.controllerIdx);
 
-	update(leftController, mLeftHand);
-	update(rightController, mRightHand);
+	update(leftController, mLeftHand.instance);
+	update(rightController, mRightHand.instance);
 }
 
 void ControllerManager::update(const VRController::SharedPtr& controller, const MeshInstance& hand)

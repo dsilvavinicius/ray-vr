@@ -61,6 +61,8 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 	scene->renderUI(pGui, "Scene");
 
+	mAvatar->renderUI(pGui, "Avatar");
+
 	pGui->addSeparator();
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
