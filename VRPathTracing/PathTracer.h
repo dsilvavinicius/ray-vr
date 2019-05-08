@@ -59,6 +59,7 @@ private:
 	FirstPersonCameraController mCamController;
 	CameraAttachment<Falcor::Mesh>::SharedPtr mCamAttachment;
 	Avatar::UniquePtr mAvatar;
+	Model::SharedPtr mBoundaryModel;
 	uint mAttachedModel = 0;
 	uint mAttachedMesh = 0;
 	uint mAttachedInstance = 0;

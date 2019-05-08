@@ -61,9 +61,33 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 	scene->renderUI(pGui, "Scene");
 
+	pGui->addSeparator();
+
 	mAvatar->renderUI(pGui, "Avatar");
 
 	pGui->addSeparator();
+
+	if(pGui->addButton("Toggle Boundaries"))
+	{
+		bool found = false;
+		for (uint i = 0; i < scene->getModelCount(); ++i)
+		{
+			Model::SharedPtr model = scene->getModel(i);
+			if (model->getName().compare("six_mirrors_room_only_edges_copy") == 0)
+			{
+				found = true;
+				mBoundaryModel = model;
+				scene->deleteModel(i);
+				break;
+			}
+		}
+
+		if (!found)
+		{
+
+			scene->addModelInstance(mBoundaryModel, "six_mirrors_room_only_edges_copy", vec3(), vec3(), vec3(0.2, 0.2, 0.2));
+		}
+	}
 
 	pGui->addCheckBox("Display VR FBO", mShowStereoViews);
 
