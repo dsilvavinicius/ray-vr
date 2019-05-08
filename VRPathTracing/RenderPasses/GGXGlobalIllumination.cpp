@@ -57,6 +57,7 @@ GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary 
     if (params.keyExists("useEmissives"))    pPass->mUseEmissiveGeom = params["useEmissives"];
     if (params.keyExists("doDirectLight"))   pPass->mDoDirectGI = params["doDirectLight"];
     if (params.keyExists("doIndirectLight")) pPass->mDoIndirectGI = params["doIndirectLight"];
+	if (params.keyExists("doFog"))			 pPass->mDoFog = params["doFog"];
     if (params.keyExists("rayDepth"))        pPass->mUserSpecifiedRayDepth = params["rayDepth"];
     if (params.keyExists("randomSeed"))      pPass->mFrameCount = params["randomSeed"];
     if (params.keyExists("useBlackEnvMap"))  pPass->mEnvMapMode = params["useBlackEnvMap"] ? EnvMapMode::Black : EnvMapMode::Scene;
@@ -70,6 +71,7 @@ Dictionary GGXGlobalIllumination::getScriptingDictionary() const
     serialize["useEmissives"] = mUseEmissiveGeom;
     serialize["doDirectLight"] = mDoDirectGI;
     serialize["doIndirectLight"] = mDoIndirectGI;
+	serialize["doFog"] = mDoFog;
     serialize["rayDepth"] = mUserSpecifiedRayDepth;
     serialize["randomSeed"] = mFrameCount;
     serialize["useBlackEnvMap"] = mEnvMapMode == EnvMapMode::Black;
@@ -153,6 +155,7 @@ void GGXGlobalIllumination::execute(RenderContext* pContext, const RenderData* p
     pCB["gFrameCount"] = mFrameCount++;
     pCB["gDoIndirectGI"] = mDoIndirectGI;
     pCB["gDoDirectGI"] = mDoDirectGI;
+	pCB["gDoFog"] = mDoFog;
     pCB["gMaxDepth"] = uint32_t(mUserSpecifiedRayDepth);
     pCB["gEmitMult"] = float(mUseEmissiveGeom ? mEmissiveGeomMult : 0.0f);
 
@@ -176,6 +179,7 @@ void GGXGlobalIllumination::renderUI(Gui* pGui, const char* uiGroup)
     bool changed = pGui->addIntVar("Max RayDepth", mUserSpecifiedRayDepth, 0, mMaxPossibleRayDepth);
     changed |= pGui->addCheckBox("Compute direct illumination", mDoDirectGI);
     changed |= pGui->addCheckBox("Compute global illumination", mDoIndirectGI);
+	changed |= pGui->addCheckBox("Fog", mDoFog);
 
     pGui->addSeparator();
 

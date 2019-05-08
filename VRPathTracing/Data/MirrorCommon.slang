@@ -47,8 +47,7 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
     if (hitDepth < gMaxDepth)
     {
 		//fog
-        //distance = 1.f;
-        float f = 1. / exp(1.e-4f * distance * distance); //(float)hitDepth/gMaxDepth;
+        float f = (gDoFog) ? 1.f / exp(1.e-4f * distance * distance) : 1.f;
 			  
         PrimaryRayData secondaryRay;
         //secondaryRay.color = float4(1.f, 1.f, 1.f, 1.f);

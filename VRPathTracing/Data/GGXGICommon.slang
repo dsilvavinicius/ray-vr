@@ -41,6 +41,7 @@ shared cbuffer GlobalCB
     uint gFrameCount; // An integer changing every frame to update the random number
     bool gDoIndirectGI; // A boolean determining if we should shoot indirect GI rays
     bool gDoDirectGI; // A boolean determining if we should compute direct lighting
+    bool gDoFog;
     uint gMaxDepth; // Maximum number of recursive bounces to allow
     float gEmitMult; // Emissives are currently hacked.  Multiply emissive amount by this factor
 }

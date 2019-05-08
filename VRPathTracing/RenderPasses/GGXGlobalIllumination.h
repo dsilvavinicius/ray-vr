@@ -63,6 +63,7 @@ private:
     bool                mDoIndirectGI = true;
     bool                mDoDirectGI = true;
     bool                mUseEmissiveGeom = true;
+	bool				mDoFog = true;
     float               mEmissiveGeomMult = 1.0f;
     Texture::SharedPtr  mpBlackHDR = nullptr;
 
