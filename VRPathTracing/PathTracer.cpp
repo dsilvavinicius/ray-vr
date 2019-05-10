@@ -393,6 +393,8 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 
 		scene->update(pCallbacks->getCurrentTime(), &mCamController);
 
+		float3 camPos = scene->getActiveCamera()->getPosition();
+
 		// Left eye
 		pair<uint, mat4> camIdxAndWorldMat = setupCamera(VRDisplay::Eye::Left);
 		uint camIdx = camIdxAndWorldMat.first;
@@ -405,7 +407,7 @@ void PathTracer::onFrameRender(SampleCallbacks* pCallbacks, RenderContext* pRend
 
 		if (mAvatar)
 		{
-			mAvatar->update(world);
+			mAvatar->update(world, camPos);
 		}
 
 		mpLeftEyeGraph->execute(pRenderContext);

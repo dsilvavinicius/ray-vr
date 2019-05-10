@@ -13,10 +13,9 @@ public:
 
 	static UniquePtr create(RtScene::SharedPtr& scene) { return UniquePtr(new ControllerManager(scene)); }
 	~ControllerManager() {}
-	void update();
+	void update(const float3& translation = float3());
 	void toggle();
 
-	bool mEnabled = true;
 private:
 	struct Hand
 	{
@@ -29,7 +28,7 @@ private:
 	ControllerManager(RtScene::SharedPtr& scene);
 	void toggle(Hand& hand);
 	MeshInstance addModelToScene(RtScene::SharedPtr& scene, RtModel::SharedPtr& model, const std::string& name, uint controllerIdx);
-	void update(const VRController::SharedPtr& controller, const MeshInstance& hand);
+	void update(const VRController::SharedPtr& controller, const MeshInstance& hand, const float3& translation);
 
 	RtScene::SharedPtr mScene;
 

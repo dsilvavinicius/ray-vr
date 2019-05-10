@@ -52,24 +52,24 @@ void ControllerManager::toggle(Hand& hand)
 	}
 }
 
-void ControllerManager::update()
+void ControllerManager::update(const float3& translation)
 {
 	VRController::SharedPtr leftController = VRSystem::instance()->getController(mLeftHand.controllerIdx);
 	VRController::SharedPtr rightController = VRSystem::instance()->getController(mRightHand.controllerIdx);
 
-	update(leftController, mLeftHand.instance);
-	update(rightController, mRightHand.instance);
+	update(leftController, mLeftHand.instance, translation);
+	update(rightController, mRightHand.instance, translation);
 }
 
-void ControllerManager::update(const VRController::SharedPtr& controller, const MeshInstance& hand)
+void ControllerManager::update(const VRController::SharedPtr& controller, const MeshInstance& hand, const float3& translation)
 {
 	if (controller && hand)
 	{
 		mat4 world = controller->getToWorldMatrix();
 		
 		float3 up = controller->getControllerVector();
-		float3 target = controller->getControllerAimPoint();
-		float3 pos = controller->getControllerCenter();
+		float3 target = controller->getControllerAimPoint() + translation;
+		float3 pos = controller->getControllerCenter() + translation;
 
 		hand->move(pos, target, up);
 	}

@@ -44,24 +44,24 @@ void Avatar::toggleHands()
 	mHands->toggle();
 }
 
-void Avatar::update(const mat4& cameraView)
+void Avatar::update(const mat4& cameraView, const float3& translation)
 {
 	if(mHead.camAttachment)
 	{
 		mHead.camAttachment->update(cameraView);
 	}
-	mHands->update();
+	mHands->update(translation);
 }
 
 void Avatar::renderUI(Gui* pGui, const char* uiGroup)
 {
 	if (pGui->beginGroup(uiGroup))
 	{
-		if (pGui->addCheckBox("Head", mHead.enabled))
+		if (pGui->addButton("Toggle Head"))
 		{
 			toggleHead();
 		}
-		if (pGui->addCheckBox("Hands", mHands->mEnabled))
+		if (pGui->addButton("Toggle Hands"))
 		{
 			toggleHands();
 		}

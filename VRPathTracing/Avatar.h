@@ -11,7 +11,7 @@ public:
 	static UniquePtr create(RtScene::SharedPtr& scene) { return UniquePtr(new Avatar(scene)); }
 	~Avatar() {}
 
-	void update(const mat4& cameraView);
+	void update(const mat4& cameraView, const float3& translation);
 
 	void toggleHead();
 	void toggleHands();
@@ -21,7 +21,6 @@ public:
 private:
 	struct Head
 	{
-		bool enabled = true;
 		Model::SharedPtr model;
 		CameraAttachment<Mesh>::SharedPtr camAttachment;
 	};
