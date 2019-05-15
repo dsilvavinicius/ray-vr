@@ -188,6 +188,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	dropList.push_back({ PERFECT_MIRROR, "Perfect Mirror" });
 	dropList.push_back({ PATH_TRACING, "Path Tracing" });
 	dropList.push_back({ TORUS, "TORUS" });
+	dropList.push_back({ DODECAHEDRON, "DODECAHEDRON" });
 
 	if (pGui->addDropdown("Global Material ID", dropList, mGlobalMaterialId))
 	{

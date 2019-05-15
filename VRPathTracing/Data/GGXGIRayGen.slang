@@ -97,6 +97,7 @@ void GGXGlobalIllumRayGen()
 			case TORUS:
             case REFLECTIONS:
             case PERFECT_MIRROR:
+            case DODECAHEDRON:
             {
                 shadeColor += tracePrimaryRay(sd.posW).rgb;
                 break;

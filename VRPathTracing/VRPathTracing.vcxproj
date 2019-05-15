@@ -146,6 +146,7 @@
   <ItemGroup>
     <None Include="..\Media\Mirrors\six_mirrors_regular_borders_small_scale.fscene" />
     <None Include="Data\Accumulate.slang" />
+    <None Include="Data\Hyperbolic.slang" />
     <None Include="Data\GGXGICommon.slang" />
     <None Include="Data\GGXGIIndirectRay.slang" />
     <None Include="Data\GGXGIRayGen.slang" />

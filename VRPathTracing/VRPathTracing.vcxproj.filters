@@ -80,5 +80,8 @@
     <None Include="..\Media\Mirrors\six_mirrors_regular_borders_small_scale.fscene">
       <Filter>Media</Filter>
     </None>
+    <None Include="Data\Hyperbolic.slang">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
 </Project>

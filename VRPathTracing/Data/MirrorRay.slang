@@ -29,6 +29,7 @@ __import Raytracing;
 __import MirrorCommon;
 __import GGXGICommon;
 __import Helpers;
+__import Hyperbolic;
 #include "ShaderTypes.h"
 
 [shader("anyhit")]
@@ -97,13 +98,29 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 		}
 
 	}
+    else if (gMaterial.id == DODECAHEDRON)
+    {
+        for (int i = 0; i < 12; ++i)
+        {
+            float epsilon = 1.e-6f;
+            float3 faceNormal = normalize(gFaces[i].normal);
+            if (abs(1.f - dot(v.normalW, faceNormal)) < epsilon)
+            {
+                Ray newRay = func_new_ray_direction(gFaces[i].invTransform, posW, rayDirW);
+                
+                posW = newRay.origin;
+                rayDirW = newRay.dir;
+                break;
+            }
+        }
+    }
     
     hitData.distance += hitT;
 
 	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
 
-    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS)
+    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == DODECAHEDRON)
     {
         hitData.color.rgb = reflectColor;
     }

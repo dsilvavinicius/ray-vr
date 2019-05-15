@@ -7,5 +7,6 @@
 #define PERFECT_MIRROR 3
 #define PATH_TRACING 4
 #define TORUS 5
+#define DODECAHEDRON 6
 
 #endif
