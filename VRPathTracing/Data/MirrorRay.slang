@@ -100,19 +100,61 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 	}
     else if (gMaterial.id == DODECAHEDRON)
     {
+        // Debug
+        bool foundFace = false;
+        //
+        
         for (int i = 0; i < 12; ++i)
         {
-            float epsilon = 1.e-6f;
+            float epsilon = 0.2f;
+            v.normalW = normalize(v.normalW);
             float3 faceNormal = normalize(gFaces[i].normal);
-            if (abs(1.f - dot(v.normalW, faceNormal)) < epsilon)
+            float dotValue = v.normalW.x * faceNormal.x + v.normalW.y * faceNormal.y + v.normalW.z * faceNormal.z;
+            if (abs(1.f + dotValue) < epsilon)
             {
+                // Debug
+                /*{
+                    foundFace = true;
+                    hitData.color.rgb = float3(1.f, 0.f, 0.f);
+                    hitData.hitT = hitT;
+                    hitData.color.a = 1;
+                    return;
+                }*/
+                //
+
                 Ray newRay = func_new_ray_direction(gFaces[i].invTransform, posW, rayDirW);
                 
+                // Debug
+                /*{
+                    if (!newRay.sanityCheck)
+                    {
+                        hitData.color.rgb = float3(1.f, 1.f, 0.f);
+                        hitData.hitT = hitT;
+                        hitData.color.a = 1;
+                        return;
+                    }
+                }*/
+
                 posW = newRay.origin;
-                rayDirW = newRay.dir;
+                rayDirW = normalize(newRay.dir);
                 break;
             }
         }
+
+        /*// Debug
+        if (!foundFace)
+        {
+            hitData.distance += hitT;
+                //hitData.color.rgb = float3(1.f, 0.f, 0.f);
+                //hitData.color.rgb = float3(gFaces[1].transform[3][0], gFaces[1].transform[3][1], gFaces[1].transform[3][2]);
+            
+            float dotValue = v.normalW.x * gFaces[11].normal.x + v.normalW.y * gFaces[11].normal.y + v.normalW.z * gFaces[11].normal.z;
+            float temp = abs(1.f + dotValue);
+            hitData.color.rgb = float3(temp, temp, temp);
+            hitData.hitT = hitT;
+            hitData.color.a = 1;
+            return;
+        }*/
     }
     
     hitData.distance += hitT;

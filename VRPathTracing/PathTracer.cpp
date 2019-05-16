@@ -362,7 +362,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 	createRenderGraph(pCallbacks, mpLeftEyeGraph);
 	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
-	loadModel(pCallbacks, "Mirrors/six_mirrors_regular_borders_small_scale.fscene");
+	loadModel(pCallbacks, "Dodecahedron/dodecaheron_with_edges.fscene");
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
 }
 
@@ -554,6 +554,7 @@ pair<uint, mat4> PathTracer::setupCamera(const VRDisplay::Eye& eye)
 	glm::mat4 view = pDisplay->getOffsetMatrix(eye) * world;
 	defaultCam->setPosition(glm::inverse(view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 	defaultCam->setViewMatrix(view);
+	pDisplay->setDepthRange(0.01f, 1000.f);
 	defaultCam->setProjectionMatrix(pDisplay->getProjectionMatrix(eye));
 
 	return pair<uint, mat4>(camIdx, world);
