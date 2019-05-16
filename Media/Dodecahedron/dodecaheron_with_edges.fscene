@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "dodecahedron.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Dodecahedron/dodecahedron.fbx",
             "name": "dodecahedron",
             "material": {
                 "shading_model": "metal_rough"
@@ -14,6 +14,33 @@
             "instances": [
                 {
                     "name": "dodecahedron0",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Dodecahedron\\dodecahedron_edges.fbx",
+            "name": "dodecahedron_edges",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "dodecahedron_edges0",
                     "translation": [
                         0.0,
                         0.0,

@@ -56,7 +56,7 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
         RayDesc ray;
         ray.Origin = worldOrigin;
 
-		if ( gMaterial.id == TORUS) 
+        if (gMaterial.id == TORUS || gMaterial.id == DODECAHEDRON) 
 		{
 			ray.Direction = worldRayDir;
 		}
