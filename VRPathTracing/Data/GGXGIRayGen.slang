@@ -98,7 +98,7 @@ void GGXGlobalIllumRayGen()
             case REFLECTIONS:
             case PERFECT_MIRROR:
             case SEIFERT_WEBER_DODECAHEDRON:
-            //case MIRRORED_DODECAHEDRON:
+            case MIRRORED_DODECAHEDRON:
             {
                 shadeColor += tracePrimaryRay(sd.posW).rgb;
                 break;

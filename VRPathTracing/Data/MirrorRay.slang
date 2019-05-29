@@ -98,32 +98,29 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 		}
 
     }
-    else if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
-    {
-        // Debug
-        bool foundFace = false;
-        //
-        
+    else if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
+    {   
         for (int i = 0; i < 12; ++i)
         {
             float epsilon = 0.2f;
             v.normalW = normalize(v.normalW);
-            float3 faceNormal = normalize(gFaces[i].normal);
+            float3 faceNormal = normalize(dodecahedronNormals[i].xyz);
             float dotValue = v.normalW.x * faceNormal.x + v.normalW.y * faceNormal.y + v.normalW.z * faceNormal.z;
             if (abs(1.f + dotValue) < epsilon)
             {
                 Ray newRay;
-                //if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON)
-                //{
-                    //newRay = func_new_ray_direction(gFaces[i].invTransform, posW, rayDirW);            
-                /*}
-                else
-                {*/
-                    newRay = perfectReflection(gFaces[i].transform, posW, rayDirW);
-                //}
-               
+                if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON)
+                {
+                    newRay = func_new_ray_direction(dodecahedronInvTransforms[i], posW, rayDirW);
+                }
+                if (gMaterial.id == MIRRORED_DODECAHEDRON)
+                {
+                    newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW);
+                }
+                
                 posW = newRay.origin;
                 rayDirW = normalize(newRay.dir);
+
                 break;
             }
         }
@@ -134,7 +131,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
 
-    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
+    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
     {
         hitData.color.rgb = reflectColor;
     }
