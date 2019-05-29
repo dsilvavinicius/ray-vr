@@ -98,7 +98,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 		}
 
     }
-    else if (gMaterial.id == DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
+    else if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
     {
         // Debug
         bool foundFace = false;
@@ -134,7 +134,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
 
-    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
+    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
     {
         hitData.color.rgb = reflectColor;
     }
