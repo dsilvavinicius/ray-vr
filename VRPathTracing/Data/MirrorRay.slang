@@ -97,8 +97,8 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 			posW = posW + len2*v.normalW;
 		}
 
-	}
-    else if (gMaterial.id == DODECAHEDRON)
+    }
+    else if (gMaterial.id == DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
     {
         // Debug
         bool foundFace = false;
@@ -112,49 +112,21 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
             float dotValue = v.normalW.x * faceNormal.x + v.normalW.y * faceNormal.y + v.normalW.z * faceNormal.z;
             if (abs(1.f + dotValue) < epsilon)
             {
-                // Debug
-                /*{
-                    foundFace = true;
-                    hitData.color.rgb = float3(1.f, 0.f, 0.f);
-                    hitData.hitT = hitT;
-                    hitData.color.a = 1;
-                    return;
-                }*/
-                //
-
-                Ray newRay = func_new_ray_direction(gFaces[i].invTransform, posW, rayDirW);
-                
-                // Debug
-                /*{
-                    if (!newRay.sanityCheck)
-                    {
-                        hitData.color.rgb = float3(1.f, 1.f, 0.f);
-                        hitData.hitT = hitT;
-                        hitData.color.a = 1;
-                        return;
-                    }
-                }*/
-
+                Ray newRay;
+                //if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON)
+                //{
+                    //newRay = func_new_ray_direction(gFaces[i].invTransform, posW, rayDirW);            
+                /*}
+                else
+                {*/
+                    newRay = perfectReflection(gFaces[i].transform, posW, rayDirW);
+                //}
+               
                 posW = newRay.origin;
                 rayDirW = normalize(newRay.dir);
                 break;
             }
         }
-
-        /*// Debug
-        if (!foundFace)
-        {
-            hitData.distance += hitT;
-                //hitData.color.rgb = float3(1.f, 0.f, 0.f);
-                //hitData.color.rgb = float3(gFaces[1].transform[3][0], gFaces[1].transform[3][1], gFaces[1].transform[3][2]);
-            
-            float dotValue = v.normalW.x * gFaces[11].normal.x + v.normalW.y * gFaces[11].normal.y + v.normalW.z * gFaces[11].normal.z;
-            float temp = abs(1.f + dotValue);
-            hitData.color.rgb = float3(temp, temp, temp);
-            hitData.hitT = hitT;
-            hitData.color.a = 1;
-            return;
-        }*/
     }
     
     hitData.distance += hitT;
@@ -162,7 +134,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
 
-    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == DODECAHEDRON)
+    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == DODECAHEDRON/*SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON*/)
     {
         hitData.color.rgb = reflectColor;
     }

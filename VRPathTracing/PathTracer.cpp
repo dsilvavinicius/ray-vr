@@ -190,6 +190,12 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	dropList.push_back({ TORUS, "TORUS" });
 	dropList.push_back({ DODECAHEDRON, "DODECAHEDRON" });
 
+	//dropList.push_back({ SEIFERT_WEBER_DODECAHEDRON, "Seifert-Weber Dodecahedron" });
+	//dropList.push_back({ MIRRORED_DODECAHEDRON, "Mirrored Dodecahedron" });
+
+
+
+
 	if (pGui->addDropdown("Global Material ID", dropList, mGlobalMaterialId))
 	{
 		for (uint i = 0; i < scene->getModelCount(); ++i)

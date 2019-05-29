@@ -8,5 +8,7 @@
 #define PATH_TRACING 4
 #define TORUS 5
 #define DODECAHEDRON 6
+//#define SEIFERT_WEBER_DODECAHEDRON 6
+//#define MIRRORED_DODECAHEDRON 7
 
 #endif

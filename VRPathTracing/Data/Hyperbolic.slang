@@ -234,6 +234,8 @@ float4 hgeo_euc2hip(float3 X)
     return Xhat;
 }
 
+
+// Projection of the vector u to the tangent space in X using Minkowski metric (https://en.wikipedia.org/wiki/Minkowski_space)
 float4 hgeo_diff_euc2hip(float3 X, float3 u)
 {
     float4 Xbar = float4(X, 1.0);
@@ -249,6 +251,9 @@ float3 hgeo_hip2euc(float4 Xhat)
     return X;
 }
 
+
+// Computes the direction in the Klein model given a tangent direction in the parabolid.
+// That is, the direction provided by the intersection between the plane z=1 and the plane spanned by Xhat and uhat
 float3 hgeo_diff_hip2euc(float4 Xhat, float4 uhat)
 {
     return uhat.xyz / Xhat.w + float3(-Xhat.x * uhat.w, -Xhat.y * uhat.w, -Xhat.z * uhat.w) / (Xhat.w * Xhat.w); //diff p em x aplicado em uhat
@@ -285,6 +290,60 @@ Ray func_new_ray_direction(
         ray.sanityCheck = (len <= 1.f);
     }*/
 
+    return ray;
+}
+
+
+
+float doth(float4 A, float4 B)
+{
+    return -A.w * B.w + A.x * B.x + A.y * B.y + A.z * B.z;
+}
+
+float dote(float3 A, float3 B)
+{
+    return A.x * B.x + A.y * B.y + A.z * B.z;
+}
+
+Ray perfectReflection(
+      in float4x4 M, //plane matrix
+      in float3 p, //hitpos
+      in float3 v //ray dir
+)
+{
+    float4 N = mul(float4(0.0, 0.0, 0.0, 1.0), M);
+
+    float3 q = float3(N.x, N.y, N.z) / (N.w + 1);
+
+    float3 n = normalize(q);
+
+    float t = dote(q, q) / dote(p, q);
+
+    float scale = 0.87;
+
+    t = t * scale;
+
+    p = t * p;
+    q = t * q;
+    //float scalar = 0.00004; //dote(q, qN) / dote(qN, p); //0.9;
+
+    //p = scalar * p;
+    //q = scalar * q;
+
+    float4 hp = float4(p-0.5*v, 1.f);
+    
+    float4 hq = float4(q, dote(q,q));
+
+    float4 Rhp = hp - 2.f * hq * (doth(hq, hp)) / (doth(hq, hq));
+  
+    float3 Rp = float3(Rhp.x / Rhp.w, Rhp.y / Rhp.w, Rhp.z / Rhp.w);
+    
+    float3 new_dir = p - Rp;
+    
+    Ray ray;
+    ray.origin = p / t; //hgeo_hip2euc(Yhat);
+    ray.dir = new_dir;
+    
     return ray;
 }
 

@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "dodecahedron_edges.fbx",
+            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Dodecahedron/dodecahedron_edges.fbx",
             "name": "dodecahedron_edges",
             "material": {
                 "shading_model": "metal_rough"
@@ -23,78 +23,6 @@
                         0.009999999776482582,
                         0.009999999776482582,
                         0.009999999776482582
-                    ],
-                    "rotation": [
-                        0.0,
-                        -0.0,
-                        -0.0
-                    ]
-                }
-            ]
-        },
-        {
-            "file": "dodecahedron.obj",
-            "name": "dodecahedron",
-            "material": {
-                "shading_model": "spec_gloss"
-            },
-            "instances": [
-                {
-                    "name": "dodecahedron0",
-                    "translation": [
-                        0.0,
-                        0.0,
-                        0.0
-                    ],
-                    "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
-                    ],
-                    "rotation": [
-                        0.0,
-                        -0.0,
-                        -0.0
-                    ]
-                }
-            ]
-        },
-        {
-            "file": "teapot.obj",
-            "name": "teapot",
-            "material": {
-                "shading_model": "spec_gloss"
-            },
-            "instances": [
-                {
-                    "name": "teapot0",
-                    "translation": [
-                        -0.27252745628356936,
-                        0.35124170780181887,
-                        0.22607183456420899
-                    ],
-                    "scaling": [
-                        0.20000000298023225,
-                        0.20000000298023225,
-                        0.20000000298023225
-                    ],
-                    "rotation": [
-                        0.0,
-                        -0.0,
-                        -0.0
-                    ]
-                },
-                {
-                    "name": "teapot1",
-                    "translation": [
-                        -0.27252745628356936,
-                        -0.4756353497505188,
-                        -0.38487550616264346
-                    ],
-                    "scaling": [
-                        0.20000000298023225,
-                        0.20000000298023225,
-                        0.20000000298023225
                     ],
                     "rotation": [
                         0.0,
