@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Dodecahedron/dodecahedron_edges.fbx",
+            "file": "Dodecahedron/dodecahedron_edges.fbx",
             "name": "dodecahedron_edges",
             "material": {
                 "shading_model": "metal_rough"
