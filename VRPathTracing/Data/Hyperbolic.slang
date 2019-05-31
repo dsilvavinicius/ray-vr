@@ -490,38 +490,40 @@ float dote(float3 A, float3 B)
     return A.x * B.x + A.y * B.y + A.z * B.z;
 }
 
+float distH(float4 p, float4 q)
+{
+    float x = sqrt((doth(p, q) * doth(p, q)) / (doth(p, p) * doth(q, q)));
+
+    return 2 * log(x + sqrt(x*x-1));
+}
+
 Ray perfectReflection(
-      in float4 N, //plane matrix
+      in float4 N, //dodecahedron face barycenter in homogeneus coordinates
       in float3 p, //hitpos
-      in float3 v //ray dir
+      in float3 v  //ray dir
 )
 {
-    //float4 N = mul(float4(0.0, 0.0, 0.0, 1.0), M);
+    //barycenter in Klein model coordinates
+    float3 q = float3(N.xyz) / (N.w + 1); 
 
-    float3 q = float3(N.x, N.y, N.z) / (N.w + 1);
+    float q_dote = dote(q, q);
 
-    float3 n = normalize(q);
+    float3 n = q / sqrt(q_dote);
 
-    float t = dote(q, q) / dote(p, q);
-
-    float scale = 0.87;
-
-    t = t * scale;
+    //parameter that gives the intersection between the ray origin + t*p and the face 
+    //0.87 ajustes to the right-angle dodecahedron in Klein model
+    float t = (q_dote / dote(p, q))*0.87;
 
     p = t * p;
     q = t * q;
-    //float scalar = 0.00004; //dote(q, qN) / dote(qN, p); //0.9;
-
-    //p = scalar * p;
-    //q = scalar * q;
 
     float4 hp = float4(p-0.5*v, 1.f);
     
-    float4 hq = float4(q, dote(q,q));
+    float4 hq = float4(q, q_dote*t*t);
 
     float4 Rhp = hp - 2.f * hq * (doth(hq, hp)) / (doth(hq, hq));
   
-    float3 Rp = float3(Rhp.x / Rhp.w, Rhp.y / Rhp.w, Rhp.z / Rhp.w);
+    float3 Rp = float3(Rhp.xyz)/Rhp.w;
     
     float3 new_dir = p - Rp;
     
@@ -531,5 +533,97 @@ Ray perfectReflection(
     
     return ray;
 }
+
+
+
+Ray PoincareSphere(
+      in float4 N, //dodecahedron face barycenter in homogeneus coordinates
+      in float3 p, //hitpos
+      in float3 v //ray dir
+)
+{
+    float3 n = normalize(float3(N.xyz));
+
+    float t = dote(n,p);
+    
+    float3 q = t * n;
+
+    float scale = 0.2;
+    
+    p = p * scale;
+    q = q * scale;
+
+
+    float3 old_p = p;
+
+    //translating  p to the plane crossing the origin
+
+    float3 proj_p = p - q;
+
+    float x1 = sqrt(dote(proj_p, proj_p));
+
+    float3 e1 = proj_p / x1;
+
+    float3 e2 = cross(e1, n);
+
+    float theta = (2.f * 3.14159265f) * 0.1;
+
+
+    p = (cos(theta) * e1 + sin(theta) * e2)*x1;
+
+    p = p - q;
+
+    //suspending old_p and p to the sphere
+    //step 1: put in the plane w=1
+    float4 p0 = float4(old_p, 1.f);
+    float4 p1 = float4(p, 1.f);
+    float4 v0 = float4(v, 0.f);
+    //step 2: put in the sphere
+    p0 = p0 / length(p0);
+    p1 = p1 / length(p1);
+    v0 = v0 - p0 * dot(p0,v0) / dot(p0,p0);
+    v0 = normalize(v0);
+
+    //paralell transport of v0 from p0 to p1
+    float4 u0 = p1 - p0;
+    u0 = u0 - u0 * dot(p0, u0) / dot(p0, p0);
+    u0 = normalize(u0);
+
+    //bool test = 
+    float4 w0 = v0 - u0 * dot(v0, u0) / dot(v0, v0);
+    w0 = normalize(w0);
+
+
+
+    float angle = acos(dot(v0,u0));
+
+    float alpha = acos(dot(p1, p0));
+
+    float4 u1 = -sin(alpha) * p0 + cos(alpha) * u0;
+    u1 = normalize(u1);
+
+    float4 w1 = w0;
+
+    float4 v1 = cos(angle) * u1 + sin(angle) * w1;
+
+
+
+    /*float4 hp = float4(p - 0.5 * v, 1.f);
+    
+    float4 hq = float4(q, q_dote * t * t);
+
+    float4 Rhp = hp - 2.f * hq * (doth(hq, hp)) / (doth(hq, hq));
+  
+    float3 Rp = float3(Rhp.xyz) / Rhp.w;
+    */
+    float3 new_dir = v1.xyz;
+    
+    Ray ray;
+    ray.origin = p/scale; //hgeo_hip2euc(Yhat);
+    ray.dir = new_dir;
+    
+    return ray;
+}
+
 
 #endif

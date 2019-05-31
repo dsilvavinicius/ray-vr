@@ -81,13 +81,6 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 		float len1 = length(v2 - v1);
 		float len2 = length(v3 - v1);
 
-		//VertexOut v1 = getVertexAttributes(triangleIndex, float3(0,0,1));
-		//VertexOut v2 = getVertexAttributes(triangleIndex, float3(0,1,0));
-		//VertexOut v3 = getVertexAttributes(triangleIndex, float3(1,0,0));
-
-		//float len1 = length(v2.posW - v1.posW);
-		//float len2 = length(v3.posW - v1.posW);
-
 		if (len1 < len2)
 		{
 			posW = posW + len1*v.normalW;
@@ -96,7 +89,6 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
 		{
 			posW = posW + len2*v.normalW;
 		}
-
     }
     else if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
     {   
@@ -116,11 +108,14 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
                 if (gMaterial.id == MIRRORED_DODECAHEDRON)
                 {
                     newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW);
+                    //newRay = PoincareSphere(dodecahedronNormals[i], posW, rayDirW);
                 }
-                
+
                 posW = newRay.origin;
                 rayDirW = normalize(newRay.dir);
-
+                
+                hitT = distH(float4(rayOrigW, 1.f), float4(posW, 1.f));
+            
                 break;
             }
         }
@@ -128,8 +123,7 @@ void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersect
     
     hitData.distance += hitT;
 
-	float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
-
+    float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
 
     if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
     {

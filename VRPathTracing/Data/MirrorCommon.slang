@@ -68,13 +68,16 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
 		ray.TMin = 0.001;
         ray.TMax = 100000;
         TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
-        reflectColor +=  f*secondaryRay.color.rgb + (1.-f);// secondaryRay.color.rgb + color;
-
+        
+ 
+        reflectColor += f * secondaryRay.color.rgb + (1. - f); // secondaryRay.color.rgb + color;
+ 
         if (gMaterial.id != PERFECT_MIRROR && gMaterial.id != TORUS && gMaterial.id != SEIFERT_WEBER_DODECAHEDRON && gMaterial.id != MIRRORED_DODECAHEDRON)
         {
             float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
             reflectColor *= 20 / falloff;
         }
+ 
     }
     return reflectColor;
 }
