@@ -32,6 +32,10 @@ __import Helpers;
 __import Hyperbolic;
 #include "ShaderTypes.h"
 
+// Defines to enable support for torus and dodecahedron intersection tests.
+//#define TORUS_INTERSECTION
+//#define DODECAHEDRON_INTERSECTION
+
 [shader("anyhit")]
 void ReflectionRayAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
@@ -64,6 +68,7 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
     // prepare the shading data
     VertexOut v = getVertexAttributes(triangleIndex, attribs);
 
+#ifdef TORUS_INTERSECTION
     // translate the ray's origin
 	if ( gMaterial.id == TORUS)
 	{
@@ -90,6 +95,9 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
 			posW = posW + len2*v.normalW;
 		}
     }
+#endif
+
+#ifdef DODECAHEDRON_INTERSECTION
     else if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
     {   
         for (int i = 0; i < 12; ++i)
@@ -120,7 +128,8 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
             }
         }
     }
-    
+#endif
+
     hitData.distance += hitT;
 
     float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
