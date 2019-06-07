@@ -32,7 +32,7 @@ import GGXGICommon;
 #include "HostDeviceSharedMacros.h"
 
 [shader("miss")]
-void IndirectMiss(inout IndirectRayPayload rayData)
+void GGXGIIndirectRayMiss(inout IndirectRayPayload rayData)
 {
     // Sample the environment map
     float2 uv = dirToSphericalCrd(WorldRayDirection());
@@ -42,14 +42,14 @@ void IndirectMiss(inout IndirectRayPayload rayData)
 }
 
 [shader("anyhit")]
-void IndirectAnyHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void GGXGIIndirectRayAnyHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     if (evalRtAlphaTest(attribs))
         IgnoreHit();
 }
 
 [shader("closesthit")]
-void IndirectClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void GGXGIIndirectRayClosestHit(inout IndirectRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     VertexOut vOut = getVertexAttributes(PrimitiveIndex(), attribs);
     ShadingData sd = prepareShadingData(vOut, gMaterial, WorldRayOrigin(), 0);

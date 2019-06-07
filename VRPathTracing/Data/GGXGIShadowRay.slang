@@ -31,7 +31,7 @@ import GGXGICommon;
 
 // What code is executed when our ray misses all geometry?
 [shader("miss")]
-void ShadowMiss(inout ShadowRayPayload rayData)
+void GGXGIShadowRayMiss(inout ShadowRayPayload rayData)
 {
     // If we miss all geometry, then the light is visibile
     rayData.visFactor = 1.0f;
@@ -39,8 +39,14 @@ void ShadowMiss(inout ShadowRayPayload rayData)
 
 // What code is executed when our ray hits a potentially transparent surface?
 [shader("anyhit")]
-void ShadowAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void GGXGIShadowRayAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     if (evalRtAlphaTest(attribs))
         IgnoreHit();
+}
+
+
+[shader("closesthit")]
+void GGXGIShadowRayClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+{
 }

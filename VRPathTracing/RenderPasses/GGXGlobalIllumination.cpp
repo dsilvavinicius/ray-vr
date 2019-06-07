@@ -31,22 +31,16 @@
 namespace {
     // Shader files
     const char* kFileRayGen = "GGXGIRayGen.slang";
-    const char* kFileRayTrace = "GGXGIIndirectRay.slang";
-    const char* kFileShadowRay = "GGXGIShadowRay.slang";
-	const char* kFileMirrorRay = "MirrorRay.slang";
+    
+	const std::array<const char*, 3> kRayNames =
+	{
+		"GGXGIShadowRay",
+		"GGXGIIndirectRay",
+		"MirrorRay"
+	};
 
-    // Entry-point names
+	// Entry-point names
     const char* kEntryPointRayGen = "GGXGlobalIllumRayGen";
-    const char* kEntryShadowMiss = "ShadowMiss";
-    const char* kEntryShadowAnyHit = "ShadowAnyHit";
-
-    const char* kEntryIndirectMiss = "IndirectMiss";
-    const char* kEntryIndirectAnyHit = "IndirectAnyHit";
-    const char* kEntryIndirectClosestHit = "IndirectClosestHit";
-
-	const char* kEntryMirrorMiss = "primaryMiss";
-	const char* kEntryMirrorAnyHit = "primaryAnyHit";
-	const char* kEntryMirrorClosestHit = "primaryClosestHit";
 };
 
 GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary &params)
@@ -104,21 +98,23 @@ void GGXGlobalIllumination::initialize(RenderContext* pContext, const RenderData
     desc.addShaderLibrary(kFileRayGen);
     desc.setRayGen(kEntryPointRayGen);
 
-    // Add ray type #0 (shadow rays)
-    desc.addShaderLibrary(kFileShadowRay);
-    desc.addMiss(0, kEntryShadowMiss);
-    desc.addHitGroup(0, "", kEntryShadowAnyHit);
+	for (int i = 0; i < kRayNames.size(); ++i)
+	{
+		std::string shaderFile = kRayNames[i];
+		shaderFile.append(".slang");
+		desc.addShaderLibrary(shaderFile);
+		
+		std::string entryMiss = kRayNames[i];
+		entryMiss += "Miss";
+		desc.addMiss(i, entryMiss);
 
-    // Add ray type #1 (indirect GI rays)
-    desc.addShaderLibrary(kFileRayTrace);
-    desc.addMiss(1, kEntryIndirectMiss);
-    desc.addHitGroup(1, kEntryIndirectClosestHit, kEntryIndirectAnyHit);
+		std::string entryClosestHit = kRayNames[i];
+		entryClosestHit += "ClosestHit";
 
-	// Add ray type #2 (full mirror reflection rays)
-	desc.addShaderLibrary(kFileMirrorRay);
-	desc.addMiss(2, kEntryMirrorMiss);
-	desc.addHitGroup(2, kEntryMirrorClosestHit, kEntryMirrorAnyHit);
-
+		std::string entryAnyHit = kRayNames[i];
+		entryAnyHit += "AnyHit";
+		desc.addHitGroup(i, entryClosestHit, entryAnyHit);
+	}
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     mpProgram = RtProgram::create(desc);

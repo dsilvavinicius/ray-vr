@@ -33,14 +33,14 @@ __import Hyperbolic;
 #include "ShaderTypes.h"
 
 [shader("anyhit")]
-void primaryAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
+void MirrorRayAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     if (evalRtAlphaTest(attribs))
         IgnoreHit();
 }
 
 [shader("miss")]
-void primaryMiss(inout PrimaryRayData hitData)
+void MirrorRayMiss(inout PrimaryRayData hitData)
 {
     // Sample the environment map
     float2 uv = dirToSphericalCrd(WorldRayDirection());
@@ -51,7 +51,7 @@ void primaryMiss(inout PrimaryRayData hitData)
 }
 
 [shader("closesthit")]
-void primaryClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersectionAttributes attribs)
+void MirrorRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersectionAttributes attribs)
 {
     // Get the hit-point data
     float3 rayOrigW = WorldRayOrigin();
