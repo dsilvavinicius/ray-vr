@@ -152,7 +152,7 @@
     <None Include="Data\GGXGIRayGen.slang" />
     <None Include="Data\GGXGIShadowRay.slang" />
     <None Include="Data\MirrorCommon.slang" />
-    <None Include="Data\MirrorRay.slang">
+    <None Include="Data\ReflectionRay.slang">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </None>

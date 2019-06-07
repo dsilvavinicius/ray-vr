@@ -71,9 +71,6 @@
     <None Include="Data\RasterPrimary.slang">
       <Filter>Data</Filter>
     </None>
-    <None Include="Data\MirrorRay.slang">
-      <Filter>Data</Filter>
-    </None>
     <None Include="Data\MirrorCommon.slang">
       <Filter>Data</Filter>
     </None>
@@ -81,6 +78,9 @@
       <Filter>Media</Filter>
     </None>
     <None Include="Data\Hyperbolic.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\ReflectionRay.slang">
       <Filter>Data</Filter>
     </None>
   </ItemGroup>

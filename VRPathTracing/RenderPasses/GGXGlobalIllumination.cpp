@@ -36,7 +36,7 @@ namespace {
 	{
 		"GGXGIShadowRay",
 		"GGXGIIndirectRay",
-		"MirrorRay"
+		"ReflectionRay"
 	};
 
 	// Entry-point names
