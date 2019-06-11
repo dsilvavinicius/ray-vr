@@ -34,7 +34,7 @@ __import Hyperbolic;
 
 // Defines to enable support for torus and dodecahedron intersection tests.
 //#define TORUS_INTERSECTION
-//#define DODECAHEDRON_INTERSECTION
+#define DODECAHEDRON_INTERSECTION
 
 [shader("anyhit")]
 void ReflectionRayAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
@@ -98,7 +98,7 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
 #endif
 
 #ifdef DODECAHEDRON_INTERSECTION
-    else if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
+    if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
     {   
         for (int i = 0; i < 12; ++i)
         {
