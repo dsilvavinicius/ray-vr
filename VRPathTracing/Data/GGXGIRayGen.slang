@@ -58,10 +58,12 @@ void GGXGlobalIllumRayGen()
     float3 V = normalize(gCamera.posW - posW.xyz);
 
     // Make sure our normal is pointed the right direction
-    if (dot(normW, V) <= 0.0f) normW = -normW;
+    if (dot(normW, V) <= 0.0f)
+        normW = -normW;
 
     // Make sure out geometric normal is pointed in the right direction
-    if (dot(geomN, V) <= 0.0f) geomN = -geomN;
+    if (dot(geomN, V) <= 0.0f)
+        geomN = -geomN;
 
     float3 shadeColor = float3(0, 0, 0);
 
@@ -94,13 +96,16 @@ void GGXGlobalIllumRayGen()
                 break;
             }
 
-			case TORUS:
+            case TORUS:
             case REFLECTIONS:
             case PERFECT_MIRROR:
             case SEIFERT_WEBER_DODECAHEDRON:
             case MIRRORED_DODECAHEDRON:
             {
-                shadeColor += tracePrimaryRay(sd.posW).rgb;
+                if (launchIndex.x % gRayStride == 0 && launchIndex.y % gRayStride == 0)
+                {
+                    shadeColor += tracePrimaryRay(sd.posW).rgb;
+                }
                 break;
             }
 

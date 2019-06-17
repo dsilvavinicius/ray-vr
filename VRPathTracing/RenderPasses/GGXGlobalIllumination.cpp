@@ -54,6 +54,7 @@ GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary 
 	if (params.keyExists("doFog"))			 pPass->mDoFog = params["doFog"];
     if (params.keyExists("rayDepth"))        pPass->mUserSpecifiedRayDepth = params["rayDepth"];
     if (params.keyExists("randomSeed"))      pPass->mFrameCount = params["randomSeed"];
+	if (params.keyExists("rayStride"))		 pPass->mRayStride = params["rayStride"];
     if (params.keyExists("useBlackEnvMap"))  pPass->mEnvMapMode = params["useBlackEnvMap"] ? EnvMapMode::Black : EnvMapMode::Scene;
 
     return pPass;
@@ -68,6 +69,7 @@ Dictionary GGXGlobalIllumination::getScriptingDictionary() const
 	serialize["doFog"] = mDoFog;
     serialize["rayDepth"] = mUserSpecifiedRayDepth;
     serialize["randomSeed"] = mFrameCount;
+	serialize["randomSeed"] = mRayStride;
     serialize["useBlackEnvMap"] = mEnvMapMode == EnvMapMode::Black;
     return serialize;
 }
@@ -154,6 +156,7 @@ void GGXGlobalIllumination::execute(RenderContext* pContext, const RenderData* p
 	pCB["gDoFog"] = mDoFog;
     pCB["gMaxDepth"] = uint32_t(mUserSpecifiedRayDepth);
     pCB["gEmitMult"] = float(mUseEmissiveGeom ? mEmissiveGeomMult : 0.0f);
+	pCB["gRayStride"] = mRayStride;
 
     globalVars->setTexture("gPos", pData->getTexture("posW"));
     globalVars->setTexture("gNorm", pData->getTexture("normW"));
@@ -176,6 +179,7 @@ void GGXGlobalIllumination::renderUI(Gui* pGui, const char* uiGroup)
     changed |= pGui->addCheckBox("Compute direct illumination", mDoDirectGI);
     changed |= pGui->addCheckBox("Compute global illumination", mDoIndirectGI);
 	changed |= pGui->addCheckBox("Fog", mDoFog);
+	changed |= pGui->addIntSlider("Ray Stride", mRayStride, 1, 8);
 
     pGui->addSeparator();
 

@@ -65,6 +65,7 @@ private:
     bool                mUseEmissiveGeom = true;
 	bool				mDoFog = true;
     float               mEmissiveGeomMult = 1.0f;
+	int				mRayStride = 1;
     Texture::SharedPtr  mpBlackHDR = nullptr;
 
     enum class EnvMapMode : uint32_t
