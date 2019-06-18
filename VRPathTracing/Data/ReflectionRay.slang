@@ -65,12 +65,10 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
     sd.N = v.normalW;
 
     if (!isPerfectReflection(gMaterial.id))
-    //if (!isPerfectReflection())
     {
         //WARNING: In the non-perfect reflection cases, current material will contribute to final color. Otherwise, only sd.normalW will be initialized.
         sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
     }
 
     evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, triangleIndex, gMaterial.id);
-    //evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, triangleIndex);
 }

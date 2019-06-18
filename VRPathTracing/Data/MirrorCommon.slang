@@ -8,7 +8,6 @@ __import Hyperbolic;
 //#define TORUS_INTERSECTION
 #define DODECAHEDRON_INTERSECTION
 
-
 #define CHECK_INTERSECTION(i) \
 { \
     float3 faceNormal = normalize(dodecahedronNormals[i].xyz); \
@@ -68,7 +67,6 @@ float4 debugVertex(float3 posW, float3 normalW)
 }
 
 void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint triangleIndex, uint materialId)
-//void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint triangleIndex)
 {
 #ifdef TORUS_INTERSECTION
     // translate the ray's origin
@@ -101,7 +99,6 @@ void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 
 #endif
 
 #ifdef DODECAHEDRON_INTERSECTION
-    //if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
     if (materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON)
     {
         CHECK_INTERSECTION(0);
@@ -122,10 +119,8 @@ void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 
     hitData.distance += hitT;
 
     float3 reflectColor = getReflectionColor(posW, sd.N, rayDirW, hitData.depth.r, hitData.distance, materialId);
-    //float3 reflectColor = getReflectionColor(posW, sd.N, rayDirW, hitData.depth.r, hitData.distance);
 
     if (isPerfectReflection(materialId))
-    //if (isPerfectReflection())
     {
         hitData.color.rgb = reflectColor;
     }
@@ -145,14 +140,11 @@ void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 
 }
 
 bool isPerfectReflection(uint materialId)
-//bool isPerfectReflection()
 {
     return (materialId == PERFECT_MIRROR || materialId == TORUS || materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON);
-    //return (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON);
 }
 
 float3 getReflectionColor(float3 worldOrigin, float3 normalW, float3 worldRayDir, uint hitDepth, float distance, uint materialId)
-//float3 getReflectionColor(float3 worldOrigin, float3 normalW, float3 worldRayDir, uint hitDepth, float distance)
 {
     float3 reflectColor = float3(0, 0, 0);
     if (hitDepth < gMaxDepth)
@@ -168,7 +160,6 @@ float3 getReflectionColor(float3 worldOrigin, float3 normalW, float3 worldRayDir
         ray.Origin = worldOrigin;
 
         if (materialId == TORUS || materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON) 
-        //if (gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON) 
 		{
 			ray.Direction = worldRayDir;
 		}
@@ -185,7 +176,6 @@ float3 getReflectionColor(float3 worldOrigin, float3 normalW, float3 worldRayDir
         reflectColor += f * secondaryRay.color.rgb + (1. - f); // secondaryRay.color.rgb + color;
  
         if (materialId != PERFECT_MIRROR && materialId != TORUS && materialId != SEIFERT_WEBER_DODECAHEDRON && materialId != MIRRORED_DODECAHEDRON)
-        //if (gMaterial.id != PERFECT_MIRROR && gMaterial.id != TORUS && gMaterial.id != SEIFERT_WEBER_DODECAHEDRON && gMaterial.id != MIRRORED_DODECAHEDRON)
         {
             float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
             reflectColor *= 20 / falloff;

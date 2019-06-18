@@ -105,7 +105,7 @@ void GGXGlobalIllumRayGen()
             {
                 if (launchIndex.x % gRayStride == 0 && launchIndex.y % gRayStride == 0)
                 {
-                    /*float3 rayDirWNotNorm = posW.xyz - gCamera.posW;
+                    float3 rayDirWNotNorm = posW.xyz - gCamera.posW;
                     float hitT = length(rayDirWNotNorm);
                     float3 rayDirW = normalize(rayDirWNotNorm);
 
@@ -116,8 +116,7 @@ void GGXGlobalIllumRayGen()
                     hitData.distance = 0.f;
 
                     evaluateReflectionRay(hitData, sd, sd.posW, gCamera.posW, rayDirW, hitT, triangleIndex, matId);
-                    shadeColor += hitData.color.rgb;*/
-                    shadeColor += tracePrimaryRay(sd.posW).rgb;
+                    shadeColor += hitData.color.rgb;
                 }
                 break;
             }
