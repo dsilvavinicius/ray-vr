@@ -44,11 +44,12 @@ void GGXGlobalIllumRayGen()
     // Load g-buffer data
     float4 posW = gPos[launchIndex];
     float3 normW = gNorm[launchIndex].xyz;
+    uint triangleIndex = (uint) gNorm[launchIndex].w;
     float4 diffuse = gDiffuseMatl[launchIndex];
     float4 specRough = gSpecMatl[launchIndex];
     float4 emissive = gEmissive[launchIndex];
     float3 geomN = gExtraMatl[launchIndex].xyz;
-    float matId = gExtraMatl[launchIndex].w;
+    uint matId = (uint) gExtraMatl[launchIndex].w;
 
     // Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
     bool isGeometryValid = (posW.w != 0.0f);
@@ -104,6 +105,18 @@ void GGXGlobalIllumRayGen()
             {
                 if (launchIndex.x % gRayStride == 0 && launchIndex.y % gRayStride == 0)
                 {
+                    /*float3 rayDirWNotNorm = posW.xyz - gCamera.posW;
+                    float hitT = length(rayDirWNotNorm);
+                    float3 rayDirW = normalize(rayDirWNotNorm);
+
+                    PrimaryRayData hitData;
+                    hitData.color = float4(0.f, 0.f, 0.f, 0.f);
+                    hitData.depth = 0.f;
+                    hitData.hitT = 0.f;
+                    hitData.distance = 0.f;
+
+                    evaluateReflectionRay(hitData, sd, sd.posW, gCamera.posW, rayDirW, hitT, triangleIndex, matId);
+                    shadeColor += hitData.color.rgb;*/
                     shadeColor += tracePrimaryRay(sd.posW).rgb;
                 }
                 break;

@@ -42,13 +42,13 @@ struct GBufferOut
 
 /** Entry point for G-buffer rasterization pixel shader.
 */
-GBufferOut ps(VertexOut vsOut)
+GBufferOut ps(VertexOut vsOut, uint primitiveId : SV_PRIMITIVEID)
 {
     ShadingData sd = prepareShadingData(vsOut, gMaterial, gCamera.posW);
 
     GBufferOut gOut;
     gOut.posW           = float4(sd.posW, 1.f);
-    gOut.normW          = float4(sd.N, 0.f);
+    gOut.normW          = float4(sd.N, primitiveId);
     gOut.bitangentW     = float4(sd.B, 0.f);
     gOut.texC           = float4(sd.uv, 0.f, 0.f);
 

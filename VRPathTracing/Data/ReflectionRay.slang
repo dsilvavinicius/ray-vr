@@ -29,12 +29,7 @@ __import Raytracing;
 __import MirrorCommon;
 __import GGXGICommon;
 __import Helpers;
-__import Hyperbolic;
 #include "ShaderTypes.h"
-
-// Defines to enable support for torus and dodecahedron intersection tests.
-//#define TORUS_INTERSECTION
-#define DODECAHEDRON_INTERSECTION
 
 [shader("anyhit")]
 void ReflectionRayAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
@@ -62,94 +57,20 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
     float3 rayDirW = WorldRayDirection(); 
     float hitT = RayTCurrent();
     uint triangleIndex = PrimitiveIndex();
-
-
     float3 posW = rayOrigW + hitT * rayDirW;
+    
     // prepare the shading data
     VertexOut v = getVertexAttributes(triangleIndex, attribs);
+    ShadingData sd;
+    sd.N = v.normalW;
 
-#ifdef TORUS_INTERSECTION
-    // translate the ray's origin
-	if ( gMaterial.id == TORUS)
-	{
-	    uint3 indices = getIndices(triangleIndex);
-       
-        float3 v1 = asfloat(gPositions.Load3((indices[0] * 3) * 4));
-			   v1 = mul(float4(v1, 1.f), gWorldMat[0]).xyz;
-
-		float3 v2 = asfloat(gPositions.Load3((indices[1] * 3) * 4));
-		       v2 = mul(float4(v2, 1.f), gWorldMat[0]).xyz;
-
-		float3 v3 = asfloat(gPositions.Load3((indices[2] * 3) * 4));
-	           v3 = mul(float4(v3, 1.f), gWorldMat[0]).xyz;
-
-		float len1 = length(v2 - v1);
-		float len2 = length(v3 - v1);
-
-		if (len1 < len2)
-		{
-			posW = posW + len1*v.normalW;
-		}
-		else
-		{
-			posW = posW + len2*v.normalW;
-		}
-    }
-#endif
-
-#ifdef DODECAHEDRON_INTERSECTION
-    if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
-    {   
-        for (int i = 0; i < 12; ++i)
-        {
-            float epsilon = 0.2f;
-            v.normalW = normalize(v.normalW);
-            float3 faceNormal = normalize(dodecahedronNormals[i].xyz);
-            float dotValue = v.normalW.x * faceNormal.x + v.normalW.y * faceNormal.y + v.normalW.z * faceNormal.z;
-            if (abs(1.f + dotValue) < epsilon)
-            {
-                Ray newRay;
-                if (gMaterial.id == SEIFERT_WEBER_DODECAHEDRON)
-                {
-                    newRay = func_new_ray_direction(dodecahedronInvTransforms[i], posW, rayDirW);
-                }
-                if (gMaterial.id == MIRRORED_DODECAHEDRON)
-                {
-                    newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW);
-                    //newRay = PoincareSphere(dodecahedronNormals[i], posW, rayDirW);
-                }
-
-                posW = newRay.origin;
-                rayDirW = normalize(newRay.dir);
-                
-                hitT = distH(float4(rayOrigW, 1.f), float4(posW, 1.f));
-            
-                break;
-            }
-        }
-    }
-#endif
-
-    hitData.distance += hitT;
-
-    float3 reflectColor = getReflectionColor(posW, v, rayDirW, hitData.depth.r, hitData.distance);
-
-    if (gMaterial.id == PERFECT_MIRROR || gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON)
+    if (!isPerfectReflection(gMaterial.id))
+    //if (!isPerfectReflection())
     {
-        hitData.color.rgb = reflectColor;
-    }
-    else
-    {
-        ShadingData sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
-        float3 color = directWithShadows(sd);
-        hitData.color.rgb = color;
-
-        // A very non-PBR inaccurate way to do reflections
-        float roughness = min(0.5, max(1e-8, sd.roughness));
-        hitData.color.rgb += sd.specular * reflectColor * (roughness * roughness);
-        hitData.color.rgb += sd.emissive;
+        //WARNING: In the non-perfect reflection cases, current material will contribute to final color. Otherwise, only sd.normalW will be initialized.
+        sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
     }
 
-    hitData.hitT = hitT;
-    hitData.color.a = 1;
+    evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, triangleIndex, gMaterial.id);
+    //evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, triangleIndex);
 }
