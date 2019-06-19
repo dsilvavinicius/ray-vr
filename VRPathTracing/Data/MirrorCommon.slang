@@ -8,23 +8,27 @@ __import Hyperbolic;
 //#define TORUS_INTERSECTION
 #define DODECAHEDRON_INTERSECTION
 
+// Define to aid the dodecahedron intersection loop unrolling. Not the best practice, but working with a normal loop seems to be buggy in RTX shaders currently.
 #define CHECK_INTERSECTION(i) \
 { \
-    float3 faceNormal = normalize(dodecahedronNormals[i].xyz); \
-    if (abs(1.f + dot(sd.N, faceNormal)) < 0.001f) \
+    if(!hasIntersected) \
     { \
-        Ray newRay; \
-        if (materialId == MIRRORED_DODECAHEDRON) \
+        float3 faceNormal = normalize(dodecahedronNormals[i].xyz); \
+        if (abs(1.f + dot(sd.N, faceNormal)) < 0.001f) \
         { \
-        newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW); \
+            Ray newRay; \
+            if (materialId == MIRRORED_DODECAHEDRON) \
+            { \
+            newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW); \
+            } \
+            else \
+            { \
+                newRay = func_new_ray_direction(dodecahedronInvTransforms[i], posW, rayDirW); \
+            } \
+            posW = newRay.origin; \
+            rayDirW = normalize(newRay.dir); \
+            hitT = distH(float4(rayOrigW, 1.f), float4(posW, 1.f)); \
         } \
-        else \
-        { \
-            newRay = func_new_ray_direction(dodecahedronInvTransforms[i], posW, rayDirW); \
-        } \
-        posW = newRay.origin; \
-        rayDirW = normalize(newRay.dir); \
-        hitT = distH(float4(rayOrigW, 1.f), float4(posW, 1.f)); \
     } \
 }
 
@@ -101,6 +105,7 @@ void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 
 #ifdef DODECAHEDRON_INTERSECTION
     if (materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON)
     {
+        bool hasIntersected = false;
         CHECK_INTERSECTION(0);
         CHECK_INTERSECTION(1);
         CHECK_INTERSECTION(2);
