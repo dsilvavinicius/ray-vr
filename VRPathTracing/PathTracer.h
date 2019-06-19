@@ -82,6 +82,6 @@ private:
 		Dodecahedron,
 		Euclidean
 	};
-	// The scene type is used to auto-detect scenes with boundaries to allow toggling them.
+	// This member is used to auto-detect special scenes that have boundaries.
 	SceneType mSceneType = Euclidean;
 };
