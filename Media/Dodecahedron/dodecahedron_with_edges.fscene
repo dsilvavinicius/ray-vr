@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "Dodecahedron/dodecahedron_edges.fbx",
+            "file": "dodecahedron_edges.fbx",
             "name": "dodecahedron_edges",
             "material": {
                 "shading_model": "metal_rough"
