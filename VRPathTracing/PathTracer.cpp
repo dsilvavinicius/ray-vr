@@ -297,7 +297,7 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 
 	if (pScene != nullptr)
 	{
-		if (filename.find("six_mirrors") != string::npos)
+		if (filename.find("fundamental_domain_cube") != string::npos)
 		{
 			mSceneType = Torus;
 		}
