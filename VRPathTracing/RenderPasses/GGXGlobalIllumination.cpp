@@ -55,6 +55,7 @@ GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary 
     if (params.keyExists("rayDepth"))        pPass->mUserSpecifiedRayDepth = params["rayDepth"];
     if (params.keyExists("randomSeed"))      pPass->mFrameCount = params["randomSeed"];
 	if (params.keyExists("rayStride"))		 pPass->mRayStride = params["rayStride"];
+	if (params.keyExists("torusDomainSize")) pPass->mTorusDomainSizeW = params["torusDomainSize"];
     if (params.keyExists("useBlackEnvMap"))  pPass->mEnvMapMode = params["useBlackEnvMap"] ? EnvMapMode::Black : EnvMapMode::Scene;
 
     return pPass;
@@ -70,6 +71,7 @@ Dictionary GGXGlobalIllumination::getScriptingDictionary() const
     serialize["rayDepth"] = mUserSpecifiedRayDepth;
     serialize["randomSeed"] = mFrameCount;
 	serialize["randomSeed"] = mRayStride;
+	serialize["torusDomainSize"] = mTorusDomainSizeW;
     serialize["useBlackEnvMap"] = mEnvMapMode == EnvMapMode::Black;
     return serialize;
 }
@@ -157,6 +159,7 @@ void GGXGlobalIllumination::execute(RenderContext* pContext, const RenderData* p
     pCB["gMaxDepth"] = uint32_t(mUserSpecifiedRayDepth);
     pCB["gEmitMult"] = float(mUseEmissiveGeom ? mEmissiveGeomMult : 0.0f);
 	pCB["gRayStride"] = mRayStride;
+	pCB["gTorusDomainSizeW"] = mTorusDomainSizeW;
 
     globalVars->setTexture("gPos", pData->getTexture("posW"));
     globalVars->setTexture("gNorm", pData->getTexture("normW"));
@@ -180,6 +183,7 @@ void GGXGlobalIllumination::renderUI(Gui* pGui, const char* uiGroup)
     changed |= pGui->addCheckBox("Compute global illumination", mDoIndirectGI);
 	changed |= pGui->addCheckBox("Fog", mDoFog);
 	changed |= pGui->addIntSlider("Ray Stride", mRayStride, 1, 8);
+	changed |= pGui->addFloatSlider("Torus Domain Size", mTorusDomainSizeW, 0.f, 10.f);
 
     pGui->addSeparator();
 

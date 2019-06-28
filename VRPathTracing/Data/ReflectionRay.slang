@@ -70,5 +70,5 @@ void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleInt
         sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
     }
 
-    evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, triangleIndex, gMaterial.id);
+    evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, gMaterial.id);
 }

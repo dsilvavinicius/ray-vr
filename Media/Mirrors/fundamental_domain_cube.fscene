@@ -29,9 +29,18 @@
                         -0.0,
                         -0.0
                     ]
-                },
+                }
+            ]
+        },
+        {
+            "file": "C:\\Users\\dsilva.vinicius\\Documents\\non_euclidean_space_ray_tracing\\NonEuclideanSpaceRayTracing\\Media\\Mirrors/six_mirrors_room_only_edges.fbx",
+            "name": "six_mirrors_room_only_edges",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
                 {
-                    "name": "six_mirrors_room1",
+                    "name": "six_mirrors_room_only_edges0",
                     "translation": [
                         0.0,
                         0.0,

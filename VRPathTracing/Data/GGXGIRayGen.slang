@@ -44,7 +44,6 @@ void GGXGlobalIllumRayGen()
     // Load g-buffer data
     float4 posW = gPos[launchIndex];
     float3 normW = gNorm[launchIndex].xyz;
-    uint triangleIndex = (uint) gNorm[launchIndex].w;
     float4 diffuse = gDiffuseMatl[launchIndex];
     float4 specRough = gSpecMatl[launchIndex];
     float4 emissive = gEmissive[launchIndex];
@@ -115,8 +114,15 @@ void GGXGlobalIllumRayGen()
                     hitData.hitT = 0.f;
                     hitData.distance = 0.f;
 
-                    evaluateReflectionRay(hitData, sd, sd.posW, gCamera.posW, rayDirW, hitT, triangleIndex, matId);
+                    evaluateReflectionRay(hitData, sd, sd.posW, gCamera.posW, rayDirW, hitT, matId);
                     shadeColor += hitData.color.rgb;
+
+                    /*
+                    // DEBUG
+                    {
+                        shadeColor += tracePrimaryRay(sd.posW).rgb;
+                    }
+                    */
                 }
                 break;
             }

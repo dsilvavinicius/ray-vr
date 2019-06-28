@@ -5,7 +5,7 @@ __import Hyperbolic;
 #include "ShaderTypes.h"
 
 // Defines to enable support for torus and dodecahedron intersection tests.
-//#define TORUS_INTERSECTION
+#define TORUS_INTERSECTION
 #define DODECAHEDRON_INTERSECTION
 
 // Define to aid the dodecahedron intersection loop unrolling. Not the best practice, but working with a normal loop seems to be buggy in RTX shaders currently.
@@ -70,35 +70,13 @@ float4 debugVertex(float3 posW, float3 normalW)
     return color;
 }
 
-void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint triangleIndex, uint materialId)
+void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint materialId)
 {
 #ifdef TORUS_INTERSECTION
     // translate the ray's origin
-	//if (gMaterial.id == TORUS)
     if (materialId == TORUS)
 	{
-	    uint3 indices = getIndices(triangleIndex);
-       
-        float3 v1 = asfloat(gPositions.Load3((indices[0] * 3) * 4));
-			   v1 = mul(float4(v1, 1.f), gWorldMat[0]).xyz;
-
-		float3 v2 = asfloat(gPositions.Load3((indices[1] * 3) * 4));
-		       v2 = mul(float4(v2, 1.f), gWorldMat[0]).xyz;
-
-		float3 v3 = asfloat(gPositions.Load3((indices[2] * 3) * 4));
-	           v3 = mul(float4(v3, 1.f), gWorldMat[0]).xyz;
-
-		float len1 = length(v2 - v1);
-		float len2 = length(v3 - v1);
-
-		if (len1 < len2)
-		{
-			posW = posW + len1*sd.N;
-		}
-		else
-		{
-			posW = posW + len2*sd.N;
-		}
+        posW = posW + gTorusDomainSizeW * sd.N;
     }
 #endif
 
