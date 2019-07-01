@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Data">
@@ -68,22 +68,19 @@
     <None Include="Data\GGXGIShadowRay.slang">
       <Filter>Data</Filter>
     </None>
-    <None Include="Data\RasterPrimary.slang">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="Data\MirrorRay.slang">
+    <None Include="Data\Hyperbolic.slang">
       <Filter>Data</Filter>
     </None>
     <None Include="Data\MirrorCommon.slang">
       <Filter>Data</Filter>
     </None>
-    <None Include="..\Media\Mirrors\six_mirrors_regular_borders_small_scale.fscene">
-      <Filter>Media</Filter>
-    </None>
-    <None Include="Data\Hyperbolic.slang">
+    <None Include="Data\Spherical.slang">
       <Filter>Data</Filter>
     </None>
-    <None Include="Data\Spherical.slang">
+    <None Include="Data\RasterPrimary.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\ReflectionRay.slang">
       <Filter>Data</Filter>
     </None>
   </ItemGroup>

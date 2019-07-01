@@ -67,25 +67,30 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 	pGui->addSeparator();
 
-	if(pGui->addButton("Toggle Boundaries"))
+	if (mSceneType == Torus || mSceneType == Dodecahedron)
 	{
-		bool found = false;
-		for (uint i = 0; i < scene->getModelCount(); ++i)
+		string expectedName = (mSceneType == Torus) ? "six_mirrors_room_only_edges_copy" : "dodecahedron_edges_copy";
+
+		if (pGui->addButton("Toggle Boundaries"))
 		{
-			Model::SharedPtr model = scene->getModel(i);
-			if (model->getName().compare("six_mirrors_room_only_edges_copy") == 0)
+			bool found = false;
+			for (uint i = 0; i < scene->getModelCount(); ++i)
 			{
-				found = true;
-				mBoundaryModel = model;
-				scene->deleteModel(i);
-				break;
+				Model::SharedPtr model = scene->getModel(i);
+				if (model->getName().compare(expectedName) == 0)
+				{
+					found = true;
+					mBoundaryModel = model;
+					scene->deleteModel(i);
+					break;
+				}
 			}
-		}
 
-		if (!found)
-		{
-
-			scene->addModelInstance(mBoundaryModel, "six_mirrors_room_only_edges_copy", vec3(), vec3(), vec3(0.2, 0.2, 0.2));
+			if (!found)
+			{
+				vec3 scale = (mSceneType == Torus) ? vec3(0.2, 0.2, 0.2) : vec3(0.01, 0.01, 0.01);
+				scene->addModelInstance(mBoundaryModel, expectedName, vec3(), vec3(), scale);
+			}
 		}
 	}
 
@@ -292,6 +297,19 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 
 	if (pScene != nullptr)
 	{
+		if (filename.find("fundamental_domain_cube") != string::npos)
+		{
+			mSceneType = Torus;
+		}
+		else if (filename.find("dodecahedron") != string::npos)
+		{
+			mSceneType = Dodecahedron;
+		}
+		else
+		{
+			mSceneType = Euclidean;
+		}
+
 		mAvatar = Avatar::create(pScene);
 
 		Fbo::SharedPtr pFbo = pCallbacks->getCurrentFbo();
@@ -363,7 +381,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 	createRenderGraph(pCallbacks, mpLeftEyeGraph);
 	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
-	loadModel(pCallbacks, "Dodecahedron/dodecaheron_with_edges.fscene");
+	loadModel(pCallbacks, "Dodecahedron/dodecahedron_with_edges.fscene");
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
 }
 

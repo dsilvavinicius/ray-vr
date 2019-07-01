@@ -48,7 +48,6 @@ public:
 private:
     void toggleCameraPathState();
 	void createRenderGraph(SampleCallbacks* pCallbacks, RenderGraph::SharedPtr& outRenderGraph);
-
 	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
 
     bool mCameraPath = false;
@@ -76,4 +75,13 @@ private:
 	bool mShowStereoViews = true;
 	vector< vector< uint > > mMaterialIds;
 	uint mGlobalMaterialId = 0;
+
+	enum SceneType
+	{
+		Torus,
+		Dodecahedron,
+		Euclidean
+	};
+	// This member is used to auto-detect special scenes that have boundaries.
+	SceneType mSceneType = Euclidean;
 };

@@ -144,7 +144,6 @@
     <ClInclude Include="RenderPasses\TemporalAccumulation.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Media\Mirrors\six_mirrors_regular_borders_small_scale.fscene" />
     <None Include="Data\Accumulate.slang" />
     <None Include="Data\Hyperbolic.slang" />
     <None Include="Data\GGXGICommon.slang" />
@@ -152,12 +151,12 @@
     <None Include="Data\GGXGIRayGen.slang" />
     <None Include="Data\GGXGIShadowRay.slang" />
     <None Include="Data\MirrorCommon.slang" />
-    <None Include="Data\MirrorRay.slang">
+    <None Include="Data\RasterPrimary.slang" />
+    <None Include="Data\Spherical.slang" />
+    <None Include="Data\ReflectionRay.slang">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </None>
-    <None Include="Data\RasterPrimary.slang" />
-    <None Include="Data\Spherical.slang" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\falcor\Framework\Source\Falcor.vcxproj">

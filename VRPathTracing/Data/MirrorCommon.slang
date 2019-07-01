@@ -1,7 +1,36 @@
 __import Raytracing;
 __import GGXGICommon;
+__import Hyperbolic;
 #include "HostDeviceSharedMacros.h"
 #include "ShaderTypes.h"
+
+// Defines to enable support for torus and dodecahedron intersection tests.
+#define TORUS_INTERSECTION
+#define DODECAHEDRON_INTERSECTION
+
+// Define to aid the dodecahedron intersection loop unrolling. Not the best practice, but working with a normal loop seems to be buggy in RTX shaders currently.
+#define CHECK_INTERSECTION(i) \
+{ \
+    if(!hasIntersected) \
+    { \
+        float3 faceNormal = normalize(dodecahedronNormals[i].xyz); \
+        if (abs(1.f + dot(sd.N, faceNormal)) < 0.001f) \
+        { \
+            Ray newRay; \
+            if (materialId == MIRRORED_DODECAHEDRON) \
+            { \
+            newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW); \
+            } \
+            else \
+            { \
+                newRay = func_new_ray_direction(dodecahedronInvTransforms[i], posW, rayDirW); \
+            } \
+            posW = newRay.origin; \
+            rayDirW = normalize(newRay.dir); \
+            hitT = distH(float4(rayOrigW, 1.f), float4(posW, 1.f)); \
+        } \
+    } \
+}
 
 struct PrimaryRayData
 {
@@ -41,7 +70,64 @@ float4 debugVertex(float3 posW, float3 normalW)
     return color;
 }
 
-float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, uint hitDepth, float distance)
+void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint materialId)
+{
+#ifdef TORUS_INTERSECTION
+    // translate the ray's origin
+    if (materialId == TORUS)
+	{
+        posW = posW + gTorusDomainSizeW * sd.N;
+    }
+#endif
+
+#ifdef DODECAHEDRON_INTERSECTION
+    if (materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON)
+    {
+        bool hasIntersected = false;
+        CHECK_INTERSECTION(0);
+        CHECK_INTERSECTION(1);
+        CHECK_INTERSECTION(2);
+        CHECK_INTERSECTION(3);
+        CHECK_INTERSECTION(4);
+        CHECK_INTERSECTION(5);
+        CHECK_INTERSECTION(6);
+        CHECK_INTERSECTION(7);
+        CHECK_INTERSECTION(8);
+        CHECK_INTERSECTION(9);
+        CHECK_INTERSECTION(10);
+        CHECK_INTERSECTION(11);
+    }
+#endif
+
+    hitData.distance += hitT;
+
+    float3 reflectColor = getReflectionColor(posW, sd.N, rayDirW, hitData.depth.r, hitData.distance, materialId);
+
+    if (isPerfectReflection(materialId))
+    {
+        hitData.color.rgb = reflectColor;
+    }
+    else
+    {
+        float3 color = directWithShadows(sd);
+        hitData.color.rgb = color;
+
+        // A very non-PBR inaccurate way to do reflections
+        float roughness = min(0.5, max(1e-8, sd.roughness));
+        hitData.color.rgb += sd.specular * reflectColor * (roughness * roughness);
+        hitData.color.rgb += sd.emissive;
+    }
+
+    hitData.hitT = hitT;
+    hitData.color.a = 1;
+}
+
+bool isPerfectReflection(uint materialId)
+{
+    return (materialId == PERFECT_MIRROR || materialId == TORUS || materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON);
+}
+
+float3 getReflectionColor(float3 worldOrigin, float3 normalW, float3 worldRayDir, uint hitDepth, float distance, uint materialId)
 {
     float3 reflectColor = float3(0, 0, 0);
     if (hitDepth < gMaxDepth)
@@ -56,13 +142,13 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
         RayDesc ray;
         ray.Origin = worldOrigin;
 
-        if (gMaterial.id == TORUS || gMaterial.id == SEIFERT_WEBER_DODECAHEDRON || gMaterial.id == MIRRORED_DODECAHEDRON) 
+        if (materialId == TORUS || materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON) 
 		{
 			ray.Direction = worldRayDir;
 		}
 		else
 		{
-			ray.Direction = reflect(worldRayDir, v.normalW);
+			ray.Direction = reflect(worldRayDir, normalW);
 		}
         
 		ray.TMin = 0.001;
@@ -72,7 +158,7 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
  
         reflectColor += f * secondaryRay.color.rgb + (1. - f); // secondaryRay.color.rgb + color;
  
-        if (gMaterial.id != PERFECT_MIRROR && gMaterial.id != TORUS && gMaterial.id != SEIFERT_WEBER_DODECAHEDRON && gMaterial.id != MIRRORED_DODECAHEDRON)
+        if (materialId != PERFECT_MIRROR && materialId != TORUS && materialId != SEIFERT_WEBER_DODECAHEDRON && materialId != MIRRORED_DODECAHEDRON)
         {
             float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
             reflectColor *= 20 / falloff;

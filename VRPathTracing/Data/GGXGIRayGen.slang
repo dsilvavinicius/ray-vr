@@ -51,7 +51,7 @@ void GGXGlobalIllumRayGen()
     float4 specRough = gSpecMatl[launchIndex];
     float4 emissive = gEmissive[launchIndex];
     float3 geomN = gExtraMatl[launchIndex].xyz;
-    float matId = gExtraMatl[launchIndex].w;
+    uint matId = (uint) gExtraMatl[launchIndex].w;
 
     // Does this g-buffer pixel contain a valid piece of geometry?  (0 in pos.w for invalid)
     bool isGeometryValid = (posW.w != 0.0f);
@@ -105,32 +105,54 @@ void GGXGlobalIllumRayGen()
             case SEIFERT_WEBER_DODECAHEDRON:
             case MIRRORED_DODECAHEDRON:
             {
-                    //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
-                    //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
-                    //gSphericalScale = getSceneUnit();
-                    //shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
-                    shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
-                   
-               //shadeColor += tracePrimaryRay(sd.posW).rgb;
+                if (launchIndex.x % gRayStride == 0 && launchIndex.y % gRayStride == 0)
+                {
+                    float3 rayDirWNotNorm = posW.xyz - gCamera.posW;
+                    float hitT = length(rayDirWNotNorm);
+                    float3 rayDirW = normalize(rayDirWNotNorm);
 
+                    PrimaryRayData hitData;
+                    hitData.color = float4(0.f, 0.f, 0.f, 0.f);
+                    hitData.depth = 0.f;
+                    hitData.hitT = 0.f;
+                    hitData.distance = 0.f;
 
+                    evaluateReflectionRay(hitData, sd, sd.posW, gCamera.posW, rayDirW, hitT, matId);
+                    shadeColor += hitData.color.rgb;
+
+                    // Spherical Rendering
+                    {
+                        //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
+                        //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
+                        //gSphericalScale = getSceneUnit();
+                        //shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
+                        //shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
+                    }
+
+                    /*
+                    // DEBUG
+                    {
+                        shadeColor += tracePrimaryRay(sd.posW).rgb;
+                    }
+                    */
+                }
                 break;
             }
             case PATH_TRACING: // Path tracing
             {
                 // Direct lighting to a random light in the scene
-                    if (gDoDirectGI)
-                        shadeColor += ggxDirect(randSeed, sd);
+                if (gDoDirectGI)
+                    shadeColor += ggxDirect(randSeed, sd);
 
                 // Indirect lighting for global illumination
-                    if (gDoIndirectGI && (gMaxDepth > 0))
-                        shadeColor += ggxIndirect(randSeed, sd, geomN);
+                if (gDoIndirectGI && (gMaxDepth > 0))
+                    shadeColor += ggxIndirect(randSeed, sd, geomN);
 
                 // Zero out any bad samples
-                    bool colorsNan = any(isnan(shadeColor));
-                    shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
-                    break;
-                }
+                bool colorsNan = any(isnan(shadeColor));
+                shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
+                break;
+            }
         }
     }
     

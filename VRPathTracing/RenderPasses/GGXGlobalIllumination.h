@@ -65,9 +65,14 @@ private:
     bool                mUseEmissiveGeom = true;
 	bool				mDoFog = true;
     float               mEmissiveGeomMult = 1.0f;
+	
 	float mSphericalScale = 0.326f;
 	float mThickness = 0.01f;
 	float mScale = 1.f;
+
+	int					mRayStride = 1;
+	float				mTorusDomainSizeW = 4.f; // Size of the Torus fundamental domain in the Torus scene.
+
     Texture::SharedPtr  mpBlackHDR = nullptr;
 
     enum class EnvMapMode : uint32_t

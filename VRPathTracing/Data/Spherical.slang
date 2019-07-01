@@ -24,7 +24,7 @@ static const float4 N1 = (1.f, 0.f, 0.f, 0.f);
 static const float4 N2 = (0.f, 1.f, 0.f, 0.f);
 
 //Initial conditions of a geodesic in the euclidean space
-struct Ray
+struct euclideanRay
 {
     float3 origin;
     float3 dir;
@@ -291,7 +291,7 @@ sphericalRay raySphereIntersection
 //*********************************************************************************************************
 //maps the euclidean ray to the spherical ray
 //********************************************************************************************************* 
-sphericalRay flatToSpherical(Ray ray)
+sphericalRay flatToSpherical(euclideanRay ray)
 {
     sphericalRay sRay;
 
@@ -312,9 +312,9 @@ sphericalRay flatToSpherical(Ray ray)
 //*********************************************************************************************************
 //
 //*********************************************************************************************************
-Ray sphericalToFlat(sphericalRay sRay)
+euclideanRay sphericalToFlat(sphericalRay sRay)
 {
-    Ray ray;
+    euclideanRay ray;
 
     ray.origin = sphericalToFlat(sRay.origin);
     ray.dir    = sphericalToFlat(sRay.origin, sRay.dir);
@@ -334,7 +334,7 @@ Ray sphericalToFlat(sphericalRay sRay)
 //maps the ray to the correspondent in the opposite dodecahedral face with a adition pi/5 rotation,
 //this transformation gives rise to the Poincare dodecaheral space
 //*********************************************************************************************************
-Ray PoincareSphereMap(Ray ray, float3 n)
+euclideanRay PoincareSphereMap(euclideanRay ray, float3 n)
 {
     float3 p = ray.origin;
     float3 v = ray.dir;
@@ -363,7 +363,7 @@ Ray PoincareSphereMap(Ray ray, float3 n)
 
     p -= q;
 
-    Ray newRay = ray;
+    euclideanRay newRay = ray;
     newRay.origin = p;
     
     return newRay;
@@ -375,7 +375,7 @@ Ray PoincareSphereMap(Ray ray, float3 n)
 //*********************************************************************************************************
 //
 //*********************************************************************************************************
-Ray PoincareSphereMap(Ray ray, float4 sn)
+euclideanRay PoincareSphereMap(euclideanRay ray, float4 sn)
 {
     return PoincareSphereMap(ray, normalize(sn.xyz));
 }
@@ -430,11 +430,11 @@ float4 PoincareUpdateDir(sphericalRay prevRay, sphericalRay nexRay, float4 sN)
 //*********************************************************************************************************
 sphericalRay PoincareSphere(sphericalRay sRay, float4 sn)
 {
-    Ray ray = sphericalToFlat(sRay);
+    euclideanRay ray = sphericalToFlat(sRay);
     
     float3 n = normalize(sn.xyz);
 
-    Ray new_fRay = PoincareSphereMap(ray, n); 
+    euclideanRay new_fRay = PoincareSphereMap(ray, n);
 
     sphericalRay new_sRay = sRay;
     new_sRay.origin = flatToSpherical(new_fRay.origin);
@@ -453,7 +453,7 @@ sphericalRay sphericalReflection(sphericalRay sRay, float4 N)
 {
     float3 n = normalize(N.xyz);
 
-    Ray ray = sphericalToFlat(sRay);
+    euclideanRay ray = sphericalToFlat(sRay);
     
     sphericalRay newRay = sRay;
 
@@ -550,7 +550,7 @@ float3 traceSphericalShade(float3 p, float3 v)
 {
     float g_distance = 0;  
                 
-    Ray ray;
+    euclideanRay ray;
     ray.origin = p;
     ray.dir = v;
     
@@ -609,7 +609,7 @@ float3 traceSphericalShade(float3 p, float3 v)
 //*********************************************************************************************************
 //
 //*********************************************************************************************************
-sphericalRay shadeCliffordTorus(sphericalRay sRay)
+/*sphericalRay shadeCliffordTorus(sphericalRay sRay)
 {
     float4 p = sRay.origin;
     float4 v = sRay.dir;
@@ -655,7 +655,7 @@ float3 shadeCliffordTorus(float3 p, float3 v)
 {
     float g_distance = 0;
                 
-    Ray ray;
+    euclideanRay ray;
     ray.origin = p;
     ray.dir = v;
     
@@ -677,7 +677,7 @@ float3 shadeCliffordTorus(float3 p, float3 v)
         float f = (1.f - g_distance / (6.28318 * gScale));
         return (float3(182.f, 82.f, 45.f) / 255.f) * (1.f - g_distance / (6.28318 * gScale)) * f * f * f;
     }
-}
+}*/
 
 
 
@@ -691,12 +691,12 @@ float3 shadeCliffordTorus(float3 p, float3 v)
 //*********************************************************************************************************
 //the functions below are used for the flat case of the poincare sphere
 //*********************************************************************************************************
-Ray func_plane_ray_intersection
+euclideanRay func_plane_ray_intersection
 (
   in float3 po, //plane origin
   in float3 pn, //plane dir
     
-  in Ray ray
+  in euclideanRay ray
 /*
   in vec3 rayo, //ray origin
   in vec3 rayn, //ray direction
@@ -704,7 +704,7 @@ Ray func_plane_ray_intersection
   out int check*/
 )
 {
-    Ray hitRay = ray;
+    euclideanRay hitRay = ray;
 
     hitRay.origin = float3(0.0, 0.0, 0.0);
     
@@ -746,9 +746,9 @@ Ray func_plane_ray_intersection
 
 
 //*********************************************************************************************************
-Ray traceFlatRay
+euclideanRay traceFlatRay
 (
-in Ray ray
+in euclideanRay ray
 /*inout vec3 rayo,
 inout vec3 rayn,
 out int border,
@@ -756,7 +756,7 @@ out int hit,
 out float outdist*/
 )
 {
-    Ray new_Ray = ray;
+    euclideanRay new_Ray = ray;
 
     //used to verify if the ray intersects an edge
     float tdist = 1000000.0;
@@ -773,7 +773,7 @@ out float outdist*/
     {
         dist[i] = 1000000.0;
       
-        Ray next_Ray = func_plane_ray_intersection(normalize(dodecahedronNormals[i].xyz) * 0.5, normalize(dodecahedronNormals[i].xyz), ray);
+        euclideanRay next_Ray = func_plane_ray_intersection(normalize(dodecahedronNormals[i].xyz) * 0.5, normalize(dodecahedronNormals[i].xyz), ray);
         
         //if the intersection is valid
         if (next_Ray.check == 1)
@@ -823,7 +823,7 @@ float3 traceFlatShade(float3 p, float3 v)
                     
     float o_specular = 0.0;
                 
-    Ray ray;
+    euclideanRay ray;
     ray.origin = p;
     ray.dir = v;
     ray.check = 0;

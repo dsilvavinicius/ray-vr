@@ -41,12 +41,14 @@ shared cbuffer GlobalCB
     uint gFrameCount; // An integer changing every frame to update the random number
     bool gDoIndirectGI; // A boolean determining if we should shoot indirect GI rays
     bool gDoDirectGI; // A boolean determining if we should compute direct lighting
-    bool gDoFog;
+    bool gDoFog; // Is fog enabled?
     uint gMaxDepth; // Maximum number of recursive bounces to allow
     float gEmitMult; // Emissives are currently hacked.  Multiply emissive amount by this factor
     float gSphericalScale;
     float gThickness;
     float gScale;
+    int gRayStride; // Rays will be traced through pixels following this stride. In other words, a ray will be traced every gRayStride pixels. Optimization parameter.
+    float gTorusDomainSizeW; // The size of the torus fundamental domain.
 }
 
 shared ITexture2D gPos;
