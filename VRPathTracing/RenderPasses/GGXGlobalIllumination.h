@@ -60,18 +60,19 @@ private:
     RtSceneRenderer::SharedPtr  mpSceneRenderer;
 
     // Recursive ray tracing can be slow. Add a toggle to disable, to allow you to manipulate the scene
-    bool                mDoIndirectGI = true;
-    bool                mDoDirectGI = true;
-    bool                mUseEmissiveGeom = true;
-	bool				mDoFog = true;
-    float               mEmissiveGeomMult = 1.0f;
+    bool mDoIndirectGI = true;
+    bool mDoDirectGI = true;
+    bool mUseEmissiveGeom = true;
+	bool mDoFog = true;
+    float mEmissiveGeomMult = 1.0f;
 	
 	float mSphericalScale = 0.326f;
 	float mThickness = 0.01f;
 	float mScale = 1.f;
 
-	int					mRayStride = 1;
-	float				mTorusDomainSizeW = 4.f; // Size of the Torus fundamental domain in the Torus scene.
+	int	mRayStride = 1;
+	float mTorusDomainSizeW = 4.f; // Size of the Torus fundamental domain in the Torus scene.
+	float mDodecahedronScale = 0.880f;
 
     Texture::SharedPtr  mpBlackHDR = nullptr;
 

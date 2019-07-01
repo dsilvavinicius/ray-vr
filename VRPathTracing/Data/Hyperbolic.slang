@@ -1,6 +1,11 @@
 #ifndef HYPERBOLIC
 #define HYPERBOLIC
 
+shared cbuffer HyperbolicCB
+{
+    float gDodecahedronScale;
+}
+
 // Dodecahedron face definition.
 /*struct Face
 {
@@ -513,7 +518,7 @@ Ray perfectReflection(
 
     //parameter that gives the intersection between the ray origin + t*p and the face 
     //0.87 ajustes to the right-angle dodecahedron in Klein model
-    float t = (q_dote / dote(p, q))*0.87;
+    float t = (q_dote / dote(p, q))*gDodecahedronScale;
 
     p = t * p;
     q = t * q;

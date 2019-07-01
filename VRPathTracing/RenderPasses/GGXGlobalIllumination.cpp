@@ -165,6 +165,9 @@ void GGXGlobalIllumination::execute(RenderContext* pContext, const RenderData* p
 	pCB["gThickness"] = mThickness;
 	pCB["gScale"] = mScale;
 
+	ConstantBuffer::SharedPtr pHyperbolicCB = globalVars->getConstantBuffer("HyperbolicCB");
+	pHyperbolicCB["gDodecahedronScale"] = mDodecahedronScale;
+
     globalVars->setTexture("gPos", pData->getTexture("posW"));
     globalVars->setTexture("gNorm", pData->getTexture("normW"));
     globalVars->setTexture("gDiffuseMatl", pData->getTexture("diffuseOpacity"));
@@ -188,6 +191,7 @@ void GGXGlobalIllumination::renderUI(Gui* pGui, const char* uiGroup)
 	changed |= pGui->addCheckBox("Fog", mDoFog);
 	changed |= pGui->addIntSlider("Ray Stride", mRayStride, 1, 8);
 	changed |= pGui->addFloatSlider("Torus Domain Size", mTorusDomainSizeW, 0.f, 10.f);
+	changed |= pGui->addFloatSlider("Mirrored Dodecahedron Scale", mDodecahedronScale, 0.1f, 1.f, false, "%5f");
 
 	changed |= pGui->addFloatSlider("Dodecahedron Scale", mSphericalScale, 0.f, 1.f);
 	changed |= pGui->addFloatSlider("Thickness", mThickness, 0.f, 0.1f);
