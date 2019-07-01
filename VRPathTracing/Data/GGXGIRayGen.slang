@@ -90,18 +90,17 @@ void GGXGlobalIllumRayGen()
         {
             case RASTER:
             {
-                    shadeColor += raster(sd);
-                    break;
-                }
+                shadeColor += raster(sd);
+                break;
+            }
             case RASTER_PLUS_SHADOWS:
             {
-                    shadeColor += directWithShadows(sd);
-                    break;
-                }
-
-            case TORUS:
+                shadeColor += directWithShadows(sd);
+                break;
+            }
             case REFLECTIONS:
             case PERFECT_MIRROR:
+            case TORUS:
             case SEIFERT_WEBER_DODECAHEDRON:
             case MIRRORED_DODECAHEDRON:
             {
@@ -129,31 +128,36 @@ void GGXGlobalIllumRayGen()
                 }
                 break;
             }
-            case POINCARE_DODECAHEDRON:
-            {
-                // Spherical Rendering
-                //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
-                //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
-                //gSphericalScale = getSceneUnit();
-                shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
-                //shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
-                break;
-            }
-            case PATH_TRACING: // Path tracing
-            {
-                // Direct lighting to a random light in the scene
-                if (gDoDirectGI)
-                    shadeColor += ggxDirect(randSeed, sd);
+            #ifdef POINCARE_ENABLED
+                case POINCARE_DODECAHEDRON:
+                {
+                    // Spherical Rendering
+                    //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
+                    //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
+                    //gSphericalScale = getSceneUnit();
+                    shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
+                    //shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
+                
+                    break;
+                }
+            #endif
+            #ifdef PATH_TRACING_ENABLED
+                case PATH_TRACING: // Path tracing
+                {
+                    // Direct lighting to a random light in the scene
+                    if (gDoDirectGI)
+                        shadeColor += ggxDirect(randSeed, sd);
 
-                // Indirect lighting for global illumination
-                if (gDoIndirectGI && (gMaxDepth > 0))
-                    shadeColor += ggxIndirect(randSeed, sd, geomN);
+                    // Indirect lighting for global illumination
+                    if (gDoIndirectGI && (gMaxDepth > 0))
+                        shadeColor += ggxIndirect(randSeed, sd, geomN);
 
-                // Zero out any bad samples
-                bool colorsNan = any(isnan(shadeColor));
-                shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
-                break;
-            }
+                    // Zero out any bad samples
+                    bool colorsNan = any(isnan(shadeColor));
+                    shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
+                    break;
+                }
+            #endif
         }
     }
     

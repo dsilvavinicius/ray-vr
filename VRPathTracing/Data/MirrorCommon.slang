@@ -4,10 +4,6 @@ __import Hyperbolic;
 #include "HostDeviceSharedMacros.h"
 #include "ShaderTypes.h"
 
-// Defines to enable support for torus and dodecahedron intersection tests.
-#define TORUS_INTERSECTION
-#define DODECAHEDRON_INTERSECTION
-
 // Define to aid the dodecahedron intersection loop unrolling. Not the best practice, but working with a normal loop seems to be buggy in RTX shaders currently.
 #define CHECK_INTERSECTION(i) \
 { \
@@ -72,7 +68,7 @@ float4 debugVertex(float3 posW, float3 normalW)
 
 void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint materialId)
 {
-#ifdef TORUS_INTERSECTION
+#ifdef TORUS_ENABLED
     // translate the ray's origin
     if (materialId == TORUS)
 	{
@@ -80,7 +76,7 @@ void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 
     }
 #endif
 
-#ifdef DODECAHEDRON_INTERSECTION
+#ifdef DODECAHEDRON_ENABLED
     if (materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON)
     {
         bool hasIntersected = false;

@@ -191,11 +191,19 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	dropList.push_back({ RASTER_PLUS_SHADOWS, "Raster plus Shadows" });
 	dropList.push_back({ REFLECTIONS, "Reflections" });
 	dropList.push_back({ PERFECT_MIRROR, "Perfect Mirror" });
-	dropList.push_back({ PATH_TRACING, "Path Tracing" });
-	dropList.push_back({ TORUS, "Torus" });
-	dropList.push_back({ SEIFERT_WEBER_DODECAHEDRON, "Seifert-Weber Dodecahedron" });
-	dropList.push_back({ MIRRORED_DODECAHEDRON, "Mirrored Dodecahedron" });
-	dropList.push_back({ POINCARE_DODECAHEDRON, "Poincare Dodecahedron" });
+	#ifdef PATH_TRACING_ENABLED
+		dropList.push_back({ PATH_TRACING, "Path Tracing" });
+	#endif
+	#ifdef TORUS_ENABLED
+		dropList.push_back({ TORUS, "Torus" });
+	#endif
+	#ifdef DODECAHEDRON_ENABLED
+		dropList.push_back({ SEIFERT_WEBER_DODECAHEDRON, "Seifert-Weber Dodecahedron" });
+		dropList.push_back({ MIRRORED_DODECAHEDRON, "Mirrored Dodecahedron" });
+	#endif
+	#ifdef POINCARE_ENABLED
+		dropList.push_back({ POINCARE_DODECAHEDRON, "Poincare Dodecahedron" });
+	#endif
 
 	if (pGui->addDropdown("Global Material ID", dropList, mGlobalMaterialId))
 	{
