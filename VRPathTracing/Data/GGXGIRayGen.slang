@@ -120,15 +120,6 @@ void GGXGlobalIllumRayGen()
                     evaluateReflectionRay(hitData, sd, sd.posW, gCamera.posW, rayDirW, hitT, matId);
                     shadeColor += hitData.color.rgb;
 
-                    // Spherical Rendering
-                    {
-                        //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
-                        //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
-                        //gSphericalScale = getSceneUnit();
-                        //shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
-                        //shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
-                    }
-
                     /*
                     // DEBUG
                     {
@@ -136,6 +127,16 @@ void GGXGlobalIllumRayGen()
                     }
                     */
                 }
+                break;
+            }
+            case POINCARE_DODECAHEDRON:
+            {
+                // Spherical Rendering
+                //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
+                //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
+                //gSphericalScale = getSceneUnit();
+                shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
+                //shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
                 break;
             }
             case PATH_TRACING: // Path tracing

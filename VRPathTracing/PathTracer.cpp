@@ -195,6 +195,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 	dropList.push_back({ TORUS, "Torus" });
 	dropList.push_back({ SEIFERT_WEBER_DODECAHEDRON, "Seifert-Weber Dodecahedron" });
 	dropList.push_back({ MIRRORED_DODECAHEDRON, "Mirrored Dodecahedron" });
+	dropList.push_back({ POINCARE_DODECAHEDRON, "Poincare Dodecahedron" });
 
 	if (pGui->addDropdown("Global Material ID", dropList, mGlobalMaterialId))
 	{

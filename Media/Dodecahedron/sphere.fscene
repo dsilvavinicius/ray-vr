@@ -6,7 +6,7 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "C:\\Users\\tiago.novello\\Documents\\ray_tracing\\rayTracing\\Media\\Dodecahedron\\sphere.obj",
+            "file": "sphere.fbx",
             "name": "sphere",
             "material": {
                 "shading_model": "spec_gloss"
