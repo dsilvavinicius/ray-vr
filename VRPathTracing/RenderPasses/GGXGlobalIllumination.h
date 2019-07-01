@@ -65,6 +65,9 @@ private:
     bool                mUseEmissiveGeom = true;
 	bool				mDoFog = true;
     float               mEmissiveGeomMult = 1.0f;
+	float mSphericalScale = 0.326f;
+	float mThickness = 0.01f;
+	float mScale = 1.f;
     Texture::SharedPtr  mpBlackHDR = nullptr;
 
     enum class EnvMapMode : uint32_t
@@ -75,7 +78,7 @@ private:
 
     EnvMapMode mEnvMapMode = EnvMapMode::Scene;
 
-    int32_t         mUserSpecifiedRayDepth = 4; ///<  What is the current maximum ray depth
+    int32_t         mUserSpecifiedRayDepth = 5; ///<  What is the current maximum ray depth
     const int32_t   mMaxPossibleRayDepth = 20;   ///<  The largest ray depth we support (without recompile)
 
     // A frame counter; needs to start at a different value than passes, since it uses to seed the RNG

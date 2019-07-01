@@ -451,6 +451,7 @@ struct Ray
     //bool sanityCheck;
 };
 
+
 Ray func_new_ray_direction(
       in float4x4 A, //plane matrix
       in float3 ray_intersection, //hitpos
@@ -528,102 +529,10 @@ Ray perfectReflection(
     float3 new_dir = p - Rp;
     
     Ray ray;
-    ray.origin = p / t; //hgeo_hip2euc(Yhat);
+    ray.origin = p / t;
     ray.dir = new_dir;
     
     return ray;
 }
-
-
-
-Ray PoincareSphere(
-      in float4 N, //dodecahedron face barycenter in homogeneus coordinates
-      in float3 p, //hitpos
-      in float3 v //ray dir
-)
-{
-    float3 n = normalize(float3(N.xyz));
-
-    float t = dote(n,p);
-    
-    float3 q = t * n;
-
-    float scale = 0.2;
-    
-    p = p * scale;
-    q = q * scale;
-
-
-    float3 old_p = p;
-
-    //translating  p to the plane crossing the origin
-
-    float3 proj_p = p - q;
-
-    float x1 = sqrt(dote(proj_p, proj_p));
-
-    float3 e1 = proj_p / x1;
-
-    float3 e2 = cross(e1, n);
-
-    float theta = (2.f * 3.14159265f) * 0.1;
-
-
-    p = (cos(theta) * e1 + sin(theta) * e2)*x1;
-
-    p = p - q;
-
-    //suspending old_p and p to the sphere
-    //step 1: put in the plane w=1
-    float4 p0 = float4(old_p, 1.f);
-    float4 p1 = float4(p, 1.f);
-    float4 v0 = float4(v, 0.f);
-    //step 2: put in the sphere
-    p0 = p0 / length(p0);
-    p1 = p1 / length(p1);
-    v0 = v0 - p0 * dot(p0,v0) / dot(p0,p0);
-    v0 = normalize(v0);
-
-    //paralell transport of v0 from p0 to p1
-    float4 u0 = p1 - p0;
-    u0 = u0 - u0 * dot(p0, u0) / dot(p0, p0);
-    u0 = normalize(u0);
-
-    //bool test = 
-    float4 w0 = v0 - u0 * dot(v0, u0) / dot(v0, v0);
-    w0 = normalize(w0);
-
-
-
-    float angle = acos(dot(v0,u0));
-
-    float alpha = acos(dot(p1, p0));
-
-    float4 u1 = -sin(alpha) * p0 + cos(alpha) * u0;
-    u1 = normalize(u1);
-
-    float4 w1 = w0;
-
-    float4 v1 = cos(angle) * u1 + sin(angle) * w1;
-
-
-
-    /*float4 hp = float4(p - 0.5 * v, 1.f);
-    
-    float4 hq = float4(q, q_dote * t * t);
-
-    float4 Rhp = hp - 2.f * hq * (doth(hq, hp)) / (doth(hq, hq));
-  
-    float3 Rp = float3(Rhp.xyz) / Rhp.w;
-    */
-    float3 new_dir = v1.xyz;
-    
-    Ray ray;
-    ray.origin = p/scale; //hgeo_hip2euc(Yhat);
-    ray.dir = new_dir;
-    
-    return ray;
-}
-
 
 #endif

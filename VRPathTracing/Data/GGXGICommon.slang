@@ -21,7 +21,7 @@
 # EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 # PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
 # PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORTgSphericalScale
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
@@ -44,6 +44,9 @@ shared cbuffer GlobalCB
     bool gDoFog;
     uint gMaxDepth; // Maximum number of recursive bounces to allow
     float gEmitMult; // Emissives are currently hacked.  Multiply emissive amount by this factor
+    float gSphericalScale;
+    float gThickness;
+    float gScale;
 }
 
 shared ITexture2D gPos;

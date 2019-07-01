@@ -159,6 +159,10 @@ void GGXGlobalIllumination::execute(RenderContext* pContext, const RenderData* p
     pCB["gMaxDepth"] = uint32_t(mUserSpecifiedRayDepth);
     pCB["gEmitMult"] = float(mUseEmissiveGeom ? mEmissiveGeomMult : 0.0f);
 
+	pCB["gSphericalScale"] = mSphericalScale;
+	pCB["gThickness"] = mThickness;
+	pCB["gScale"] = mScale;
+
     globalVars->setTexture("gPos", pData->getTexture("posW"));
     globalVars->setTexture("gNorm", pData->getTexture("normW"));
     globalVars->setTexture("gDiffuseMatl", pData->getTexture("diffuseOpacity"));
@@ -180,6 +184,10 @@ void GGXGlobalIllumination::renderUI(Gui* pGui, const char* uiGroup)
     changed |= pGui->addCheckBox("Compute direct illumination", mDoDirectGI);
     changed |= pGui->addCheckBox("Compute global illumination", mDoIndirectGI);
 	changed |= pGui->addCheckBox("Fog", mDoFog);
+
+	changed |= pGui->addFloatSlider("Dodecahedron Scale", mSphericalScale, 0.f, 1.f);
+	changed |= pGui->addFloatSlider("Thickness", mThickness, 0.f, 0.1f);
+	changed |= pGui->addFloatSlider("Scale", mScale, 0.f, 10.f);
 
     pGui->addSeparator();
 

@@ -82,6 +82,7 @@ float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, u
     return reflectColor;
 }
 
+
 float4 tracePrimaryRay(RayDesc ray)
 {
     PrimaryRayData hitData;

@@ -30,7 +30,10 @@ import Shading;
 import Helpers;
 import GGXGICommon;
 import MirrorCommon;
+import Spherical;
+
 #include "ShaderTypes.h"
+
 
 [shader("raygeneration")]
 void GGXGlobalIllumRayGen()
@@ -58,10 +61,12 @@ void GGXGlobalIllumRayGen()
     float3 V = normalize(gCamera.posW - posW.xyz);
 
     // Make sure our normal is pointed the right direction
-    if (dot(normW, V) <= 0.0f) normW = -normW;
+    if (dot(normW, V) <= 0.0f)
+        normW = -normW;
 
     // Make sure out geometric normal is pointed in the right direction
-    if (dot(geomN, V) <= 0.0f) geomN = -geomN;
+    if (dot(geomN, V) <= 0.0f)
+        geomN = -geomN;
 
     float3 shadeColor = float3(0, 0, 0);
 
@@ -85,40 +90,47 @@ void GGXGlobalIllumRayGen()
         {
             case RASTER:
             {
-                shadeColor += raster(sd);
-                break;
-            }
+                    shadeColor += raster(sd);
+                    break;
+                }
             case RASTER_PLUS_SHADOWS:
             {
-                shadeColor += directWithShadows(sd);
-                break;
-            }
+                    shadeColor += directWithShadows(sd);
+                    break;
+                }
 
-			case TORUS:
+            case TORUS:
             case REFLECTIONS:
             case PERFECT_MIRROR:
             case SEIFERT_WEBER_DODECAHEDRON:
             case MIRRORED_DODECAHEDRON:
             {
-                shadeColor += tracePrimaryRay(sd.posW).rgb;
+                    //shadeColor = traceFlatShade(-gCamera.posW, sd.V);
+                    //shadeColor = traceSphericalShade(float3(0.f, 0.f, 0.f), -posW.xyz);
+                    //gSphericalScale = getSceneUnit();
+                    //shadeColor = traceSphericalShade(-gCamera.posW, sd.V);
+                    shadeColor = shadeCliffordTorus(-gCamera.posW, sd.V);
+                   
+               //shadeColor += tracePrimaryRay(sd.posW).rgb;
+
+
                 break;
             }
-
             case PATH_TRACING: // Path tracing
             {
                 // Direct lighting to a random light in the scene
-                if (gDoDirectGI)
-                    shadeColor += ggxDirect(randSeed, sd);
+                    if (gDoDirectGI)
+                        shadeColor += ggxDirect(randSeed, sd);
 
                 // Indirect lighting for global illumination
-                if (gDoIndirectGI && (gMaxDepth > 0))
-                    shadeColor += ggxIndirect(randSeed, sd, geomN);
+                    if (gDoIndirectGI && (gMaxDepth > 0))
+                        shadeColor += ggxIndirect(randSeed, sd, geomN);
 
                 // Zero out any bad samples
-                bool colorsNan = any(isnan(shadeColor));
-                shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
-                break;
-            }
+                    bool colorsNan = any(isnan(shadeColor));
+                    shadeColor = colorsNan ? float3(0, 0, 0) : shadeColor;
+                    break;
+                }
         }
     }
     

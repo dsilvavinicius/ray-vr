@@ -157,6 +157,7 @@
       </ExcludedFromBuild>
     </None>
     <None Include="Data\RasterPrimary.slang" />
+    <None Include="Data\Spherical.slang" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\falcor\Framework\Source\Falcor.vcxproj">
