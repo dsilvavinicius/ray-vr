@@ -6,7 +6,34 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "dodecahedron_test.fbx",
+            "file": "dodecahedron.fbx",
+            "name": "dodecahedron",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "dodecahedron0",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.019,
+                        0.019,
+                        0.019
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "dodecahedron_edges.fbx",
             "name": "dodecahedron_edges",
             "material": {
                 "shading_model": "metal_rough"
@@ -20,9 +47,9 @@
                         0.0
                     ],
                     "scaling": [
-                        0.009999999776482582,
-                        0.009999999776482582,
-                        0.009999999776482582
+                        0.019,
+                        0.019,
+                        0.019
                     ],
                     "rotation": [
                         0.0,

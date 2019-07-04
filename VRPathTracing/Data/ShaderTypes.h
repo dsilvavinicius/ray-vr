@@ -13,9 +13,9 @@
 #define POINCARE_DODECAHEDRON 8
 
 // Optimization. Disable code for specific cases to simplify shader.
-#define PATH_TRACING_ENABLED
-#define TORUS_ENABLED
-#define DODECAHEDRON_ENABLED
+//#define PATH_TRACING_ENABLED
+//#define TORUS_ENABLED
+//#define DODECAHEDRON_ENABLED
 #define POINCARE_ENABLED
 
 #endif

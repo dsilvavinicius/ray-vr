@@ -103,6 +103,7 @@ void GGXGlobalIllumRayGen()
             case TORUS:
             case SEIFERT_WEBER_DODECAHEDRON:
             case MIRRORED_DODECAHEDRON:
+            case POINCARE_DODECAHEDRON:
             {
                 if (launchIndex.x % gRayStride == 0 && launchIndex.y % gRayStride == 0)
                 {
@@ -128,7 +129,7 @@ void GGXGlobalIllumRayGen()
                 }
                 break;
             }
-            #ifdef POINCARE_ENABLED
+            /*#ifdef POINCARE_ENABLED
                 case POINCARE_DODECAHEDRON:
                 {
                     // Spherical Rendering
@@ -140,7 +141,7 @@ void GGXGlobalIllumRayGen()
                 
                     break;
                 }
-            #endif
+            #endif*/
             #ifdef PATH_TRACING_ENABLED
                 case PATH_TRACING: // Path tracing
                 {

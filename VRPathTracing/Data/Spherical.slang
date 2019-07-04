@@ -546,6 +546,30 @@ sphericalRay traceSphericalRay( in sphericalRay sRay )
 //*********************************************************************************************************
 //
 //*********************************************************************************************************
+bool updateEuclideanRayInSphericalSpace(inout float3 p, inout float3 v)
+{
+    euclideanRay ray;
+    ray.origin = p;
+    ray.dir = v;
+    
+    sphericalRay sRay = flatToSpherical(ray);
+    sRay.check = 0.f;
+    sRay.border = 0.f;
+    sRay.hit = 0.f;
+
+    ray = sphericalToFlat(traceSphericalRay(sRay));
+    p = ray.origin;
+    v = ray.dir;
+
+    return bool(ray.border);
+}
+//*********************************************************************************************************
+
+
+
+//*********************************************************************************************************
+//
+//*********************************************************************************************************
 float3 traceSphericalShade(float3 p, float3 v)
 {
     float g_distance = 0;  
