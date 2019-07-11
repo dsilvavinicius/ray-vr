@@ -30,10 +30,8 @@ import Shading;
 import Helpers;
 import GGXGICommon;
 import MirrorCommon;
-import Spherical;
 
 #include "ShaderTypes.h"
-
 
 [shader("raygeneration")]
 void GGXGlobalIllumRayGen()

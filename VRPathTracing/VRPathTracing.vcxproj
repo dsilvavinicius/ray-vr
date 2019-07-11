@@ -145,6 +145,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang" />
+    <None Include="Data\DodecahedronGlobals.slang" />
     <None Include="Data\Hyperbolic.slang" />
     <None Include="Data\GGXGICommon.slang" />
     <None Include="Data\GGXGIIndirectRay.slang" />
