@@ -5,9 +5,9 @@ VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "NonEuclideanSpaceRayTracing", "NonEuclideanSpaceRayTracing\NonEuclideanSpaceRayTracing.vcxproj", "{FEF177AC-E809-4691-9D62-50BFA9BFF84D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FalcorSharedObjects", "..\..\falcor\Framework\FalcorSharedObjects\FalcorSharedObjects.vcxproj", "{2C535635-E4C5-4098-A928-574F0E7CD5F9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FalcorSharedObjects", "falcor\Framework\FalcorSharedObjects\FalcorSharedObjects.vcxproj", "{2C535635-E4C5-4098-A928-574F0E7CD5F9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Falcor", "..\..\falcor\Framework\Source\Falcor.vcxproj", "{3B602F0E-3834-4F73-B97D-7DFC91597A98}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Falcor", "falcor\Framework\Source\Falcor.vcxproj", "{3B602F0E-3834-4F73-B97D-7DFC91597A98}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VRPathTracing", "VRPathTracing\VRPathTracing.vcxproj", "{AF97451C-90AA-4302-9843-BAB296192AD7}"
 	ProjectSection(ProjectDependencies) = postProject
