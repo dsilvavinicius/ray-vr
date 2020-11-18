@@ -25,28 +25,50 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
-import ShaderCommon;
-import Raytracing;
-import GGXGICommon;
+__import Raytracing;
+__import MirrorCommon;
+__import GGXGICommon;
+__import Helpers;
+#include "ShaderTypes.h"
 
-// What code is executed when our ray misses all geometry?
-[shader("miss")]
-void GGXGIShadowRayMiss(inout ShadowRayPayload rayData)
-{
-    // If we miss all geometry, then the light is visibile
-    rayData.visFactor = 1.0f;
-}
-
-// What code is executed when our ray hits a potentially transparent surface?
 [shader("anyhit")]
-void GGXGIShadowRayAnyHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ReflectionRayAnyHit(inout PrimaryRayData rayData, BuiltInTriangleIntersectionAttributes attribs)
 {
     if (evalRtAlphaTest(attribs))
         IgnoreHit();
 }
 
+[shader("miss")]
+void ReflectionRayMiss(inout PrimaryRayData hitData)
+{
+    // Sample the environment map
+    float2 uv = dirToSphericalCrd(WorldRayDirection());
+    float2 dims;
+    gEnvMap.GetDimensions(dims.x, dims.y);
+    hitData.color = gEnvMap[uint2(uv * dims)];
+    hitData.hitT = -1;
+}
 
 [shader("closesthit")]
-void GGXGIShadowRayClosestHit(inout ShadowRayPayload rayData, BuiltInTriangleIntersectionAttributes attribs)
+void ReflectionRayClosestHit(inout PrimaryRayData hitData, in BuiltInTriangleIntersectionAttributes attribs)
 {
+    // Get the hit-point data
+    float3 rayOrigW = WorldRayOrigin();
+    float3 rayDirW = WorldRayDirection(); 
+    float hitT = RayTCurrent();
+    uint triangleIndex = PrimitiveIndex();
+    float3 posW = rayOrigW + hitT * rayDirW;
+    
+    // prepare the shading data
+    VertexOut v = getVertexAttributes(triangleIndex, attribs);
+    ShadingData sd;
+    sd.N = v.normalW;
+
+    if (!isPerfectReflection(gMaterial.id))
+    {
+        //WARNING: In the non-perfect reflection cases, current material will contribute to final color. Otherwise, only sd.normalW will be initialized.
+        sd = prepareShadingData(v, gMaterial, rayOrigW, 0);
+    }
+
+    evaluateReflectionRay(hitData, sd, posW, rayOrigW, rayDirW, hitT, gMaterial.id);
 }

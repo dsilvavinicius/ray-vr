@@ -31,22 +31,16 @@
 namespace {
     // Shader files
     const char* kFileRayGen = "GGXGIRayGen.slang";
-    const char* kFileRayTrace = "GGXGIIndirectRay.slang";
-    const char* kFileShadowRay = "GGXGIShadowRay.slang";
-	const char* kFileMirrorRay = "MirrorRay.slang";
+    
+	const std::array<const char*, 3> kRayNames =
+	{
+		"GGXGIShadowRay",
+		"GGXGIIndirectRay",
+		"ReflectionRay"
+	};
 
-    // Entry-point names
+	// Entry-point names
     const char* kEntryPointRayGen = "GGXGlobalIllumRayGen";
-    const char* kEntryShadowMiss = "ShadowMiss";
-    const char* kEntryShadowAnyHit = "ShadowAnyHit";
-
-    const char* kEntryIndirectMiss = "IndirectMiss";
-    const char* kEntryIndirectAnyHit = "IndirectAnyHit";
-    const char* kEntryIndirectClosestHit = "IndirectClosestHit";
-
-	const char* kEntryMirrorMiss = "primaryMiss";
-	const char* kEntryMirrorAnyHit = "primaryAnyHit";
-	const char* kEntryMirrorClosestHit = "primaryClosestHit";
 };
 
 GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary &params)
@@ -57,8 +51,11 @@ GGXGlobalIllumination::SharedPtr GGXGlobalIllumination::create(const Dictionary 
     if (params.keyExists("useEmissives"))    pPass->mUseEmissiveGeom = params["useEmissives"];
     if (params.keyExists("doDirectLight"))   pPass->mDoDirectGI = params["doDirectLight"];
     if (params.keyExists("doIndirectLight")) pPass->mDoIndirectGI = params["doIndirectLight"];
+	if (params.keyExists("doFog"))			 pPass->mDoFog = params["doFog"];
     if (params.keyExists("rayDepth"))        pPass->mUserSpecifiedRayDepth = params["rayDepth"];
     if (params.keyExists("randomSeed"))      pPass->mFrameCount = params["randomSeed"];
+	if (params.keyExists("rayStride"))		 pPass->mRayStride = params["rayStride"];
+	if (params.keyExists("torusDomainSize")) pPass->mTorusDomainSizeW = params["torusDomainSize"];
     if (params.keyExists("useBlackEnvMap"))  pPass->mEnvMapMode = params["useBlackEnvMap"] ? EnvMapMode::Black : EnvMapMode::Scene;
 
     return pPass;
@@ -70,8 +67,11 @@ Dictionary GGXGlobalIllumination::getScriptingDictionary() const
     serialize["useEmissives"] = mUseEmissiveGeom;
     serialize["doDirectLight"] = mDoDirectGI;
     serialize["doIndirectLight"] = mDoIndirectGI;
+	serialize["doFog"] = mDoFog;
     serialize["rayDepth"] = mUserSpecifiedRayDepth;
     serialize["randomSeed"] = mFrameCount;
+	serialize["randomSeed"] = mRayStride;
+	serialize["torusDomainSize"] = mTorusDomainSizeW;
     serialize["useBlackEnvMap"] = mEnvMapMode == EnvMapMode::Black;
     return serialize;
 }
@@ -102,21 +102,23 @@ void GGXGlobalIllumination::initialize(RenderContext* pContext, const RenderData
     desc.addShaderLibrary(kFileRayGen);
     desc.setRayGen(kEntryPointRayGen);
 
-    // Add ray type #0 (shadow rays)
-    desc.addShaderLibrary(kFileShadowRay);
-    desc.addMiss(0, kEntryShadowMiss);
-    desc.addHitGroup(0, "", kEntryShadowAnyHit);
+	for (int i = 0; i < kRayNames.size(); ++i)
+	{
+		std::string shaderFile = kRayNames[i];
+		shaderFile.append(".slang");
+		desc.addShaderLibrary(shaderFile);
+		
+		std::string entryMiss = kRayNames[i];
+		entryMiss += "Miss";
+		desc.addMiss(i, entryMiss);
 
-    // Add ray type #1 (indirect GI rays)
-    desc.addShaderLibrary(kFileRayTrace);
-    desc.addMiss(1, kEntryIndirectMiss);
-    desc.addHitGroup(1, kEntryIndirectClosestHit, kEntryIndirectAnyHit);
+		std::string entryClosestHit = kRayNames[i];
+		entryClosestHit += "ClosestHit";
 
-	// Add ray type #2 (full mirror reflection rays)
-	desc.addShaderLibrary(kFileMirrorRay);
-	desc.addMiss(2, kEntryMirrorMiss);
-	desc.addHitGroup(2, kEntryMirrorClosestHit, kEntryMirrorAnyHit);
-
+		std::string entryAnyHit = kRayNames[i];
+		entryAnyHit += "AnyHit";
+		desc.addHitGroup(i, entryClosestHit, entryAnyHit);
+	}
 
     // Now that we've passed all our shaders in, compile and (if available) setup the scene
     mpProgram = RtProgram::create(desc);
@@ -153,8 +155,18 @@ void GGXGlobalIllumination::execute(RenderContext* pContext, const RenderData* p
     pCB["gFrameCount"] = mFrameCount++;
     pCB["gDoIndirectGI"] = mDoIndirectGI;
     pCB["gDoDirectGI"] = mDoDirectGI;
+	pCB["gDoFog"] = mDoFog;
     pCB["gMaxDepth"] = uint32_t(mUserSpecifiedRayDepth);
     pCB["gEmitMult"] = float(mUseEmissiveGeom ? mEmissiveGeomMult : 0.0f);
+	pCB["gRayStride"] = mRayStride;
+	pCB["gTorusDomainSizeW"] = mTorusDomainSizeW;
+
+	pCB["gSphericalScale"] = mSphericalScale;
+	pCB["gThickness"] = mThickness;
+	pCB["gScale"] = mScale;
+
+	ConstantBuffer::SharedPtr pHyperbolicCB = globalVars->getConstantBuffer("HyperbolicCB");
+	pHyperbolicCB["gDodecahedronScale"] = mDodecahedronScale;
 
     globalVars->setTexture("gPos", pData->getTexture("posW"));
     globalVars->setTexture("gNorm", pData->getTexture("normW"));
@@ -176,6 +188,14 @@ void GGXGlobalIllumination::renderUI(Gui* pGui, const char* uiGroup)
     bool changed = pGui->addIntVar("Max RayDepth", mUserSpecifiedRayDepth, 0, mMaxPossibleRayDepth);
     changed |= pGui->addCheckBox("Compute direct illumination", mDoDirectGI);
     changed |= pGui->addCheckBox("Compute global illumination", mDoIndirectGI);
+	changed |= pGui->addCheckBox("Fog", mDoFog);
+	changed |= pGui->addIntSlider("Ray Stride", mRayStride, 1, 8);
+	changed |= pGui->addFloatSlider("Torus Domain Size", mTorusDomainSizeW, 0.f, 10.f);
+	changed |= pGui->addFloatSlider("Mirrored Dodecahedron Scale", mDodecahedronScale, 0.1f, 1.f, false, "%5f");
+
+	changed |= pGui->addFloatSlider("Dodecahedron Scale", mSphericalScale, 0.f, 1.f);
+	changed |= pGui->addFloatSlider("Thickness", mThickness, 0.f, 0.1f);
+	changed |= pGui->addFloatSlider("Scale", mScale, 0.f, 10.f);
 
     pGui->addSeparator();
 

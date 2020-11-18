@@ -6,14 +6,14 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "one_mirror.fbx",
-            "name": "one_mirror",
+            "file": "sphere.fbx",
+            "name": "sphere",
             "material": {
-                "shading_model": "metal_rough"
+                "shading_model": "spec_gloss"
             },
             "instances": [
                 {
-                    "name": "one_mirror0",
+                    "name": "sphere0",
                     "translation": [
                         0.0,
                         0.0,
@@ -35,20 +35,6 @@
     ],
     "lights": [
         {
-            "name": "DirLight0",
-            "type": "dir_light",
-            "intensity": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "direction": [
-                0.0,
-                -1.0,
-                0.0
-            ]
-        },
-        {
             "name": "PointLight0",
             "type": "point_light",
             "intensity": [
@@ -57,9 +43,9 @@
                 1.0
             ],
             "pos": [
-                -0.08507061004638672,
-                12.32887077331543,
-                -18.3252010345459
+                -0.4651947319507599,
+                -0.2362534999847412,
+                -0.0863804817199707
             ],
             "direction": [
                 0.0,
@@ -74,14 +60,14 @@
         {
             "name": "Camera0",
             "pos": [
-                -4.2659149169921879,
-                8.28884506225586,
-                -27.992719650268556
+                0.0,
+                0.0,
+                0.0
             ],
             "target": [
-                -4.2659149169921879,
-                8.28884506225586,
-                -28.992719650268556
+                0.0,
+                0.0,
+                -1.0
             ],
             "up": [
                 0.0,

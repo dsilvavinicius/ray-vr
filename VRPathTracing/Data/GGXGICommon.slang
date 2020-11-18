@@ -21,7 +21,7 @@
 # EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
 # PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
 # PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORTgSphericalScale
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************************************************************************/
@@ -41,8 +41,14 @@ shared cbuffer GlobalCB
     uint gFrameCount; // An integer changing every frame to update the random number
     bool gDoIndirectGI; // A boolean determining if we should shoot indirect GI rays
     bool gDoDirectGI; // A boolean determining if we should compute direct lighting
+    bool gDoFog; // Is fog enabled?
     uint gMaxDepth; // Maximum number of recursive bounces to allow
     float gEmitMult; // Emissives are currently hacked.  Multiply emissive amount by this factor
+    float gSphericalScale;
+    float gThickness;
+    float gScale;
+    int gRayStride; // Rays will be traced through pixels following this stride. In other words, a ray will be traced every gRayStride pixels. Optimization parameter.
+    float gTorusDomainSizeW; // The size of the torus fundamental domain.
 }
 
 shared ITexture2D gPos;

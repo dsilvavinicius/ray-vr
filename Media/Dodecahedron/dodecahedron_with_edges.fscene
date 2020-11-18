@@ -6,23 +6,50 @@
     "active_camera": "Camera0",
     "models": [
         {
-            "file": "two_mirrors.fbx",
-            "name": "two_mirrors",
+            "file": "dodecahedron.fbx",
+            "name": "dodecahedron",
             "material": {
                 "shading_model": "metal_rough"
             },
             "instances": [
                 {
-                    "name": "two_mirrors0",
+                    "name": "dodecahedron0",
                     "translation": [
                         0.0,
                         0.0,
                         0.0
                     ],
                     "scaling": [
-                        1.0,
-                        1.0,
-                        1.0
+                        0.009999999776482582,
+                        0.009999999776482582,
+                        0.009999999776482582
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "dodecahedron_edges.fbx",
+            "name": "dodecahedron_edges",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "dodecahedron_edges0",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.009999999776482582,
+                        0.009999999776482582,
+                        0.009999999776482582
                     ],
                     "rotation": [
                         0.0,
@@ -38,14 +65,14 @@
             "name": "PointLight0",
             "type": "point_light",
             "intensity": [
-                1000.0,
-                1000.0,
-                1000.0
+                0.5,
+                0.5,
+                0.5
             ],
             "pos": [
-                -0.8383398056030273,
-                11.735628128051758,
-                -3.6212902069091799
+                0.3034595549106598,
+                0.3411960005760193,
+                0.0
             ],
             "direction": [
                 0.0,
@@ -54,54 +81,19 @@
             ],
             "opening_angle": 180.0,
             "penumbra_angle": 0.0
-        },
-        {
-            "name": "DirLight3",
-            "type": "dir_light",
-            "intensity": [
-                100.0,
-                100.0,
-                100.0
-            ],
-            "direction": [
-                0.0,
-                -1.0,
-                0.0
-            ]
         },
         {
             "name": "PointLight1",
             "type": "point_light",
             "intensity": [
-                1000.072998046875,
-                1000.072998046875,
-                1000.072998046875
+                0.5,
+                0.5,
+                0.5
             ],
             "pos": [
-                395.0596008300781,
-                -32.49333190917969,
-                -101.70658874511719
-            ],
-            "direction": [
-                0.0,
-                -1.0,
+                -0.3921798765659332,
+                -0.23033389449119569,
                 0.0
-            ],
-            "opening_angle": 180.0,
-            "penumbra_angle": 0.0
-        },
-        {
-            "name": "PointLight2",
-            "type": "point_light",
-            "intensity": [
-                100.0,
-                100.0,
-                100.0
-            ],
-            "pos": [
-                -1.5390806198120118,
-                8.823516845703125,
-                3.7563962936401369
             ],
             "direction": [
                 0.0,
@@ -116,14 +108,14 @@
         {
             "name": "Camera0",
             "pos": [
-                -2.7471675872802736,
-                7.653566360473633,
-                5.924749374389648
+                0.0,
+                0.0,
+                0.0
             ],
             "target": [
-                -2.7471675872802736,
-                7.653566360473633,
-                4.924749374389648
+                0.0,
+                0.0,
+                -1.0
             ],
             "up": [
                 0.0,

@@ -60,10 +60,20 @@ private:
     RtSceneRenderer::SharedPtr  mpSceneRenderer;
 
     // Recursive ray tracing can be slow. Add a toggle to disable, to allow you to manipulate the scene
-    bool                mDoIndirectGI = true;
-    bool                mDoDirectGI = true;
-    bool                mUseEmissiveGeom = true;
-    float               mEmissiveGeomMult = 1.0f;
+    bool mDoIndirectGI = true;
+    bool mDoDirectGI = true;
+    bool mUseEmissiveGeom = true;
+	bool mDoFog = true;
+    float mEmissiveGeomMult = 1.0f;
+	
+	float mSphericalScale = 0.326f;
+	float mThickness = 0.01f;
+	float mScale = 1.f;
+
+	int	mRayStride = 1;
+	float mTorusDomainSizeW = 4.f; // Size of the Torus fundamental domain in the Torus scene.
+	float mDodecahedronScale = 0.880f;
+
     Texture::SharedPtr  mpBlackHDR = nullptr;
 
     enum class EnvMapMode : uint32_t
@@ -74,8 +84,8 @@ private:
 
     EnvMapMode mEnvMapMode = EnvMapMode::Scene;
 
-    int32_t         mUserSpecifiedRayDepth = 2; ///<  What is the current maximum ray depth
-    const int32_t   mMaxPossibleRayDepth = 4;   ///<  The largest ray depth we support (without recompile)
+    int32_t         mUserSpecifiedRayDepth = 5; ///<  What is the current maximum ray depth
+    const int32_t   mMaxPossibleRayDepth = 20;   ///<  The largest ray depth we support (without recompile)
 
     // A frame counter; needs to start at a different value than passes, since it uses to seed the RNG
     uint32_t mFrameCount = 0x1234u; ///< A frame counter to vary random numbers over time

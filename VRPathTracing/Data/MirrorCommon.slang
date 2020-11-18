@@ -1,13 +1,40 @@
 __import Raytracing;
 __import GGXGICommon;
+__import Hyperbolic;
+__import Spherical;
 #include "HostDeviceSharedMacros.h"
 #include "ShaderTypes.h"
+
+// Define to aid the dodecahedron intersection loop unrolling. Not the best practice, but working with a normal loop seems to be buggy in RTX shaders currently.
+#define CHECK_INTERSECTION(i) \
+{ \
+    if(!hasIntersected) \
+    { \
+        float3 faceNormal = normalize(dodecahedronNormals[i].xyz); \
+        if (abs(1.f + dot(sd.N, faceNormal)) < 0.001f) \
+        { \
+            Ray newRay; \
+            if (materialId == MIRRORED_DODECAHEDRON) \
+            { \
+            newRay = perfectReflection(dodecahedronNormals[i], posW, rayDirW); \
+            } \
+            else \
+            { \
+                newRay = func_new_ray_direction(dodecahedronInvTransforms[i], posW, rayDirW); \
+            } \
+            posW = newRay.origin; \
+            rayDirW = normalize(newRay.dir); \
+            hitT = distH(float4(rayOrigW, 1.f), float4(posW, 1.f)); \
+        } \
+    } \
+}
 
 struct PrimaryRayData
 {
     float4 color;
     uint depth;
     float hitT;
+	float distance;
 };
 
 float3 calcBlinnPhongLighting(float3 N, float3 L, float3 H)
@@ -40,42 +67,140 @@ float4 debugVertex(float3 posW, float3 normalW)
     return color;
 }
 
-float3 getReflectionColor(float3 worldOrigin, VertexOut v, float3 worldRayDir, uint hitDepth)
+void evaluateReflectionRay(inout PrimaryRayData hitData, ShadingData sd, float3 posW, float3 rayOrigW, float3 rayDirW, float hitT, uint materialId)
+{
+#ifdef TORUS_ENABLED
+    // translate the ray's origin
+    if (materialId == TORUS)
+	{
+        posW = posW + gTorusDomainSizeW * sd.N;
+    }
+#endif
+
+#ifdef DODECAHEDRON_ENABLED
+    if (materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON)
+    {
+        bool hasIntersected = false;
+        CHECK_INTERSECTION(0);
+        CHECK_INTERSECTION(1);
+        CHECK_INTERSECTION(2);
+        CHECK_INTERSECTION(3);
+        CHECK_INTERSECTION(4);
+        CHECK_INTERSECTION(5);
+        CHECK_INTERSECTION(6);
+        CHECK_INTERSECTION(7);
+        CHECK_INTERSECTION(8);
+        CHECK_INTERSECTION(9);
+        CHECK_INTERSECTION(10);
+        CHECK_INTERSECTION(11);
+    }
+#endif
+
+    // DEBUG
+    /*if (materialId == RASTER)
+    {
+        hitData.color = float4(1.0f, 0.f, 0.f, 1.f);
+        return;
+    }*/
+
+#ifdef POINCARE_ENABLED
+    if (materialId == POINCARE_DODECAHEDRON)
+    {
+        //float distanceToFace = dot(-sd.N, posW);
+        posW = rayOrigW;
+        bool isBorder = updateEuclideanRayInSphericalSpace(posW, rayDirW);
+        //posW = normalize(posW) * distanceToFace;
+
+        if (isBorder)
+        {
+            hitData.color.rgb = float3(182.f, 82.f, 45.f) / 255.f;
+            return;
+        }
+    }
+#endif
+
+    hitData.
+        distance += hitT;
+
+    float3 reflectColor = getReflectionColor(posW, sd.N, rayDirW, hitData.depth.r, hitData.distance, materialId);
+
+    if (isPerfectReflection(materialId))
+    {
+        hitData.color.rgb = reflectColor;
+    }
+    else
+    {
+        float3 color = directWithShadows(sd);
+        hitData.color.rgb = color;
+
+        // A very non-PBR inaccurate way to do reflections
+        float roughness = min(0.5, max(1e-8, sd.roughness));
+        hitData.color.rgb += sd.specular * reflectColor * (roughness * roughness);
+        hitData.color.rgb += sd.emissive;
+    }
+
+    hitData.hitT = hitT;
+    hitData.color.a = 1;
+}
+
+bool isPerfectReflection(uint materialId)
+{
+    return (materialId == PERFECT_MIRROR || materialId == TORUS || materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON || materialId == POINCARE_DODECAHEDRON);
+}
+
+float3 getReflectionColor(float3 worldOrigin, float3 normalW, float3 worldRayDir, uint hitDepth, float distance, uint materialId)
 {
     float3 reflectColor = float3(0, 0, 0);
     if (hitDepth < gMaxDepth)
     {
+		//fog
+        float f = (gDoFog) ? 1.f / exp(1.e-4f * distance * distance) : 1.f;
+			  
         PrimaryRayData secondaryRay;
         //secondaryRay.color = float4(1.f, 1.f, 1.f, 1.f);
         secondaryRay.depth.r = hitDepth + 1;
+		secondaryRay.distance = distance; 
         RayDesc ray;
         ray.Origin = worldOrigin;
-        ray.Direction = reflect(worldRayDir, v.normalW);
-        ray.TMin = 0.001;
+
+        if (materialId == TORUS || materialId == SEIFERT_WEBER_DODECAHEDRON || materialId == MIRRORED_DODECAHEDRON || materialId == POINCARE_DODECAHEDRON) 
+		{
+			ray.Direction = worldRayDir;
+		}
+		else
+		{
+			ray.Direction = reflect(worldRayDir, normalW);
+		}
+        
+		ray.TMin = 0.001;
         ray.TMax = 100000;
         TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, secondaryRay);
-        reflectColor = secondaryRay.color.rgb;
-
-        if (gMaterial.id != PERFECT_MIRROR)
+        
+ 
+        reflectColor += f * secondaryRay.color.rgb + (1. - f); // secondaryRay.color.rgb + color;
+ 
+        if (materialId != PERFECT_MIRROR && materialId != TORUS && materialId != SEIFERT_WEBER_DODECAHEDRON && materialId != MIRRORED_DODECAHEDRON && materialId != POINCARE_DODECAHEDRON)
         {
             float falloff = max(1, (secondaryRay.hitT * secondaryRay.hitT));
             reflectColor *= 20 / falloff;
         }
+ 
     }
     return reflectColor;
 }
+
 
 float4 tracePrimaryRay(RayDesc ray)
 {
     PrimaryRayData hitData;
     hitData.depth = 0;
+	hitData.distance= 0;
     TraceRay(gRtScene, 0 /*rayFlags*/, 0xFF, 2 /* ray index*/, hitProgramCount, 2, ray, hitData);
     return hitData.color;
 }
 
 float4 tracePrimaryRay(float3 posW)
 {
-#ifndef DEBUG_RAY_GENERATION
     RayDesc ray;
     ray.Origin = gCamera.posW;
 	//ray.Direction = rayDirs[DispatchRaysIndex().xy].xyz;
@@ -84,9 +209,6 @@ float4 tracePrimaryRay(float3 posW)
     ray.TMin = 0;
     ray.TMax = 100000;
     return tracePrimaryRay(ray);
-#else
-    return float4(posW, 1.f);
-#endif
 }
 
 /**  Evaluates direct lighting without shadows as a raster program would do.

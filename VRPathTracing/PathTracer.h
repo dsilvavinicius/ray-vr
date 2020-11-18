@@ -28,6 +28,7 @@
 #pragma once
 #include "Falcor.h"
 #include "FalcorExperimental.h"
+#include "Avatar.h"
 
 using namespace Falcor;
 using namespace std;
@@ -47,7 +48,6 @@ public:
 private:
     void toggleCameraPathState();
 	void createRenderGraph(SampleCallbacks* pCallbacks, RenderGraph::SharedPtr& outRenderGraph);
-
 	void loadModel(SampleCallbacks* pCallbacks, const string& filename);
 
     bool mCameraPath = false;
@@ -56,31 +56,32 @@ private:
 	RenderGraph::SharedPtr mpRightEyeGraph;
 
 	FirstPersonCameraController mCamController;
+	CameraAttachment<Falcor::Mesh>::SharedPtr mCamAttachment;
+	Avatar::UniquePtr mAvatar;
+	Model::SharedPtr mBoundaryModel;
+	uint mAttachedModel = 0;
+	uint mAttachedMesh = 0;
+	uint mAttachedInstance = 0;
+
 	bool mUseHMD = false;
 	bool mLeftEyeOnly = false;
-
-	/*enum CamMovementSource
-	{
-		Forward,
-		Backward,
-		Right,
-		Left,
-		Up,
-		Down,
-		RotationXY,
-		RotationZ,
-		Count
-	};
-
-	std::bitset<CamMovementSource::Count> mCamMovement;*/
 
 	// VR
 	void initVR(Fbo* pTargetFbo);
 	void blitTexture(RenderContext* pContext, Fbo* pTargetFbo, Texture::SharedPtr pTexture, uint32_t xStart);
-	uint setupCamera(const VRDisplay::Eye& eye);
+	pair<uint, mat4> setupCamera(const VRDisplay::Eye& eye);
 	
 	VrFbo::UniquePtr mpVrFbo;
 	bool mShowStereoViews = true;
 	vector< vector< uint > > mMaterialIds;
 	uint mGlobalMaterialId = 0;
+
+	enum SceneType
+	{
+		Torus,
+		Dodecahedron,
+		Euclidean
+	};
+	// This member is used to auto-detect special scenes that have boundaries.
+	SceneType mSceneType = Euclidean;
 };

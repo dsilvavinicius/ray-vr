@@ -123,14 +123,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Avatar.cpp" />
+    <ClCompile Include="ControllerManager.cpp" />
     <ClCompile Include="PathTracer.cpp" />
+    <ClCompile Include="RenderPasses\Blur.cpp" />
     <ClCompile Include="RenderPasses\GBufferRaster.cpp" />
     <ClCompile Include="RenderPasses\GGXGlobalIllumination.cpp" />
     <ClCompile Include="RenderPasses\TemporalAccumulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Avatar.h" />
+    <ClInclude Include="CameraAttachment.h" />
+    <ClInclude Include="ControllerManager.h" />
     <ClInclude Include="Data\ShaderTypes.h" />
     <ClInclude Include="PathTracer.h" />
+    <ClInclude Include="RenderPasses\Blur.h" />
     <ClInclude Include="RenderPasses\GBuffer.h" />
     <ClInclude Include="RenderPasses\GBufferRaster.h" />
     <ClInclude Include="RenderPasses\GGXGlobalIllumination.h" />
@@ -138,16 +145,19 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang" />
+    <None Include="Data\DodecahedronGlobals.slang" />
+    <None Include="Data\Hyperbolic.slang" />
     <None Include="Data\GGXGICommon.slang" />
     <None Include="Data\GGXGIIndirectRay.slang" />
     <None Include="Data\GGXGIRayGen.slang" />
     <None Include="Data\GGXGIShadowRay.slang" />
     <None Include="Data\MirrorCommon.slang" />
-    <None Include="Data\MirrorRay.slang">
+    <None Include="Data\RasterPrimary.slang" />
+    <None Include="Data\Spherical.slang" />
+    <None Include="Data\ReflectionRay.slang">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </ExcludedFromBuild>
     </None>
-    <None Include="Data\RasterPrimary.slang" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\falcor\Framework\Source\Falcor.vcxproj">

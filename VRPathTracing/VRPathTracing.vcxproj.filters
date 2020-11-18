@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Data">
@@ -6,6 +6,9 @@
     </Filter>
     <Filter Include="RenderPasses">
       <UniqueIdentifier>{54b2a735-d8e1-47b9-96ca-7a392c4f953b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Media">
+      <UniqueIdentifier>{ca7247e3-b245-42fc-bcd8-c36e2f32d78d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -17,6 +20,11 @@
       <Filter>RenderPasses</Filter>
     </ClCompile>
     <ClCompile Include="RenderPasses\TemporalAccumulation.cpp">
+      <Filter>RenderPasses</Filter>
+    </ClCompile>
+    <ClCompile Include="ControllerManager.cpp" />
+    <ClCompile Include="Avatar.cpp" />
+    <ClCompile Include="RenderPasses\Blur.cpp">
       <Filter>RenderPasses</Filter>
     </ClCompile>
   </ItemGroup>
@@ -37,6 +45,12 @@
     <ClInclude Include="Data\ShaderTypes.h">
       <Filter>Data</Filter>
     </ClInclude>
+    <ClInclude Include="CameraAttachment.h" />
+    <ClInclude Include="ControllerManager.h" />
+    <ClInclude Include="Avatar.h" />
+    <ClInclude Include="RenderPasses\Blur.h">
+      <Filter>RenderPasses</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\Accumulate.slang">
@@ -54,13 +68,22 @@
     <None Include="Data\GGXGIShadowRay.slang">
       <Filter>Data</Filter>
     </None>
-    <None Include="Data\RasterPrimary.slang">
-      <Filter>Data</Filter>
-    </None>
-    <None Include="Data\MirrorRay.slang">
+    <None Include="Data\Hyperbolic.slang">
       <Filter>Data</Filter>
     </None>
     <None Include="Data\MirrorCommon.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\Spherical.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\RasterPrimary.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\ReflectionRay.slang">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\DodecahedronGlobals.slang">
       <Filter>Data</Filter>
     </None>
   </ItemGroup>
