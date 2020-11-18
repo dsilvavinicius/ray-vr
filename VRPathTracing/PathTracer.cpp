@@ -390,7 +390,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 	createRenderGraph(pCallbacks, mpLeftEyeGraph);
 	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
-	loadModel(pCallbacks, "Dodecahedron/dodecahedron_with_edges.fscene");
+	loadModel(pCallbacks, "Arcade/Arcade.fscene");
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
 }
 
