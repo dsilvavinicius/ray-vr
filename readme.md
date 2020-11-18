@@ -69,7 +69,7 @@ The Visual Studio solution is `Ray-VR.sln`. It has the following structure:
 
 ![](readme_img/solution.png "Visual Studio solution")
 
-The projects in the solution match the repositories described earlier. `NonEuclideanSpaceRayTracing` is organized in several folders and a main class:
+The projects in the solution match the repositories described earlier. `Ray-VR` is organized in several folders and a main class:
 
 - `Data` contains all files that must be copied to the executable folder (shaders for example). Falcor unsures the copy at compilation time.
 - `Engine` contains classes that solve auxiliary problems, such as avatar creation, VR controller management, etc.
