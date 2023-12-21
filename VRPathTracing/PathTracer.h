@@ -63,7 +63,7 @@ private:
 	uint mAttachedMesh = 0;
 	uint mAttachedInstance = 0;
 
-	bool mUseHMD = false;
+	bool mUseHMD = true;
 	bool mLeftEyeOnly = false;
 
 	// VR
@@ -78,8 +78,11 @@ private:
 
 	enum SceneType
 	{
+		MirroredCube,
 		Torus,
-		Dodecahedron,
+		SeifertWeber,
+		MirroredDodecahedron,
+		Poincare,
 		Euclidean
 	};
 	// This member is used to auto-detect special scenes that have boundaries.

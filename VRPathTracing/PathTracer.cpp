@@ -67,9 +67,9 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 	pGui->addSeparator();
 
-	if (mSceneType == Torus || mSceneType == Dodecahedron)
+	if (mSceneType == Torus || mSceneType == MirroredCube || mSceneType == MirroredDodecahedron || mSceneType == SeifertWeber || mSceneType == Poincare)
 	{
-		string expectedName = (mSceneType == Torus) ? "six_mirrors_room_only_edges_copy" : "dodecahedron_edges_copy";
+		string expectedName = (mSceneType == Torus || mSceneType == MirroredCube) ? "six_mirrors_room_only_edges_copy" : "dodecahedron_edges_copy";
 
 		if (pGui->addButton("Toggle Boundaries"))
 		{
@@ -88,7 +88,7 @@ void PathTracer::onGuiRender(SampleCallbacks* pCallbacks, Gui* pGui)
 
 			if (!found)
 			{
-				vec3 scale = (mSceneType == Torus) ? vec3(0.2, 0.2, 0.2) : vec3(0.01, 0.01, 0.01);
+				vec3 scale = (mSceneType == Torus || mSceneType == MirroredCube) ? vec3(0.2, 0.2, 0.2) : vec3(0.01, 0.01, 0.01);
 				scene->addModelInstance(mBoundaryModel, expectedName, vec3(), vec3(), scale);
 			}
 		}
@@ -306,13 +306,25 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 
 	if (pScene != nullptr)
 	{
-		if (filename.find("fundamental_domain_cube") != string::npos)
+		if (filename.find("mirrored_cube") != string::npos)
+		{
+			mSceneType = MirroredCube;
+		}
+		else if (filename.find("torus") != string::npos)
 		{
 			mSceneType = Torus;
 		}
-		else if (filename.find("dodecahedron") != string::npos)
+		else if (filename.find("mirrored_dodecahedron") != string::npos)
 		{
-			mSceneType = Dodecahedron;
+			mSceneType = MirroredDodecahedron;
+		}
+		else if (filename.find("seifert-weber") != string::npos)
+		{
+			mSceneType = SeifertWeber;
+		}
+		else if (filename.find("poincare") != string::npos)
+		{
+			mSceneType = Poincare;
 		}
 		else
 		{
@@ -334,14 +346,27 @@ void PathTracer::loadModel(SampleCallbacks* pCallbacks, const string& filename)
 			mMaterialIds[i] = vector< uint >(pScene->getModel(i)->getMeshCount());
 			for (uint j = 0; j < mMaterialIds[i].size(); ++j)
 			{
-				uint id = 0;
+				uint id = RASTER;
+				if (i == 0)
+				{
+					switch(mSceneType)
+					{
+					case MirroredCube: id = PERFECT_MIRROR; break;
+					case Torus: id = TORUS; break;
+					case SeifertWeber: id = SEIFERT_WEBER_DODECAHEDRON; break;
+					case MirroredDodecahedron: id = MIRRORED_DODECAHEDRON; break;
+					case Poincare: id = POINCARE_DODECAHEDRON; break;
+					}
+				}
 				mMaterialIds[i][j] = id;
 				pScene->getModel(i)->getMesh(j)->getMaterial()->setID(id);
 			}
 		}
 
 		// Additional FPS and HMD cameras.
-		pScene->addCamera(Camera::create());
+		auto cam = Camera::create();
+		cam->setPosition({0.0f, -1.0f, 0.0f});
+		pScene->addCamera(cam);
 		pScene->addCamera(Camera::create());
 	}
 }
@@ -390,7 +415,7 @@ void PathTracer::onLoad(SampleCallbacks* pCallbacks, RenderContext* pRenderConte
 	createRenderGraph(pCallbacks, mpLeftEyeGraph);
 	createRenderGraph(pCallbacks, mpRightEyeGraph);
 
-	loadModel(pCallbacks, "Arcade/Arcade.fscene");
+	loadModel(pCallbacks, "Dodecahedron/mirrored_dodecahedron.fscene");
 	//mFpsCam->setViewMatrix(VRSystem::instance()->getHMD()->getWorldMatrix());
 }
 

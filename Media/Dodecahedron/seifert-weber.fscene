@@ -1,0 +1,133 @@
+{
+    "version": 2,
+    "scene_unit": 1.0,
+    "camera_speed": 1.0,
+    "lighting_scale": 1.0,
+    "active_camera": "Camera0",
+    "models": [
+        {
+            "file": "dodecahedron.fbx",
+            "name": "dodecahedron",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "dodecahedron0",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.009999999776482582,
+                        0.009999999776482582,
+                        0.009999999776482582
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        },
+        {
+            "file": "dodecahedron_edges.fbx",
+            "name": "dodecahedron_edges",
+            "material": {
+                "shading_model": "metal_rough"
+            },
+            "instances": [
+                {
+                    "name": "dodecahedron_edges0",
+                    "translation": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "scaling": [
+                        0.009999999776482582,
+                        0.009999999776482582,
+                        0.009999999776482582
+                    ],
+                    "rotation": [
+                        0.0,
+                        -0.0,
+                        -0.0
+                    ]
+                }
+            ]
+        }
+    ],
+    "lights": [
+        {
+            "name": "PointLight0",
+            "type": "point_light",
+            "intensity": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "pos": [
+                0.3034595549106598,
+                0.3411960005760193,
+                0.0
+            ],
+            "direction": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "opening_angle": 180.0,
+            "penumbra_angle": 0.0
+        },
+        {
+            "name": "PointLight1",
+            "type": "point_light",
+            "intensity": [
+                0.5,
+                0.5,
+                0.5
+            ],
+            "pos": [
+                -0.3921798765659332,
+                -0.23033389449119569,
+                0.0
+            ],
+            "direction": [
+                0.0,
+                -1.0,
+                0.0
+            ],
+            "opening_angle": 180.0,
+            "penumbra_angle": 0.0
+        }
+    ],
+    "cameras": [
+        {
+            "name": "Camera0",
+            "pos": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "target": [
+                0.0,
+                0.0,
+                -1.0
+            ],
+            "up": [
+                0.0,
+                1.0,
+                0.0
+            ],
+            "focal_length": 21.0,
+            "depth_range": [
+                0.10000000149011612,
+                1000.0
+            ],
+            "aspect_ratio": 1.7776999473571778
+        }
+    ]
+}
