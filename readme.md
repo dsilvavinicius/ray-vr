@@ -30,14 +30,13 @@ In Git Bash, type the following instructions:
 ```
 1. git clone git@github.com:dsilvavinicius/rayvr.git
 2. cd ray-vr
-3. git submodule init
-4. git submodule update
-5. Open the solution in VS 2022, compile the ReleaseD3D12 configuration
-6. Turn your HMD on and link it with your PC. Our current tests used a Quest 2 with Airlink. (If your HMD is not linked, SteamVR will not recognize it and the app will crash)
-7. You should use the application in front of your PC to access mouse and keyboard so you will be able to change settings, load scenes or translate your camera. We used the Stationary mode on Quest 2, in front of the computer.
-8. Run the ReleaseD3D12 configuration in VS 2022.
-9. You should now see the Seifert-Weber space. You have an avatar with a head and two hands, which should be centered in the fundamental domain dodecahedron.
-10. Use the QWASDE keys to translate the camera if you appear outside of the dodecahedron. It works as a free-camera in a FPS game.
+3. git submodule update --init
+4. Open the solution in VS 2022, compile the ReleaseD3D12 configuration
+5. Turn your HMD on and link it with your PC. Our current tests used a Quest 2 with Airlink. (If your HMD is not linked, SteamVR will not recognize it and the app will crash)
+6. You should use the application in front of your PC to access mouse and keyboard so you will be able to change settings, load scenes or translate your camera. We used the Stationary mode on Quest 2, in front of the computer.
+7. Run the ReleaseD3D12 configuration in VS 2022.
+8. You should now see the Seifert-Weber space. You have an avatar with a head and two hands, which should be centered in the fundamental domain dodecahedron.
+9. Use the WASDQE keys to translate the camera if you appear outside of the dodecahedron. It works as a free-camera in a FPS game.
 ```
 
 ## Options
