@@ -6,7 +6,7 @@
 
 The project consists of two repos:
 
-- [Ray-VR](git@github.com:dsilvavinicius/rayvr.git): original main repo, with support for stereo ray tracing on Torus and Dodecahedron. Supports the following manifolds and orbifolds: Mirrored Cube, Torus, Mirrored Dodecahedron, Seifert-Weber, and Poincaré Sphere.
+- [Ray-VR](git@github.com:dsilvavinicius/ray-vr.git): original main repo, with support for stereo ray tracing on Torus and Dodecahedron. Supports the following manifolds and orbifolds: Mirrored Cube, Torus, Mirrored Dodecahedron, Seifert-Weber, and Poincaré Sphere.
 - [Falcor](git@github.com:dsilvavinicius/Falcor.git): prerequisite. Fork of NVidia's scientifical framework and is used as a library to access RTX ray tracing capabilities.
 
 ## Disclaimer
@@ -28,10 +28,11 @@ Prerequisites
 In Git Bash, type the following instructions:
 
 ```
-1. git clone git@github.com:dsilvavinicius/rayvr.git
+1. git clone git@github.com:dsilvavinicius/ray-vr.git
 2. cd ray-vr
 3. git submodule update --init
 4. Open the solution in VS 2022, compile the ReleaseD3D12 configuration
+5. Set VRPathTracing as the Startup Project
 5. Turn your HMD on and link it with your PC. Our current tests used a Quest 2 with Airlink. (If your HMD is not linked, SteamVR will not recognize it and the app will crash)
 6. You should use the application in front of your PC to access mouse and keyboard so you will be able to change settings, load scenes or translate your camera. We used the Stationary mode on Quest 2, in front of the computer.
 7. Run the ReleaseD3D12 configuration in VS 2022.
